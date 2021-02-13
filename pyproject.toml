@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 80
+include = '\.pyi?$'
+exclude = '''
+
+(
+      \.eggs
+    | \.git
+    | build
+    | _build
+    | dist
+)
+'''
+
+[tool.isort]
+profile = "black"
