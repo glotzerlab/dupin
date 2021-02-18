@@ -2,9 +2,9 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional
+from typing import Optional, Tuple
 
-from . import event, signal
+from .. import event, signal
 
 
 class DetectorStatus(Enum):
@@ -68,6 +68,6 @@ class Detector(ABC):
 
     @property
     @abstractmethod
-    def signals(self) -> set[signal.Signal]:
-        """set[signal.Signal] All current signals used for the detector."""
+    def signals(self) -> Tuple[signal.Signal, ...]:
+        """tuple[signal.Signal] All current signals used for the detector."""
         pass
