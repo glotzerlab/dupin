@@ -5,7 +5,6 @@ event-detection
 Python package for detecting rare events in molecular simulations.
 
 
-
 Features
 --------
 
