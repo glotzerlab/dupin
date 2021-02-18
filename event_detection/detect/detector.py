@@ -1,13 +1,13 @@
 """Provide base API for rare event detectors."""
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Optional, Tuple
 
 from .. import event, signal
+from ..util import OrderedEnum
 
 
-class DetectorStatus(Enum):
+class DetectorStatus(OrderedEnum):
     """The current status of a detector."""
 
     INACTIVE = 1
