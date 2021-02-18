@@ -2,9 +2,8 @@
 
 from typing import Dict, Tuple, Union
 
-import numpy as np
-
 from .generate import Generator
+from .signal import Signal
 
 
 def _str_isinstance(instance: object, cls_strings: Tuple[str, ...]) -> bool:
@@ -42,7 +41,7 @@ class FreudDescriptor(Generator):
         self._args = args
         self._kwargs = kwargs
 
-    def generate(self, state) -> Dict[str, Union[float, np.ndarray]]:
+    def generate(self, state) -> Dict[str, Signal]:
         """Generate the specified signals from the internal freud compute.
 
         state: state-like object
@@ -52,7 +51,9 @@ class FreudDescriptor(Generator):
         """
         system = self._state_to_freud_system(state)
         self._compute.compute(system, *self._args, **self._kwargs)
-        return {attr: getattr(self._compute, attr) for attr in self._attrs}
+        return {
+            attr: Signal(getattr(self._compute, attr)) for attr in self._attrs
+        }
 
     @staticmethod
     def _state_to_freud_system(state):

@@ -1,9 +1,9 @@
 """Define the interface for signals used for event detection."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Union
+from typing import Dict
 
-import numpy as np
+from .signal import Signal
 
 
 class Generator(ABC):
@@ -15,7 +15,7 @@ class Generator(ABC):
     """
 
     @abstractmethod
-    def generate(self, state) -> Dict[str, Union[float, np.ndarray]]:
+    def generate(self, state) -> Dict[str, Signal]:
         """Return the output signal for a given state.
 
         Parameters
