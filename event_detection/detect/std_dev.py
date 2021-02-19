@@ -1,12 +1,97 @@
 """Use the standard deviation of signals from a baseline to detect events."""
 
+from abc import ABC, abstractmethod
+from copy import copy
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from .. import event
-from ..signal import Generator
+from ..signal import Generator, Signal, SignalType
 from . import Detector, DetectorStatus
+
+
+class _SignalStats(ABC):
+    @abstractmethod
+    def update_baseline(self, entry: Signal) -> None:
+        pass
+
+    @abstractmethod
+    def compute(self):
+        pass
+
+    @property
+    def mean(self) -> float:
+        if self._recompute_stats:
+            self.compute()
+        return self._mean
+
+    @property
+    def std_dev(self) -> float:
+        if self._recompute_stats:
+            self.compute()
+        return self._std_dev
+
+    @abstractmethod
+    def __getitem__(self, index: Union[int, slice]):
+        return copy(self._baseline[index])
+
+    @abstractmethod
+    def deviations(self, entry):
+        pass
+
+
+class _ScalarSignalStats(_SignalStats):
+    def __init__(self) -> None:
+        self._baseline = []
+        self.active_counter = 0
+        self._recompute_stats = True
+
+    def update_baseline(self, entry: float) -> None:
+        self._baseline.append(entry.data)
+        self._recompute_stats = True
+
+    def compute(self):
+        baseline = np.array(self._baseline)
+        self._mean = np.mean(baseline)
+        self._std_dev = np.std(baseline)
+
+    def __getitem__(self, index: Union[int, slice]):
+        return copy(self._baseline[index])
+
+    def deviations(self, entry: Signal) -> float:
+        return abs(entry.data - self.mean) / self.std_dev
+
+
+class _ArraySignalStats(_SignalStats):
+    def __init__(self, percentiles: List[int]) -> None:
+        self.percentiles = percentiles
+        self.percentile_indices = None
+        self._recompute_stats = True
+        self.active_counter = np.zeros(len(percentiles))
+        self._baseline = []
+
+    def update_baseline(self, entry: Signal) -> None:
+        if entry.type != SignalType.ARRAY:
+            raise ValueError("Signal type and SignalStats type do not align.")
+        if self.percentile_indices is None:
+            self.percentile_indices = [
+                int(percent / 100.0 * (len(entry.data) - 1))
+                for percent in self.percentiles
+            ]
+        self._baseline.append(np.sort(entry.data)[self.percentile_indices])
+        self._recompute_stats = True
+
+    def compute(self) -> None:
+        baselines = np.array(self._baseline)
+        self._mean = np.mean(baselines, axis=0)
+        self._std_dev = np.std(baselines, axis=0)
+
+    def deviations(self, entry: Signal) -> np.ndarray:
+        return (
+            np.abs(np.sort(entry.data)[self.percentile_indices] - self.mean)
+            / self.std_dev
+        )
 
 
 class StdDevDetector(Detector):
@@ -20,12 +105,6 @@ class StdDevDetector(Detector):
     n_training: int
         The number of calls to use for generating the baseline before attempting
         to detect a signal.
-    n_stop: int
-        The number of steps to use for generating the baseline. If this is
-        greater than `n_training`, then the instance will attempt to detect
-        events for calls `n_traning` to ``n_training + n_stop``. If no event is
-        detected then the baseline will continue to be updated until `n_stop`
-        calls have been made.
     n_stdev: float
         The number of standard deviations from the base line that consitutes
         triggering an event.
@@ -37,8 +116,7 @@ class StdDevDetector(Detector):
         self,
         signals: List[Generator],
         n_training: int = 50,
-        n_stop: int = 100,
-        n_stddev: float = 2.0,
+        n_std_dev: float = 2.0,
     ):
         """Create a `StdDevDetector` object.
 
@@ -49,101 +127,75 @@ class StdDevDetector(Detector):
         n_training: int
             The number of calls to use for generating the baseline before
             attempting to detect a signal.
-        n_stop: int
-            The number of steps to use for generating the baseline. If this is
-            greater than `n_training`, then the instance will attempt to detect
-            events for calls `n_traning` to ``n_training + n_stop``. If no event
-            is detected then the baseline will continue to be updated until
-            `n_stop` calls have been made.
         n_stdev: float
             The number of standard deviations from the base line that consitutes
             triggering an event.
         """
         self._signals = signals
         self.n_training = n_training
-        self.n_stop = n_stop
-        self.n_stddev = 2.0
+        self.n_std_dev = 2.0
         self._signals_stats = {}
         self._count = 0
+        self.percentages = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
         self.status = DetectorStatus.INACTIVE
 
-    def _get_signals(self, state) -> Dict[str, Union[float, np.ndarray]]:
+    def _get_signals(self, state) -> Dict[str, Signal]:
         signals = {}
         for generator in self.signals:
-            new_signals = generator.query(state)
+            new_signals = generator.generate(state)
             if signals.keys().isdisjoint(new_signals):
                 signals.update(new_signals)
             else:
                 raise RuntimeError("All signals must have unique names.")
         return signals
 
-    def _update_stats(
-        self, signals: Dict[str, Union[float, np.ndarray]]
-    ) -> None:
+    def _update_stats(self, signals: Dict[str, Signal]) -> None:
         for signal_name, signal in signals.items():
-            signal_stats = self._signals_stats[signal_name]
-            if isinstance(signal, np.ndarray):
-                sorted_signal = np.sort(signal)
-                indices = signal_stats["_percent_indices_pairs"]
-                for percent, index in indices:
-                    signal_stats[percent]["values"].append(sorted_signal[index])
-            else:
-                signal_stats["values"].append(signal)
+            self._signals_stats[signal_name].update_baseline(signal)
 
-    def _initialize_stats(
-        self, signals: Dict[str, Union[float, np.ndarray]]
-    ) -> None:
-        percentages = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    def _initialize_stats(self, signals: Dict[str, Signal]) -> None:
         for signal_name, signal in signals.items():
-            signal_stats = self._signals_stats[signal_name] = {}
-            if isinstance(signal, np.ndarray):
-                signal_stats["_percent_indices_pairs"] = []
-                for percent in percentages:
-                    index = int(percent / 100.0 * (len(signal) - 1))
-                    signal_stats["_percent_indices_pairs"].append(
-                        (percent, index)
-                    )
-                    signal_stats[percent] = {"values": [signal[index]]}
-            else:
-                signal_stats["values"] = [signal]
+            if signal.type == SignalType.SCALAR:
+                signal_stats = _ScalarSignalStats()
+            elif signal.type == SignalType.ARRAY:
+                signal_stats = _ArraySignalStats(self.percentages)
 
-    def _compute_statistics(self):
-        for signal_stats in self._signals_stats.values():
-            if "values" in signal_stats:
-                values = np.array(signal_stats["values"])
-                signal_stats["mean"] = np.mean(values)
-                signal_stats["std_dev"] = np.std(values)
-            else:
-                for name, percent_stats in signal_stats.items():
-                    if not isinstance(name, int):
-                        continue
-                    values = np.array(percent_stats["values"])
-                    percent_stats["mean"] = np.mean(values)
-                    percent_stats["std_dev"] = np.std(values)
+            signal_stats.update_baseline(signal)
+            self._signals_stats[signal_name] = signal_stats
 
     def _evaluate_signals(self, signals):
+        max_event_counter = 0
+        event_happened = False
         for signal_name, signal in signals.items():
             signal_stats = self._signals_stats[signal_name]
-            if isinstance(signal, np.ndarray):
-                sorted_signal = np.sort(signal)
-                indices = signal_stats["_percent_indices_pairs"]
-                for percent, index in indices:
-                    if not isinstance(percent, int):
-                        continue
-                    deviation = abs(
-                        sorted_signal[index] - signal_stats[percent]["mean"]
+            deviations = signal_stats.deviations(signal)
+            if isinstance(deviations, np.ndarray):
+                events = deviations > self.n_std_dev
+                event_detected = any(events)
+                if event_detected:
+                    signal_stats.active_counter[events] += 1
+                    max_event_counter = max(
+                        max_event_counter, signal_stats.active_counter.max()
                     )
-                    std_dev = signal_stats[percent]["std_dev"]
-                    if (deviation - (self.n_stddev * std_dev)) > 0:
-                        if self.status == DetectorStatus.INACTIVE:
-                            self.status = DetectorStatus.ACTIVE
+                else:
+                    signal_stats.active_counter[:] = 0
             else:
-                deviation = abs(signal - signal_stats["mean"])
-                std_dev = signal_stats["std_dev"]
-                if (deviation - (self.n_stddev * std_dev)) > 0:
-                    if self.status == DetectorStatus.INACTIVE:
-                        self.status = DetectorStatus.ACTIVE
-            return self.status
+                event_detected = deviations > self.n_std_dev
+                if event_detected:
+                    signal_stats.active_counter += 1
+                    max_event_counter = max(
+                        max_event_counter, signal_stats.active_counter
+                    )
+                else:
+                    signal_stats.active_counter = 0
+            event_happened = event_happened or event_detected
+        if max_event_counter > 10:
+            self.status = DetectorStatus.CONFIRMED
+        elif event_happened:
+            self.status = DetectorStatus.ACTIVE
+        else:
+            self.status = DetectorStatus.INACTIVE
+        return self.status
 
     def _update_status(self, state) -> DetectorStatus:
         signals = self._get_signals(state)
@@ -153,21 +205,14 @@ class StdDevDetector(Detector):
         if self._count < self.n_training:
             self._update_stats(signals)
             return DetectorStatus.INACTIVE
-        if self._count == self.n_training:
-            self._compute_statistics()
         status = self._evaluate_signals(signals)
-        if self._count < self.n_stop and status < DetectorStatus.ACTIVE:
-            self._update_stats(signals)
-            self._compute_statistics()
         return status
 
     def update_status(self, state) -> DetectorStatus:
         """Update the detector status with the given state.
 
         For the first `n_training` calls, only update the baseline for future
-        detection. From ``n_training + 1`` to ``n_training + n_stop`` calls
-        update baseline while also attempting to detect the signal. Afterwards,
-        only attempt to detect events.
+        detection.  Afterwards, attempt to detect events.
 
         Parameters
         ----------
