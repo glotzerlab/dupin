@@ -62,7 +62,7 @@ class FreudDescriptor(Generator):
             `gsd.hoomd.Frame` and `hoomd.Snapshot`. This is used to pass to
             generator to return the corresponding signals.
         """
-        system = self._state_to_freud_system(state)
+        system = _state_to_freud_system(state)
         self._compute.compute(system, *self._args, **self._kwargs)
         signal_dict = {}
         for attr, name in self._attrs.items():
@@ -86,18 +86,18 @@ class FreudDescriptor(Generator):
                 signal_dict[attr] = data
         return signal_dict
 
-    @staticmethod
-    def _state_to_freud_system(state):
-        if isinstance(state, tuple):
-            return state
-        if _str_isinstance(state, "hoomd.state.State"):
-            state = state.snapshot
-        hoomd_snapshot_classes = (
-            "hoomd.Snapshot",
-            "hoomd.data.local_access.LocalSnapshot",
-        )
-        gsd_classes = ("gsd.hoomd.Snapshot",)
-        if _str_isinstance(state, hoomd_snapshot_classes + gsd_classes):
-            return (state.configuration.box, state.particles.position)
-        else:
-            raise TypeError("state is not a valid type.")
+
+def _state_to_freud_system(state):
+    if isinstance(state, tuple):
+        return state
+    if _str_isinstance(state, "hoomd.state.State"):
+        state = state.snapshot
+    hoomd_snapshot_classes = (
+        "hoomd.Snapshot",
+        "hoomd.data.local_access.LocalSnapshot",
+    )
+    gsd_classes = ("gsd.hoomd.Snapshot",)
+    if _str_isinstance(state, hoomd_snapshot_classes + gsd_classes):
+        return (state.configuration.box, state.particles.position)
+    else:
+        raise TypeError("state is not a valid type.")
