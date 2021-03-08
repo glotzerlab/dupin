@@ -1,9 +1,11 @@
 """Interface from freud to event_detection."""
 
-from typing import Dict, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
+
+import numpy as np
 
 from .generate import Generator
-from .signal import Signal
+from .reducer import ArrayReducer
 
 
 def _str_isinstance(instance: object, cls_strings: Tuple[str, ...]) -> bool:
@@ -20,7 +22,12 @@ class FreudDescriptor(Generator):
     """
 
     def __init__(
-        self, compute, attrs: Union[str, Tuple[str, ...]], *args, **kwargs
+        self,
+        compute,
+        attrs: Union[str, Tuple[str, ...]],
+        reducers: Optional[Tuple[ArrayReducer]] = None,
+        *args,
+        **kwargs,
     ):
         r"""Create a `FreudDescriptor` object.
 
@@ -28,20 +35,26 @@ class FreudDescriptor(Generator):
         ----------
         compute: freud.util._Compute
             The freud compute object to generate the signals from.
-        attrs: str or tuple[str, ...]
-            A tuple of string names that are attributes to query from the
-            compute object as independent signals.
+        attrs: str or Dict[str, str]
+            A mapping of attribute names to desired signal names. If the value
+            in a entry is ``None`` the key value is used.
+        reducers: Sequence[signal.ArrayReducer]
+            A sequence of `signal.ArrayReducer` objects to use for creating
+            features from distributions or array quantities. All reducers are
+            applied to all ``attrs``. If any attributes specified are arrays,
+            and this list is empty then an error is produced.
         \*args:
             list of positional arguments to pass to ``compute.compute``.
         \*\*kwargs:
             mapping of keyword arguments to pass to ``compute.compute``.
         """
         self._compute = compute
-        self._attrs = (attrs,) if isinstance(attrs, str) else attrs
+        self._attrs = {attrs: attrs} if isinstance(attrs, str) else attrs
+        self._reducers = reducers
         self._args = args
         self._kwargs = kwargs
 
-    def generate(self, state) -> Dict[str, Signal]:
+    def generate(self, state) -> Dict[str, float]:
         """Generate the specified signals from the internal freud compute.
 
         state: state-like object
@@ -51,9 +64,27 @@ class FreudDescriptor(Generator):
         """
         system = self._state_to_freud_system(state)
         self._compute.compute(system, *self._args, **self._kwargs)
-        return {
-            attr: Signal(getattr(self._compute, attr)) for attr in self._attrs
-        }
+        signal_dict = {}
+        for attr, name in self._attrs.items():
+            if name is None:
+                name = attr
+            data = getattr(self._compute, attr)
+            if isinstance(data, np.ndarray):
+                if self._reducers is None:
+                    raise RuntimeError(
+                        f"Cannot process array quantity "
+                        f"{attr} without a filter."
+                    )
+                signal_dict.update(
+                    {
+                        "-".join((key, name)): value
+                        for reducer in self._reducers
+                        for key, value in reducer(data).items()
+                    }
+                )
+            else:
+                signal_dict[attr] = data
+        return signal_dict
 
     @staticmethod
     def _state_to_freud_system(state):
