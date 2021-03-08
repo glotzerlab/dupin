@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
-from .. import event, signal
-from ..util import OrderedEnum
+from event_detection import event, signal
+from event_detection.util import OrderedEnum
 
 
 class DetectorStatus(OrderedEnum):
@@ -18,7 +18,7 @@ class DetectorStatus(OrderedEnum):
 class Detector(ABC):
     """Abstract base class for rare event detectors.
 
-    A `Detector` takes in one or more `signal.Signal` instances and uses them
+    A `Detector` takes in one or more `signal.Generator` instances and uses them
     to attempt to detect an _event_ occurring. All `Detector` subclasses must
     follow a 3 state paradigm: inactive, active, confirmed. The states are
     roughly:
@@ -34,8 +34,8 @@ class Detector(ABC):
     All subclasses must implement three things a `update_status` method that
     updates its internal state and returns a `DetectorStatus` that state, a
     `event_details` method that returns an `event.Event` instance or ``None``
-    if no event was detected yet, and a `signals` property that returns a set
-    of currently used `signal.Signal` objects.
+    if no event was detected yet, and a `generators` property that returns a
+    sequence of currently used `signal.Generator` objects.
     """
 
     @abstractmethod
@@ -68,6 +68,6 @@ class Detector(ABC):
 
     @property
     @abstractmethod
-    def signals(self) -> Tuple[signal.Signal, ...]:
-        """tuple[signal.Signal] All current signals used for the detector."""
+    def generators(self) -> Tuple[signal.Generator, ...]:
+        """tuple[signal.Generator] All current signals used for the detector."""
         pass
