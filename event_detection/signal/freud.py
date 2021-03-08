@@ -6,11 +6,7 @@ import numpy as np
 
 from .generate import Generator
 from .reduce import ArrayReducer
-
-
-def _str_isinstance(instance: object, cls_strings: Tuple[str, ...]) -> bool:
-    cls_name = ".".join((instance.__module__, instance.__class__.__name__))
-    return any(cls_name in cls_str for cls_str in cls_strings)
+from .util import _state_to_freud_system
 
 
 class FreudDescriptor(Generator):
@@ -65,6 +61,8 @@ class FreudDescriptor(Generator):
         system = _state_to_freud_system(state)
         self._compute.compute(system, *self._args, **self._kwargs)
         signal_dict = {}
+        for reducer in self._reducers:
+            reducer.update(state)
         for attr, name in self._attrs.items():
             if name is None:
                 name = attr
@@ -85,19 +83,3 @@ class FreudDescriptor(Generator):
             else:
                 signal_dict[attr] = data
         return signal_dict
-
-
-def _state_to_freud_system(state):
-    if isinstance(state, tuple):
-        return state
-    if _str_isinstance(state, "hoomd.state.State"):
-        state = state.snapshot
-    hoomd_snapshot_classes = (
-        "hoomd.Snapshot",
-        "hoomd.data.local_access.LocalSnapshot",
-    )
-    gsd_classes = ("gsd.hoomd.Snapshot",)
-    if _str_isinstance(state, hoomd_snapshot_classes + gsd_classes):
-        return (state.configuration.box, state.particles.position)
-    else:
-        raise TypeError("state is not a valid type.")

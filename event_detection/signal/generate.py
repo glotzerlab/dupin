@@ -3,8 +3,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from .signal import Signal
-
 
 class Generator(ABC):
     """The abstract base class for signals used for event detection.
@@ -15,7 +13,7 @@ class Generator(ABC):
     """
 
     @abstractmethod
-    def generate(self, state) -> Dict[str, Signal]:
+    def generate(self, state) -> Dict[str, float]:
         """Return the output signal for a given state.
 
         Parameters
@@ -28,6 +26,6 @@ class Generator(ABC):
         Returns
         -------
         signals:
-            Returns a mapping of signal names to `Signal` instances.
+            Returns a mapping of signal names to floating point values.
         """
         pass
