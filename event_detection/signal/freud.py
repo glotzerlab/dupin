@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 from .generate import Generator
-from .reducer import ArrayReducer
+from .reduce import ArrayReducer
 
 
 def _str_isinstance(instance: object, cls_strings: Tuple[str, ...]) -> bool:
