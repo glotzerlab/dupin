@@ -22,3 +22,19 @@ def _state_to_freud_system(state):
         return (state.configuration.box, state.particles.position)
     else:
         raise TypeError("state is not a valid type.")
+
+
+def _state_to_id(state):
+    hoomd_snapshot_classes = (
+        "hoomd.Snapshot",
+        "hoomd.data.local_access.LocalSnapshot",
+    )
+    gsd_classes = ("gsd.hoomd.Snapshot",)
+    if isinstance(state, tuple) or _str_isinstance(
+        state, hoomd_snapshot_classes + gsd_classes
+    ):
+        return id(state)
+    if _str_isinstance(state, "hoomd.state.State"):
+        return state._simulation.timestep
+    else:
+        raise TypeError("state is not a valid type.")

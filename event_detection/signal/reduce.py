@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import freud
 import numpy as np
 
-from .util import _state_to_freud_system
+from .util import _state_to_freud_system, _state_to_id
 
 
 class ArrayReducer(Callable):
@@ -165,9 +165,14 @@ class NeighborAveraging(SpatialAveraging):
         else:
             self._neighbor_kwargs = None
             self._use_voronoi = True
+        self._state_id = -1
 
     def update(self, state):
         """Update system neighbors."""
+        new_id = _state_to_id(state)
+        if new_id == self._state_id:
+            return
+        self._state_id = new_id
         system = _state_to_freud_system(state)
         if self._use_voronoi:
             nlist = freud.locality.Voronoi()(system)
