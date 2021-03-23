@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from typing import Any, Dict, Optional, Tuple, Union
 
 import freud
+import numba
 import numpy as np
 
 from .util import _state_to_freud_system, _state_to_id
@@ -126,6 +127,16 @@ class SpatialAveraging(ArrayReducer):
         pass
 
 
+@numba.njit
+def _freud_neighbor_summing(
+    arr: np.ndarray, particle_index: np.ndarray, neighbor_index: np.ndarray
+) -> np.ndarray:
+    summed_array = np.zeros(arr.shape)
+    for i, j in zip(particle_index, neighbor_index):
+        summed_array[i] += arr[j]
+    return summed_array
+
+
 class NeighborAveraging(SpatialAveraging):
     r"""Average distribution about neighboring data points.
 
@@ -185,6 +196,6 @@ class NeighborAveraging(SpatialAveraging):
         self._nlist = nlist
 
     def _spatially_average(self, distribution: np.ndarray) -> np.ndarray:
-        avg_distribution = np.zeros(len(distribution), dtype=float)
-        avg_distribution[self._nlist[:, 0]] += distribution[self._nlist[:, 1]]
-        return avg_distribution / self._nlist.neighbor_counts.astype(float)
+        return _freud_neighbor_summing(
+            distribution, self._nlist[:, 0], self._nlist[:, 1]
+        ) / self._nlist.neighbor_counts.astype(float)
