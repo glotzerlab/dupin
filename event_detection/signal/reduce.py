@@ -175,7 +175,9 @@ class NeighborAveraging(SpatialAveraging):
         self._state_id = new_id
         system = _state_to_freud_system(state)
         if self._use_voronoi:
-            nlist = freud.locality.Voronoi()(system)
+            voronio = freud.locality.Voronoi()
+            voronio.compute(system)
+            nlist = voronio.nlist
         else:
             query = freud.locality.AABBQuery(*system)
             nlist = query.query(
