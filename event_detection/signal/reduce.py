@@ -62,12 +62,11 @@ class Percentile(ArrayReducer):
 
     def __call__(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with dd% keys."""
-        N = len(distribution) - 1
-        sorted_distribution = np.sort(distribution)
-        indices = np.rint(np.multiply(self._percentiles, N / 100)).astype(int)
         return {
-            f"{percent}%": sorted_distribution[i]
-            for i, percent in zip(indices, self._percentiles)
+            f"{percent}%": value
+            for percent, value in zip(
+                self._percentiles, np.percentile(distribution)
+            )
         }
 
 
