@@ -65,6 +65,7 @@ class StdDevDetector(Detector):
         generators: List[Generator],
         n_training: int = 50,
         n_std_dev: float = 2.0,
+        threshold: int = 10,
     ):
         """Create a `StdDevDetector` object.
 
@@ -73,18 +74,22 @@ class StdDevDetector(Detector):
         generators: list[Generator]
             The generators used for signal generation to use for event
             detection.
-        n_training: int
+        n_training: int, optional
             The number of calls to use for generating the baseline before
             attempting to detect a signal.
-        n_stdev: float
+        n_stdev: float, optional
             The number of standard deviations from the base line that consitutes
             triggering an event.
+        theshold: int, optional
+            The number of consequative calls that a signal is over/under the set
+            number of standard deviations.
         """
         self._generators = generators
         self.n_training = n_training
         self.n_std_dev = n_std_dev
         self._signals_stats = {}
         self._count = 0
+        self._threshold = threshold
         self.status = DetectorStatus.INACTIVE
 
     def _get_signals(self, state) -> Dict[str, float]:
@@ -121,7 +126,7 @@ class StdDevDetector(Detector):
             else:
                 signal_stats.active_counter = 0
 
-        if max_event_counter > 15:
+        if max_event_counter > self._threshold:
             self.status = DetectorStatus.CONFIRMED
             self._triggering_signal = activating_signal
         elif max_event_counter > 0:
