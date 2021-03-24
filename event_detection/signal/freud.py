@@ -2,6 +2,22 @@
 
 from typing import Dict, Optional, Tuple, Union
 
+try:
+    import freud
+except ImportError:
+
+    class _ModuleError:
+        def __init__(self, module):
+            self.module = module
+
+        def __getattribute__(self, attr):
+            raise RuntimeError(
+                f"This feature is not available as the module "
+                f"{object.__getattribute__(self, 'module')} is not available."
+            )
+
+    freud = _ModuleError("freud")
+
 import numpy as np
 
 from .generate import Generator
