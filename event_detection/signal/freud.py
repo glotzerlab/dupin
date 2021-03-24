@@ -1,6 +1,8 @@
 """Interface from freud to event_detection."""
 
-from typing import Dict, Optional, Tuple, Union
+import copy
+from collections.abc import Sequence
+from typing import Dict, List, Optional, Tuple, Union
 
 try:
     import freud
@@ -25,7 +27,92 @@ from .reduce import ArrayReducer
 from .util import _state_to_freud_system
 
 
-class FreudDescriptor(Generator):
+class FreudDescriptorDefinition:
+    """Defines the interface between freud and event_detection."""
+
+    def __init__(
+        self,
+        compute,
+        attrs: Union[str, Tuple[str, ...]],
+        reducers: Optional[Tuple[ArrayReducer]] = None,
+        drop_kwargs: Optional[List[str]] = None,
+        **kwargs,
+    ) -> None:
+        r"""Create a `FreudDescriptorDefinition` object.
+
+        Parameters
+        ----------
+        compute: freud.util._Compute
+            freud objects with a ``compute`` method.
+        attrs: str or Sequence[str] or dict[str, str]
+            A mapping of attribute names to desired signal names. If the value
+            in a entry is ``None`` the key value is used. A single string or
+            sequence of strings can be passed and will be converted to the
+            appropriate dict instance.
+        reducers: Sequence[signal.ArrayReducer], optional
+            A sequence of `signal.ArrayReducer` objects to use for creating
+            features from distributions or array quantities. All reducers are
+            applied to all ``attrs``. If any attributes specified are arrays,
+            and this list is empty then an error is produced.
+        drop_kwargs: Sequence[str], optional
+            List of keyword arguments to ignore when passed from a
+            `FreudDescriptors` object.
+        \*\*kwargs:
+            mapping of keyword arguments to pass to ``compute.compute``.
+
+        Note:
+            If ``'neighbors'`` is used as a key-word argument, the string
+            ``'voronoi'`` can be passed as its value to indicate that the
+            Voronoi tesselation should be used for determining neighbors.
+        """
+        self.compute = compute
+        if isinstance(attrs, str):
+            self.attrs = {attrs: attrs}
+        elif isinstance(attrs, Sequence):
+            self.attrs = {attr: None for attr in attrs}
+        else:
+            self.attrs = attrs
+        self.reducers = reducers
+        self.drop_kwargs = drop_kwargs if drop_kwargs is not None else {}
+        self.kwargs = kwargs
+
+    def __call__(self, system, **kwargs):
+        """Return signals generated from this descriptor."""
+        for reducer in self.reducers:
+            reducer.update(system)
+        for key in self.drop_kwargs:
+            kwargs.pop(key, None)
+        kwargs.update(self.kwargs)
+        if kwargs["neighbors"] == "voronoi":
+            voronoi = freud.locality.Voronoi()
+            voronoi.compute(system)
+            kwargs["neighbors"] = voronoi.nlist
+        self.compute.compute(system, **kwargs)
+        signals = {}
+        for attr in self.attrs:
+            signals.update(self._process_attr(attr))
+        return signals
+
+    def _process_attr(self, attr):
+        if (name := self.attrs[attr]) is None:
+            name = attr
+        data = getattr(self.compute, attr)
+        if isinstance(data, np.ndarray):
+            if self.reducers is None:
+                raise RuntimeError(
+                    f"Cannot process array quantity "
+                    f"{attr} without a filter."
+                )
+            return {
+                "-".join((key, name)): value
+                for reducer in self.reducers
+                for key, value in reducer(data).items()
+            }
+        else:
+            return {name: data}
+
+
+class FreudDescriptors(Generator):
     """Wraps `freud` compute objects for use in generating signals.
 
     When a returned quantity returned by an instances internal compute is an
@@ -35,35 +122,49 @@ class FreudDescriptor(Generator):
 
     def __init__(
         self,
-        compute,
-        attrs: Union[str, Tuple[str, ...]],
+        computes: List[FreudDescriptorDefinition],
         reducers: Optional[Tuple[ArrayReducer]] = None,
-        *args,
         **kwargs,
     ):
-        r"""Create a `FreudDescriptor` object.
+        r"""Create a `FreudDescriptors` object.
 
         Parameters
         ----------
         compute: freud.util._Compute
-            The freud compute object to generate the signals from.
-        attrs: str or Dict[str, str]
-            A mapping of attribute names to desired signal names. If the value
-            in a entry is ``None`` the key value is used.
+            The list of `FreudDescriptorDefinition` objects to generate the
+            signals from. Plain freud compute objects can also be passed and
+            they will be wrapped around a `FreudDescriptorDefinition`. This
+            assumes the desired attribute is ``particle_order``.
         reducers: Sequence[signal.ArrayReducer]
             A sequence of `signal.ArrayReducer` objects to use for creating
             features from distributions or array quantities. All reducers are
             applied to all ``attrs``. If any attributes specified are arrays,
             and this list is empty then an error is produced.
-        \*args:
-            list of positional arguments to pass to ``compute.compute``.
         \*\*kwargs:
-            mapping of keyword arguments to pass to ``compute.compute``.
+            mapping of keyword arguments to pass to the individual
+            `FreudDescriptorDefinition` objects' call method.
+
+        Note:
+            If ``'neighbors'`` is used as a key-word argument, the neighbor
+            query specified will be precomputed for use in all the descriptors.
+            This is desirable if all/most of the computes have the same neighbor
+            arguments, and undesirable for heterogenious neighbor querying.
+            Also, if the string ``'voronoi'`` can be passed as its value to
+            indicate that the Voronoi tesselation should be used for determining
+            neighbors.
         """
-        self._compute = compute
-        self._attrs = {attrs: attrs} if isinstance(attrs, str) else attrs
-        self._reducers = reducers
-        self._args = args
+        self._computes = []
+        for compute in computes:
+            if isinstance(compute, FreudDescriptorDefinition):
+                if compute.reducers is None:
+                    compute.reducers = reducers
+                self._computes.append(compute)
+            else:
+                self._computes.append(
+                    FreudDescriptorDefinition(
+                        compute, "particle_order", reducers
+                    )
+                )
         self._kwargs = kwargs
 
     def generate(self, state) -> Dict[str, float]:
@@ -75,27 +176,22 @@ class FreudDescriptor(Generator):
             generator to return the corresponding signals.
         """
         system = _state_to_freud_system(state)
-        self._compute.compute(system, *self._args, **self._kwargs)
-        signal_dict = {}
-        for reducer in self._reducers:
-            reducer.update(state)
-        for attr, name in self._attrs.items():
-            if name is None:
-                name = attr
-            data = getattr(self._compute, attr)
-            if isinstance(data, np.ndarray):
-                if self._reducers is None:
-                    raise RuntimeError(
-                        f"Cannot process array quantity "
-                        f"{attr} without a filter."
-                    )
-                signal_dict.update(
-                    {
-                        "-".join((key, name)): value
-                        for reducer in self._reducers
-                        for key, value in reducer(data).items()
-                    }
-                )
+        kwargs = copy.copy(self._kwargs)
+        if "neighbors" in kwargs:
+            if (
+                isinstance(kwargs["neighbors"], str)
+                and kwargs["neighbors"] == "voronoi"
+            ):
+                voronoi = freud.locality.Voronoi()
+                voronoi.compute(system)
+                kwargs["neighbors"] = voronoi.nlist
             else:
-                signal_dict[attr] = data
-        return signal_dict
+                query = freud.locality.AABBQuery(*system)
+                kwargs["neighbors"] = query.query(
+                    system[1], kwargs["neighbors"]
+                ).toNeighborList()
+
+        signals = {}
+        for compute in self._computes:
+            signals.update(compute(system, **kwargs))
+        return signals
