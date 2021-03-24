@@ -66,7 +66,8 @@ class Percentile(ArrayReducer):
         return {
             f"{percent}%": value
             for percent, value in zip(
-                self._percentiles, np.percentile(distribution)
+                self._percentiles,
+                np.percentile(distribution, self._percentiles),
             )
         }
 
