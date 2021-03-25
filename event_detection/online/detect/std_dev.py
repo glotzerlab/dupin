@@ -1,11 +1,10 @@
 """Use the standard deviation of signals from a baseline to detect events."""
 
 from copy import copy
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
-from event_detection import event
 from event_detection.signal import Generator
 
 from . import Detector, DetectorStatus
@@ -90,6 +89,7 @@ class StdDevDetector(Detector):
         self._signals_stats = {}
         self._count = 0
         self._threshold = threshold
+        self._events = []
         self.status = DetectorStatus.INACTIVE
 
     def _get_signals(self, state) -> Dict[str, float]:
@@ -114,7 +114,7 @@ class StdDevDetector(Detector):
 
     def _evaluate_signals(self, signals: Dict[str, float]):
         max_event_counter = 0
-        activating_signal = ""
+        confirmed_signals = []
         for signal_name, signal in signals.items():
             signal_stats = self._signals_stats[signal_name]
             deviation = abs(signal_stats.mean - signal)
@@ -122,13 +122,13 @@ class StdDevDetector(Detector):
                 signal_stats.active_counter += 1
                 if signal_stats.active_counter > max_event_counter:
                     max_event_counter = signal_stats.active_counter
-                    activating_signal = signal_name
+                    confirmed_signals.append(signal_name)
             else:
                 signal_stats.active_counter = 0
 
         if max_event_counter > self._threshold:
             self.status = DetectorStatus.CONFIRMED
-            self._triggering_signal = activating_signal
+            self._events.append(self._count, confirmed_signals)
         elif max_event_counter > 0:
             self.status = DetectorStatus.ACTIVE
         else:
@@ -163,9 +163,9 @@ class StdDevDetector(Detector):
         self._count += 1
         return status
 
-    def event_details(self) -> Optional[event.Event]:
+    def event_details(self) -> List[Tuple[int, List[str]]]:
         """If an event has been detected provide information about the event."""
-        raise NotImplementedError
+        return self._events
 
     @property
     def generators(self) -> Tuple[Generator, ...]:

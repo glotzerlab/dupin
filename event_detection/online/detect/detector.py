@@ -1,9 +1,9 @@
 """Provide base API for rare event detectors."""
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
+from typing import List, Tuple
 
-from event_detection import event, signal
+from event_detection import signal
 from event_detection.util import OrderedEnum
 
 
@@ -56,7 +56,7 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def event_details(self) -> Optional[event.Event]:
+    def event_details(self) -> List[Tuple[int, List[str]]]:
         """Return the details of an event if detected.
 
         Returns
