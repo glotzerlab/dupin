@@ -18,23 +18,23 @@ def _conj_sq(x):
 
 
 @numba.njit
-def _to_steinhardt(js, harmonics, l, Np):  # noqa: E741
+def _to_steinhardt(js, harmonics, l, Np, weights):  # noqa: E741
     avg_qlm = np.zeros(harmonics.shape[1], dtype=np.complex64)
     steinhardt = np.zeros((Np, l + 1), dtype=np.float32)
-    cnt = 0.0
+    cum_weight = 0.0
     cur_particle = 0
-    for i, j in enumerate(js):
+    for i, (j, weight) in enumerate(zip(js, weights)):
         if cur_particle != j:
-            avg_qlm /= cnt
+            avg_qlm /= cum_weight
             _reduce_harmonics(avg_qlm, l, steinhardt[cur_particle])
-            cnt = 0.0
+            cum_weight = 0.0
             cur_particle += 1
             avg_qlm[:] = 0
 
-        avg_qlm += harmonics[i, :]
-        cnt += 1.0
+        avg_qlm += weight * harmonics[i, :]
+        cum_weight += 1.0
 
-    avg_qlm /= cnt
+    avg_qlm /= cum_weight
     _reduce_harmonics(avg_qlm, l, steinhardt[cur_particle])
     return steinhardt
 
@@ -92,7 +92,11 @@ class SteinhardtGenerator(Generator):
             nlist = query.query(system[1], self.neighbors).toNeighborList()
         self.compute.compute(system, neighbors=nlist)
         steinhardt = _to_steinhardt(
-            nlist[:, 0], self.compute.sph, self.max_l, nlist.num_points
+            nlist[:, 0],
+            self.compute.sph,
+            self.max_l,
+            nlist.num_points,
+            nlist.weights,
         )
         signals = {}
         for i, q in enumerate(steinhardt.T):
