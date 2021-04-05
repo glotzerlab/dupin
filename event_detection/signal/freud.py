@@ -123,7 +123,7 @@ class FreudDescriptors(Generator):
     def __init__(
         self,
         computes: List[FreudDescriptorDefinition],
-        reducers: Optional[Tuple[ArrayReducer]] = None,
+        reducers: Optional[List[ArrayReducer]] = None,
         **kwargs,
     ):
         r"""Create a `FreudDescriptors` object.
