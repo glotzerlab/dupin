@@ -62,7 +62,7 @@ class SignalAggregator:
         """
         return pd.DataFrame(
             {
-                col: [frame[col] for frame in self.signals]
-                for col in self.signals[0]
+                col: [frame[col] for frame in self._signals]
+                for col in self._signals[0]
             }
         )
