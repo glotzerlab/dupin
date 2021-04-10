@@ -4,7 +4,12 @@ from typing import Tuple
 
 
 def _str_isinstance(instance: object, cls_strings: Tuple[str, ...]) -> bool:
-    cls_name = ".".join((instance.__module__, instance.__class__.__name__))
+    cls_name = ".".join(
+        (
+            getattr(instance, "__module__", ""),
+            getattr(instance.__class__, "__name__", ""),
+        )
+    )
     return any(cls_name in cls_str for cls_str in cls_strings)
 
 
