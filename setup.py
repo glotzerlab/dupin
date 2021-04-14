@@ -10,7 +10,7 @@ with open("README.md") as readme_file:
 with open("changelog") as history_file:
     history = history_file.read()
 
-requirements = []
+requirements = ["numpy", "ruptures", "kneed", "freud-analysis", "numba"]
 
 setup(
     author="Brandon Butler",
