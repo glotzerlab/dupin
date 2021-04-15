@@ -72,5 +72,8 @@ class SweepDetector:
                 direction="decreasing",
                 interp_method="interp1d",
             )
-            return kneedle.elbow
-        return self._elbow_detector(x, costs)
+            elbow = kneedle.elbow
+        else:
+            elbow = self._elbow_detector(x, costs)
+        if elbow is None:
+            return len(costs) + 1
