@@ -48,7 +48,13 @@ class SweepDetector:
         self, data: np.ndarray
     ) -> Tuple[List[int], List[float]]:
         penalties = []
-        change_points = []
+        change_points = [[]]
+        # Get the base level pentalty of the entire sequence
+        if isinstance(self._detector, rpt.base.BaseEstimator):
+            self._detector.cost.fit(data)
+            penalties.append(self._detector.cost.error(0, len(data)))
+        else:
+            penalties.append(self._detector(data, 0))
         for num_change_points in range(1, self.max_change_points + 1):
             if isinstance(self._detector, rpt.base.BaseEstimator):
                 points = self._detector.fit_predict(
