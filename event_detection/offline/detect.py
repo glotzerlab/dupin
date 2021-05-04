@@ -102,3 +102,54 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
         x=x, y=costs, curve="convex", direction="decreasing", **kwargs
     )
     return detector.elbow
+
+
+def two_pass_elbow_detection(
+    threshold: int, detector: Optional[ElbowDetector] = None
+) -> ElbowDetector:
+    """Create a function that runs two passes of KNEEDLE to find a second elbow.
+
+    The detector runs a first pass of the elbow detector ``detector`` and
+    determines if the elbow is far enough along the cost curve (determined by
+    ``threshold``). If it is not, the detector runs a second pass with only the
+    points at or beyond the first pass's estimated elbow. This is designed to
+    help with the case where the first elbow detected is expected to be from
+    such a prodigious decrease in the cost function that the proper number of
+    events would not be detected such as smaller events within a phase
+    transition.
+
+    Note:
+        If the second pass returns ``None`` the first pass elbow will still be
+        used.
+
+    Parameters
+    ----------
+    threshold : int
+        If the first pass of the elbow detector computes an elbow less than
+        threshold, run a second pass. Otherwise, the detector just returns the
+        first pass.
+    detector : callable[[list[float]], int], optional
+        The callable to use for both sweeps of elbow detection. Defaults to
+        `kneedle_elbow_detection`.
+
+    Returns
+    -------
+    new_detector : callable[[list[float], list[float]], int]
+        Returns a new elbow detector that uses the two steps scheme shown above.
+    """
+    if detector is None:
+        detector = kneedle_elbow_detection
+
+    def find_elbow(costs: List[float]) -> int:
+        first_pass = detector(costs)
+        if first_pass.elbow is None:
+            return None
+        if first_pass.elbow < threshold:
+            second_pass = detector(costs[first_pass.elbow :])
+            if second_pass.elbow is None:
+                return first_pass.elbow
+            else:
+                return second_pass.elbow
+        return first_pass.elbow
+
+    return find_elbow
