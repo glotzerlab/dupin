@@ -5,6 +5,8 @@ import kneed as kd
 import numpy as np
 import ruptures as rpt
 
+ElbowDetector = Callable[[List[float]], int]
+
 
 class SweepDetector:
     """Detects the optimal number of change points in a time series.
@@ -22,16 +24,15 @@ class SweepDetector:
             Callable[[np.ndarray, int], Tuple[List[int], float]],
         ],
         max_change_points: int,
-        use_kneedle: bool = True,
-        elbow_detector: Optional[
-            Callable[[List[float], List[float]], int]
-        ] = None,
+        elbow_detector: Optional[ElbowDetector] = None,
     ) -> None:
         """Create a SweepDetector object."""
         self._detector = detector
         self.max_change_points = max_change_points
-        self.use_kneedle = use_kneedle
-        self._elbow_detector = elbow_detector
+        if elbow_detector is None:
+            self._elbow_detector = kneedle_elbow_detection
+        else:
+            self._elbow_detector = elbow_detector
 
     def fit(self, data: np.ndarray) -> List[int]:
         """Fit and return change points for given data."""
@@ -73,18 +74,31 @@ class SweepDetector:
         return change_points, penalties
 
     def _get_elbow(self, costs: List[float]) -> int:
-        x = range(1, self.max_change_points + 1)
-        if self._elbow_detector is None and self.use_kneedle:
-            kneedle = kd.KneeLocator(
-                x=x,
-                y=costs,
-                S=2.0,
-                curve="convex",
-                direction="decreasing",
-                interp_method="interp1d",
-            )
-            elbow = kneedle.elbow
-        else:
-            elbow = self._elbow_detector(x, costs)
+        elbow = self._elbow_detector(costs)
         if elbow is None:
             return len(costs) + 1
+        return elbow
+
+
+def kneedle_elbow_detection(costs: List[float], **kwargs):
+    r"""Run the KNEEDLE algorithm for elbow detection.
+
+    Parameters
+    ----------
+    costs : list[float]
+        The list/array of costs along some implicit x.
+    \*\*kwargs : dict
+        keyword arguments to pass to ``kneed.KneeLocator``.
+
+    Returns
+    -------
+    int
+        The predicted index for the elbow.
+    """
+    kwargs.setdefault("S", 1.0)
+    kwargs.setdefault("interp_method", "interp1d")
+    x = range(0, len(costs))
+    detector = kd.KneeLocator(
+        x=x, y=costs, curve="convex", direction="decreasing", **kwargs
+    )
+    return detector.elbow
