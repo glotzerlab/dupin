@@ -73,6 +73,31 @@ class Percentile(ArrayReducer):
         }
 
 
+class NthGreatest(ArrayReducer):
+    """Reduce a distribution to the Nth greatest values."""
+
+    def __init__(self, indices: Tuple[int]) -> None:
+        """Create a `NthGreatest` object.
+
+        Parameters
+        ----------
+        indices : tuple[int], optional
+            The indices to query. Negative indices are the Nth smallest values.
+            Zero is not smallest value in the array.
+        """
+        self._indices = indices
+
+    def __call__(self, distribution: np.ndarray) -> Dict[str, float]:
+        """Return the signals with modified keys."""
+        sorted_array = np.sort(distribution)
+        return {
+            f"{index}-th-{'greatest' if index > 0 else 'least'}": sorted_array[
+                -index
+            ]
+            for index in self._indices
+        }
+
+
 class SpatialAveraging(ArrayReducer):
     """Composite Reducer that first spatially averages the given distribution.
 
