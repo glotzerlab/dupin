@@ -59,7 +59,8 @@ class Percentile(ArrayReducer):
             every 10% increment from 0% to 100% (inclusive) is taken.
         """
         if percentiles is None:
-            self._percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+            percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+        self._percentiles = percentiles
 
     def __call__(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with dd% keys."""
