@@ -47,7 +47,7 @@ class SweepDetector:
             return self.opt_change_points_
 
         self.opt_n_change_points_ = opt_n_change_points
-        self.opt_change_points_ = change_points[opt_n_change_points - 1]
+        self.opt_change_points_ = change_points[opt_n_change_points]
         return self.opt_change_points_
 
     def _get_change_points(
