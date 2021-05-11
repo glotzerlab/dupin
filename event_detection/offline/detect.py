@@ -40,14 +40,14 @@ class SweepDetector:
         self.costs_ = penalties
         self.change_points_ = change_points
 
-        opt_n_change_points = self._get_elbow(penalties)
-        if opt_n_change_points is None:
+        elbow_index = self._elbow_detector(penalties)
+        if elbow_index is None:
             self.opt_n_change_points_ = 0
             self.opt_n_change_points_ = []
             return self.opt_change_points_
 
-        self.opt_n_change_points_ = opt_n_change_points
-        self.opt_change_points_ = change_points[opt_n_change_points]
+        self.opt_n_change_points_ = elbow_index
+        self.opt_change_points_ = change_points[elbow_index]
         return self.opt_change_points_
 
     def _get_change_points(
@@ -65,19 +65,13 @@ class SweepDetector:
             if isinstance(self._detector, rpt.base.BaseEstimator):
                 points = self._detector.fit_predict(
                     data, n_bkps=num_change_points
-                )
+                )[:-1]
                 cost = self._detector.cost.sum_of_costs(points)
             else:
                 points, cost = self._detector(data, num_change_points)
             penalties.append(cost)
             change_points.append(points)
         return change_points, penalties
-
-    def _get_elbow(self, costs: List[float]) -> int:
-        elbow = self._elbow_detector(costs)
-        if elbow is None:
-            return len(costs) + 1
-        return elbow
 
 
 def kneedle_elbow_detection(costs: List[float], **kwargs):
@@ -142,14 +136,14 @@ def two_pass_elbow_detection(
 
     def find_elbow(costs: List[float]) -> int:
         first_pass = detector(costs)
-        if first_pass.elbow is None:
+        if first_pass is None:
             return None
-        if first_pass.elbow < threshold:
-            second_pass = detector(costs[first_pass.elbow :])
-            if second_pass.elbow is None:
-                return first_pass.elbow
+        if first_pass < threshold:
+            second_pass = detector(costs[first_pass:])
+            if second_pass is None:
+                return first_pass
             else:
-                return second_pass.elbow
-        return first_pass.elbow
+                return second_pass + first_pass
+        return first_pass
 
     return find_elbow
