@@ -29,32 +29,35 @@ class CostLinearFit(rpt.base.BaseCost):
         """Create a CostLinearFit object."""
         pass
 
-    def fit(self, signal):
+    def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
-        self._signal = signal
+        if len(signal.shape) == 1:
+            self._signal = np.ascontiguousarray(signal.reshape((1, -1)))
+        else:
+            self._signal = np.ascontiguousarray(signal.T)
 
         if len(signal.shape) == 2:
-            self._base_errors = [1.0 for _ in range(signal.shape[1])]
+            self._base_errors = np.ones(signal.shape[1], dtype=float)
         else:
-            self._base_errors = [1.0]
+            self._base_errors = np.ones(1, dtype=float)
         self._base_errors = self._individual_errors(0, len(signal))
+        self._x = np.linspace(0, 1, len(self._signal), dtype=float)
 
-    def error(self, start, end):
+    def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
         return sum(self._individual_errors(start, end))
 
-    def _individual_errors(self, start, end):
+    def _individual_errors(self, start: int, end: int):
         errors = []
-        x = np.linspace(0, 1, end - start)
-        for ind_base_error, signal in zip(self._base_errors, self._signal.T):
-            linear_regression = sp.stats.linregress(x, signal[start:end])
-            prefactor = (end - start) / ind_base_error
-            errors.append(
-                prefactor * self._l1(linear_regression, x, signal[start:end])
-            )
+        x = self._x[start:end]
+        for base_error, signal in zip(self._base_errors, self._signal):
+            prefactor = (end - start) / base_error
+            y = signal[start:end]
+            linear_regression = sp.stats.linregress(x, y)
+            errors.append(prefactor * self._l1(linear_regression, x, y))
         return errors
 
     @staticmethod
-    def _l1(linear_regression, x, y):
+    def _l1(linear_regression, x: np.ndarray, y: np.ndarray):
         predicted_y = linear_regression.slope * x + linear_regression.intercept
         return np.sum(np.abs(predicted_y - y))
