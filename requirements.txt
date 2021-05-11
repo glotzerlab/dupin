@@ -3,3 +3,4 @@ numba
 freud-analysis
 ruptures
 kneed
+scikit-learn

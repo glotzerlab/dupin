@@ -10,7 +10,14 @@ with open("README.md") as readme_file:
 with open("changelog") as history_file:
     history = history_file.read()
 
-requirements = ["numpy", "ruptures", "kneed", "freud-analysis", "numba"]
+requirements = [
+    "numpy",
+    "ruptures",
+    "kneed",
+    "freud-analysis",
+    "numba",
+    "scikit-learn",
+]
 
 setup(
     author="Brandon Butler",
@@ -23,6 +30,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     description="Python package for detecting rare events in molecular "
     "simulations.",
