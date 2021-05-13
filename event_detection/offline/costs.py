@@ -2,6 +2,7 @@
 import numpy as np
 import ruptures as rpt
 import scipy as sp
+from sklearn import preprocessing
 
 
 class CostLinearFit(rpt.base.BaseCost):
@@ -32,16 +33,10 @@ class CostLinearFit(rpt.base.BaseCost):
     def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
         if len(signal.shape) == 1:
-            self._signal = np.ascontiguousarray(signal.reshape((1, -1)))
-        else:
-            self._signal = np.ascontiguousarray(signal.T)
-
-        if len(signal.shape) == 2:
-            self._base_errors = np.ones(signal.shape[1], dtype=float)
-        else:
-            self._base_errors = np.ones(1, dtype=float)
-        self._base_errors = self._individual_errors(0, len(signal))
-        self._x = np.linspace(0, 1, len(self._signal), dtype=float)
+            signal = signal.reshape((-1, 1))
+        signal = preprocessing.MinMaxScaler().fit_transform(signal)
+        self._signal = np.ascontiguousarray(signal.T)
+        self._x = np.linspace(0, 1, self._signal.shape[1], dtype=float)
 
     def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
@@ -50,11 +45,9 @@ class CostLinearFit(rpt.base.BaseCost):
     def _individual_errors(self, start: int, end: int):
         errors = []
         x = self._x[start:end]
-        for base_error, signal in zip(self._base_errors, self._signal):
-            prefactor = (end - start) / base_error
-            y = signal[start:end]
+        for y in self._signal[:, start:end]:
             linear_regression = sp.stats.linregress(x, y)
-            errors.append(prefactor * self._l1(linear_regression, x, y))
+            errors.append(self._l1(linear_regression, x, y))
         return errors
 
     @staticmethod
