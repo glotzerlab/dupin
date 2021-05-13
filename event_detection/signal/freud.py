@@ -83,7 +83,7 @@ class FreudDescriptorDefinition:
         for key in self.drop_kwargs:
             kwargs.pop(key, None)
         kwargs.update(self.kwargs)
-        if kwargs["neighbors"] == "voronoi":
+        if kwargs.get("neighbors", None) == "voronoi":
             voronoi = freud.locality.Voronoi()
             voronoi.compute(system)
             kwargs["neighbors"] = voronoi.nlist
