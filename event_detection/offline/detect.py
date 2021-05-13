@@ -25,6 +25,7 @@ class SweepDetector:
         ],
         max_change_points: int,
         elbow_detector: Optional[ElbowDetector] = None,
+        tolerance: float = 1e-3,
     ) -> None:
         """Create a SweepDetector object."""
         self._detector = detector
@@ -33,6 +34,7 @@ class SweepDetector:
             self._elbow_detector = kneedle_elbow_detection
         else:
             self._elbow_detector = elbow_detector
+        self.tolerance = tolerance
 
     def fit(self, data: np.ndarray) -> List[int]:
         """Fit and return change points for given data."""
@@ -65,12 +67,22 @@ class SweepDetector:
             if isinstance(self._detector, rpt.base.BaseEstimator):
                 points = self._detector.fit_predict(
                     data, n_bkps=num_change_points
-                )[:-1]
+                )
+                # Stop early if the correct number of change points were not
+                # detected which can happen when no change point addition
+                # sigificantly reduces cost.
+                if len(points) != num_change_points + 1:
+                    break
                 cost = self._detector.cost.sum_of_costs(points)
+                points.pop()
             else:
                 points, cost = self._detector(data, num_change_points)
             penalties.append(cost)
             change_points.append(points)
+            # Check if cost changed enough to justify finding an additional
+            # change point.
+            if abs(cost - penalties[-2]) / penalties[-2] <= self.tolerance:
+                break
         return change_points, penalties
 
 
