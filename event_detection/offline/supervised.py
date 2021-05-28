@@ -8,7 +8,7 @@ import sklearn as sk
 
 def window_iter(seq, window_size):
     """Iterate over a sequence in slices of length window_size."""
-    L = len(window_size)
+    L = len(seq)
     for i, j in zip(range(0, L - window_size + 1), range(window_size, L + 1)):
         yield seq[i:j]
 
@@ -102,9 +102,9 @@ class Window:
                 y_test,
             ) = sk.model_selection.train_test_split(
                 x,
-                y[: len(self.window_size)],
+                y[: self.window_size],
                 test_size=self.test_size,
-                stratify=y[: len(self.window_size)],
+                stratify=y[: self.window_size],
             )
             self.classifier.fit(x_train, y_train)
             self.window_errors.append(
