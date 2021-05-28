@@ -1,6 +1,7 @@
+freud-analysis
+kneed
 numpy
 numba
-freud-analysis
+pandas
 ruptures
-kneed
 scikit-learn
