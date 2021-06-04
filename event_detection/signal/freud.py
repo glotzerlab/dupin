@@ -103,13 +103,19 @@ class FreudDescriptorDefinition:
                     f"Cannot process array quantity "
                     f"{attr} without a filter."
                 )
+            if isinstance(name, Sequence):
+                return {
+                    "-".join((key, n)): value
+                    for i, n in enumerate(name)
+                    for reducer in self.reducers
+                    for key, value in reducer(data[i]).items()
+                }
             return {
                 "-".join((key, name)): value
                 for reducer in self.reducers
                 for key, value in reducer(data).items()
             }
-        else:
-            return {name: data}
+        return {name: data}
 
 
 class FreudDescriptors(Generator):
