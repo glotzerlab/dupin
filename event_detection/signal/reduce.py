@@ -220,9 +220,13 @@ class NeighborAveraging(SpatialAveraging):
             nlist = query.query(
                 system[1], self._neighbor_kwargs
             ).toNeighborList()
-        self._nlist = nlist
+        # Must store arrays explicitly or some garbage collection/memory error
+        # occurs leaving the array size and data corrupted and crashes the
+        # program.
+        self._nlist_array = nlist[:]
+        self._neighbor_counts = nlist.neighbor_counts
 
     def _spatially_average(self, distribution: np.ndarray) -> np.ndarray:
         return _freud_neighbor_summing(
-            distribution, self._nlist[:, 0], self._nlist[:, 1]
-        ) / self._nlist.neighbor_counts.astype(float)
+            distribution, self._nlist_array[:, 0], self._nlist_array[:, 1]
+        ) / self._neighbor_counts.astype(float)
