@@ -103,7 +103,7 @@ class FreudDescriptorDefinition:
                     f"Cannot process array quantity "
                     f"{attr} without a filter."
                 )
-            if isinstance(name, Sequence):
+            if isinstance(name, Sequence) and not isinstance(name, str):
                 return {
                     "-".join((key, n)): value
                     for i, n in enumerate(name)
