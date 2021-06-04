@@ -108,7 +108,9 @@ class FreudDescriptorDefinition:
                     "-".join((key, n)): value
                     for i, n in enumerate(name)
                     for reducer in self.reducers
-                    for key, value in reducer(data[i]).items()
+                    # We assume the first dimension is N_particles and the
+                    # second is a feature
+                    for key, value in reducer(data[:, i]).items()
                 }
             return {
                 "-".join((key, name)): value
