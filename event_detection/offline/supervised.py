@@ -23,9 +23,9 @@ class Window:
     then the classifier should approach some error up to an error rate of 0.5.
 
     Warning:
-        For this to be useful, a *weak* classifier must be chosen. By weak, a
-        classifier that has low discrimination ability is meant. This prevents
-        the training on noise between window halves. For small and intermediate
+        For this to be useful, a *weak* classifier must be chosen. A weak
+        classifier is one that has low discrimination ability. This prevents the
+        training on noise between window halves. For small and intermediate
         window sizes, most classifiers will find noise that can (nearly)
         perfectly discriminate the halves of the window.
     """
