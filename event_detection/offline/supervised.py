@@ -71,7 +71,6 @@ class Window:
             self._loss_function = sk.metrics.zero_one_loss
         else:
             self._loss_function = loss_function
-        self._loss_function = loss_function
         self.store_intermediate_classifiers = store_intermediate_classifiers
 
     def compute(self, X: np.ndarray) -> List[float]:
@@ -85,13 +84,13 @@ class Window:
 
         Returns
         -------
-        window_errors : list
+        errors : list
             Returns the list of loss function values for each window in ``X``.
         """
-        self.window_errors = []
+        self.errors = []
         if self.store_intermediate_classifiers:
-            self.classifiers = []
-        y = np.repeat([0, 1], np.ceil(self.window_size / 2))
+            self._classifiers = []
+        y = np.repeat([0, 1], np.ceil(self.window_size / 2))[: self.window_size]
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
         for x in window_iter(X, self.window_size):
@@ -102,17 +101,17 @@ class Window:
                 y_test,
             ) = sk.model_selection.train_test_split(
                 x,
-                y[: self.window_size],
+                y,
                 test_size=self.test_size,
-                stratify=y[: self.window_size],
+                stratify=y,
             )
-            self.classifier.fit(x_train, y_train)
-            self.window_errors.append(
-                self._loss_function(y_test, self.classifier.predict(x_test))
+            self._classifier.fit(x_train, y_train)
+            self.errors.append(
+                self._loss_function(y_test, self._classifier.predict(x_test))
             )
             # If storing intermediate classifiers clone the classifier to ensure
             # we train/fit on a new identical model.
             if self.store_intermediate_classifiers:
-                self.classifiers.append(self.classifier)
-                self.classifier = sk.base.clone(self.classifier)
-            return self.window_errors
+                self._classifiers.append(self._classifier)
+                self._classifier = sk.base.clone(self._classifier)
+        return self.errors
