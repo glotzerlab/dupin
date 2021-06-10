@@ -45,7 +45,7 @@ class SweepDetector:
         elbow_index = self._elbow_detector(penalties)
         if elbow_index is None:
             self.opt_n_change_points_ = 0
-            self.opt_n_change_points_ = []
+            self.opt_change_points_ = []
             return self.opt_change_points_
 
         self.opt_n_change_points_ = elbow_index
