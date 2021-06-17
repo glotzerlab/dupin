@@ -28,7 +28,10 @@ class SweepDetector:
         tolerance: float = 1e-3,
     ) -> None:
         """Create a SweepDetector object."""
-        self._detector = detector
+        if isinstance(detector, rpt.base.BaseEstimator):
+            self._detector = _RupturesWrapper(detector)
+        else:
+            self._detector = detector
         self.max_change_points = max_change_points
         if elbow_detector is None:
             self._elbow_detector = kneedle_elbow_detection
@@ -56,27 +59,17 @@ class SweepDetector:
         self, data: np.ndarray
     ) -> Tuple[List[int], List[float]]:
         penalties = []
-        change_points = [[]]
+        change_points = []
         # Get the base level pentalty of the entire sequence
-        if isinstance(self._detector, rpt.base.BaseEstimator):
-            self._detector.cost.fit(data)
-            penalties.append(self._detector.cost.error(0, len(data)))
-        else:
-            penalties.append(self._detector(data, 0))
+        points, cost = self._detector(data, 0)
+        change_points.append(points)
+        penalties.append(cost)
         for num_change_points in range(1, self.max_change_points + 1):
-            if isinstance(self._detector, rpt.base.BaseEstimator):
-                points = self._detector.fit_predict(
-                    data, n_bkps=num_change_points
-                )
-                # Stop early if the correct number of change points were not
-                # detected which can happen when no change point addition
-                # sigificantly reduces cost.
-                if len(points) != num_change_points + 1:
-                    break
-                cost = self._detector.cost.sum_of_costs(points)
-                points.pop()
-            else:
-                points, cost = self._detector(data, num_change_points)
+            points, cost = self._detector(data, num_change_points)
+            # None indicates that the detection failed, and we should return
+            # with the currenlty detected change points.
+            if points is None:
+                break
             penalties.append(cost)
             change_points.append(points)
             # Check if cost changed enough to justify finding an additional
@@ -159,3 +152,36 @@ def two_pass_elbow_detection(
         return first_pass
 
     return find_elbow
+
+
+class _RupturesWrapper:
+    def __init__(self, detector: rpt.base.BaseEstimator):
+        self.detector = detector
+        self._cost_fit = False
+
+    def __call__(self, data: np.ndarray, n_change_points: int):
+        if n_change_points == 0:
+            if not self._cost_fit:
+                self.detector.cost.fit(data)
+                self._cost_fit = True
+            return [], self.detector.cost.error(0, len(data))
+        # An AssertionError is raised if no suitable change point can be found
+        # by a decector. We return (None, 0) to indicate the failure.
+        try:
+            change_points = self.detector.fit_predict(data, n_change_points)
+        except AssertionError:
+            return None, 0
+        # If we reach here, then cost has been fit on the data.
+        self._cost_fit = True
+
+        # Return None if the correct number of change points were not detected
+        # which can happen when no change point addition sigificantly reduces
+        # cost.
+        if len(change_points) != n_change_points + 1:
+            None, 0
+        # The selection of change points was successful, compute costs and
+        # return
+        cost = self.detector.cost.sum_of_costs(change_points)
+        # Remove the last index from the sequence of change points
+        change_points.pop()
+        return change_points, cost
