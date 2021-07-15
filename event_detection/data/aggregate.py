@@ -12,8 +12,9 @@ class SignalAggregator:
     """Using generators computes signals across a trajectory.
 
     This class can be used to create appropriate data structures for use in
-    analysising a whole trajectory with offline methods. See the `__call__`
-    method for usage.
+    analysising a whole trajectory with offline methods or iteratively
+    analysising for online use. See the `compute` and `accumulate` methods for
+    usage.
     """
 
     def __init__(self, generators: List[signal.Generator]):
@@ -28,7 +29,7 @@ class SignalAggregator:
         self._generators = generators
         self._signals = []
 
-    def __call__(self, trajectory):
+    def compute(self, trajectory):
         """Compute signals from generators across the trajectory.
 
         These signals are stored internally unto asked for by `to_dataframe`.
@@ -42,16 +43,28 @@ class SignalAggregator:
             `signal.Generator` objects. Examples include `gsd.hoomd.Trajectory`
             and a Python generator of ``(box, positions)`` tuples.
         """
-        self._signals.extend(
-            self._compute_single_frame(system) for system in trajectory
-        )
+        for system in trajectory:
+            self.accumulate(system)
 
-    def _compute_single_frame(self, frame):
-        return {
-            name: signal
-            for generator in self._generators
-            for name, signal in generator.generate(frame).items()
-        }
+    def accumulate(self, system):
+        """Add features from simulation snapshot to object.
+
+        Allows the addition of individual snapshots to aggregator. This can be
+        useful for online detection or any case where computing the entire
+        trajectory is not possible or not desired.
+
+        Parameters
+        ----------
+        system: a system-like object
+            An object compatible with the current generators.
+        """
+        self._signals.append(
+            {
+                name: signal
+                for generator in self._generators
+                for name, signal in generator.generate(system).items()
+            }
+        )
 
     def to_dataframe(self) -> pd.DataFrame:
         """Return the aggregated signals as a pandas DataFrame.
@@ -60,7 +73,8 @@ class SignalAggregator:
         -------
         signals: pandas.DataFrame
             The aggregated signals. The columns are features, and the indices
-            correspond to system frames in the order passed to `__call__`.
+            correspond to system frames in the order passed to `accumulate` or
+            `compute`.
         """
         return pd.DataFrame(
             {
