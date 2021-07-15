@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
-from event_detection.signal import Generator
+import event_detection.data as data
 
 from . import Detector, DetectorStatus
 
@@ -61,7 +61,7 @@ class StdDevDetector(Detector):
 
     def __init__(
         self,
-        generators: List[Generator],
+        generators: List[data.base.Generator],
         n_training: int = 50,
         n_std_dev: float = 2.0,
         threshold: int = 10,
@@ -70,7 +70,7 @@ class StdDevDetector(Detector):
 
         Parameters
         ----------
-        generators: list[Generator]
+        generators: list[data.base.Generator]
             The generators used for signal generation to use for event
             detection.
         n_training: int, optional
@@ -168,6 +168,6 @@ class StdDevDetector(Detector):
         return self._events
 
     @property
-    def generators(self) -> Tuple[Generator, ...]:
-        """tuple[signal.Generator] Current generators used by the detector."""
+    def generators(self) -> Tuple[data.base.Generator, ...]:
+        """tuple[data.base.Generator] generators used by the detector."""
         return self._generators

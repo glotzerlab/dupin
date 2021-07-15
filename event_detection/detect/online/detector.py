@@ -1,6 +1,7 @@
 """Provide base API for rare event detectors."""
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import List, Tuple
 
 from event_detection import data
