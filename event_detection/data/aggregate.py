@@ -1,7 +1,6 @@
 """Helper module for getting features accross an entire trajectory."""
 
 
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 import pandas as pd
@@ -29,7 +28,7 @@ class SignalAggregator:
         self._generators = generators
         self._signals = []
 
-    def __call__(self, trajectory, threads: int = 0):
+    def __call__(self, trajectory):
         """Compute signals from generators across the trajectory.
 
         These signals are stored internally unto asked for by `to_dataframe`.
@@ -42,17 +41,7 @@ class SignalAggregator:
             An object when iterated over, yields objects compatible with
             `signal.Generator` objects. Examples include `gsd.hoomd.Trajectory`
             and a Python generator of ``(box, positions)`` tuples.
-        threads: int
-            The number of threads to use, 0 means serial. This only helps if the
-            trajectory like object is a generator-like object that has IO for
-            every step.
         """
-        if threads >= 1:
-            with ThreadPoolExecutor(max_workers=threads) as pool:
-                self._signals.extend(
-                    pool.map(self._compute_single_frame, trajectory)
-                )
-
         self._signals.extend(
             self._compute_single_frame(system) for system in trajectory
         )
