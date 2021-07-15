@@ -3,8 +3,31 @@
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
-from event_detection import signal
-from event_detection.util import OrderedEnum
+from event_detection import data
+
+
+class OrderedEnum(Enum):
+    """An enum that can use the comparison operators."""
+
+    def __ge__(self, other):  # noqa: D105
+        if self.__class__ is other.__class__:
+            return self.value >= other.value
+        return NotImplemented
+
+    def __gt__(self, other):  # noqa: D105
+        if self.__class__ is other.__class__:
+            return self.value > other.value
+        return NotImplemented
+
+    def __le__(self, other):  # noqa: D105
+        if self.__class__ is other.__class__:
+            return self.value <= other.value
+        return NotImplemented
+
+    def __lt__(self, other):  # noqa: D105
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
 
 
 class DetectorStatus(OrderedEnum):
@@ -18,9 +41,9 @@ class DetectorStatus(OrderedEnum):
 class Detector(ABC):
     """Abstract base class for rare event detectors.
 
-    A `Detector` takes in one or more `signal.Generator` instances and uses them
-    to attempt to detect an _event_ occurring. All `Detector` subclasses must
-    follow a 3 state paradigm: inactive, active, confirmed. The states are
+    A `Detector` takes in one or more `data.Generator` instances and uses
+    them to attempt to detect an _event_ occurring. All `Detector` subclasses
+    must follow a 3 state paradigm: inactive, active, confirmed. The states are
     roughly:
 
     * inactive - No anamolous signal detected
@@ -35,7 +58,7 @@ class Detector(ABC):
     updates its internal state and returns a `DetectorStatus` that state, a
     `event_details` method that returns an `event.Event` instance or ``None``
     if no event was detected yet, and a `generators` property that returns a
-    sequence of currently used `signal.Generator` objects.
+    sequence of currently used `data.Generator` objects.
     """
 
     @abstractmethod
@@ -68,6 +91,6 @@ class Detector(ABC):
 
     @property
     @abstractmethod
-    def generators(self) -> Tuple[signal.Generator, ...]:
-        """tuple[signal.Generator] All current signals used for the detector."""
+    def generators(self) -> Tuple[data.Generator, ...]:
+        """tuple[data.Generator] All current signals used for the detector."""
         pass
