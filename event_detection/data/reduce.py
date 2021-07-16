@@ -1,6 +1,6 @@
 """Classes for transforming array quantities into scalar features."""
 
-from typing import Dict, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -68,3 +68,33 @@ class NthGreatest(base.DataReducer):
             ]
             for index in self._indices
         }
+
+
+class Tee(base.DataReducer):
+    """Enable mutliple reducers to act on the same generator like object."""
+
+    def __init__(
+        self,
+        generator: base.GeneratorLike,
+        reducers: List[Callable[[base.GeneratorLike], base.DataReducer]],
+    ):
+        """Create a data.reduce.Tee object.
+
+        Parameters
+        ----------
+        generator: GeneratorLike
+            A generator like object to reduce to percentiles.
+        reducers: list[callable[base.GeneratorLike, base.DataReducer]]
+            A sequence of callables that take a generator like object and
+            returns a data reducer. Using the ``wraps`` class method with a
+            `DataReducer` subclass is a useful combination.
+        """
+        self._reducers = [reduce(generator) for reduce in reducers]
+        super().__init__(generator)
+
+    def compute(self, distribution: np.typing.ArrayLike) -> Dict[str, float]:
+        """Run all composed reducer computes."""
+        processed_data = {}
+        for reducer in self._reducers:
+            processed_data.update(reducer.compute(distribution))
+        return processed_data
