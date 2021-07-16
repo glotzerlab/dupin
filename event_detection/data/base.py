@@ -16,6 +16,10 @@ GeneratorLike = Union[
 ]
 
 
+def _join_filter_none(string, sequence):
+    return string.join(filter(lambda x: x is not None, sequence))
+
+
 class _DataModifier(Callable):
     """Generalized modifier of data in a pipeline."""
 
@@ -43,7 +47,9 @@ class _DataModifier(Callable):
             if isinstance(datum, (Sequence, np.ndarray)):
                 processed_data.update(
                     {
-                        "_".join((extension, base_name)): processed_datum
+                        _join_filter_none(
+                            "_", (extension, base_name)
+                        ): processed_datum
                         for extension, processed_datum in self.compute(
                             datum
                         ).items()
