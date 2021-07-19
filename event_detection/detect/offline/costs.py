@@ -1,4 +1,5 @@
 """Implements cost functions for use in event detection."""
+
 import numpy as np
 import ruptures as rpt
 import scipy as sp
@@ -8,8 +9,8 @@ from sklearn import preprocessing
 class CostLinearFit(rpt.base.BaseCost):
     r"""Compute the L1 cumulative error of piecewise linear fits in time.
 
-    Used to compute the relative cumulative L1 deviation from a linear fit
-    piecewise fit of a signal (potentially multidimensional).
+    Used to compute the relative cumulative L1 deviation from a linear piecewise
+    fit of a signal.
 
     .. math::
 

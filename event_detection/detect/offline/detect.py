@@ -1,4 +1,5 @@
 """Implements offline methods for detecting events in molecular simulations."""
+
 from typing import Callable, List, Optional, Tuple, Union
 
 import kneed as kd
@@ -27,7 +28,26 @@ class SweepDetector:
         elbow_detector: Optional[ElbowDetector] = None,
         tolerance: float = 1e-3,
     ) -> None:
-        """Create a SweepDetector object."""
+        """Create a SweepDetector object.
+
+        Parameters
+        ----------
+        detector: Union[ruptures.base.BaseEstimator,
+                        Callable[[numpy.ndarray, int], Tuple[List[int], float]]:
+            The detector to use for each round of change point detection.
+        max_change_points: int
+            The maximum number of change points to attempt to detect.
+        elbow_detector: Callable[[List[float]], int], optional
+            A callable that takes in a list of costs and outputs the elbow of
+            the data. The callable should return ``None`` if no elbow can be
+            detected. Defaults to the KNEEDLE algorithm provided by the kneedle
+            package.
+        tolerance: float, optional
+            The percentile change in cost below which to stop detecting higher
+            numbers of change points. Since detecting :math:`n+1` change points
+            is by definition going to decrease the cost less than the last
+            iteration, this is a reliable way to prevent wasted computation.
+        """
         if isinstance(detector, rpt.base.BaseEstimator):
             self._detector = _RupturesWrapper(detector)
         else:
@@ -40,7 +60,16 @@ class SweepDetector:
         self.tolerance = tolerance
 
     def fit(self, data: np.ndarray) -> List[int]:
-        """Fit and return change points for given data."""
+        """Fit and return change points for given data.
+
+        Compute the change points for ``[0, self.max_change_points]``, and
+        detect the elbow of the associated costs if any.
+
+        Parameters
+        ----------
+        data: np.ndarray
+            The data to detect change points for.
+        """
         change_points, penalties = self._get_change_points(data)
         self.costs_ = penalties
         self.change_points_ = change_points
@@ -106,7 +135,7 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
 def two_pass_elbow_detection(
     threshold: int, detector: Optional[ElbowDetector] = None
 ) -> ElbowDetector:
-    """Create a function that runs two passes of KNEEDLE to find a second elbow.
+    """Create a function that runs two passes of an elbow detection algorithm.
 
     The detector runs a first pass of the elbow detector ``detector`` and
     determines if the elbow is far enough along the cost curve (determined by
