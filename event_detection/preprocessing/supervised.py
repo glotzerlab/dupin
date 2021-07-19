@@ -1,13 +1,33 @@
 """Classes for use in utilizing supervised learning for event detection."""
+
 from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
-import sklearn as sk
+
+import event_detection.errors as errors
+
+try:
+    import sklearn as sk
+except ImportError:
+    sk = errors._RaiseModuleError("sklearn")
 
 
 def window_iter(seq, window_size):
-    """Iterate over a sequence in slices of length window_size."""
+    """Iterate over a sequence in slices of length window_size.
+
+    Parameters
+    ----------
+    seq: List[Any]
+        The sequence to yield windows of.
+    window_size: int
+        The size of window iter iterator over.
+
+    Yields
+    ------
+    window: List[Any]
+        The current window of the original data.
+    """
     L = len(seq)
     for i, j in zip(range(0, L - window_size + 1), range(window_size, L + 1)):
         yield seq[i:j]
@@ -32,7 +52,7 @@ class Window:
 
     def __init__(
         self,
-        classifier,
+        classifier: "sk.base.ClassifierMixin",
         window_size: int,
         test_size: float,
         loss_function: Optional[
@@ -45,8 +65,7 @@ class Window:
         Parameters
         ----------
         classifier : sklearn compatible classifier
-            A sklearn compatible classifier that is ready to fit to data. Should
-            be a weak classifier (see class documentation warning).
+            A sklearn compatible classifier that is ready to fit to data.
         window_size : int
             The size of windows to learn on, should be a even number for best
             results.
@@ -56,13 +75,14 @@ class Window:
         loss_function : callable[[hp.ndarray, np.ndarray], float], optional
             A callable that takes in the predicted and actual class labels for a
             given window and outputs a score. Examples of this include the
-            zero-one loss and logistic loss. Defaults to the zero-one loss.
+            zero-one loss and logistic loss. Defaults to the zero-one loss, when
+            scikit-learn is available otherwise this will error.
         store_intermediate_classifiers : bool, optional
             Whether to store the fitted classifier for each window in the
             sequence passed to `compute`. Defaults to False. **Warning**: If the
             classifier stores some or all of the sequence in fitting as is the
-            case for kernelized memory this could lead to a drastic increase of
-            memory for this class.
+            case for kernelized classifiers, this optional will lead a much use
+            of memory.
         """
         self._classifier = classifier
         self.window_size = window_size
