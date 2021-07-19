@@ -52,6 +52,8 @@ class NthGreatest(base.DataReducer):
 
         Parameters
         ----------
+        generator: GeneratorLike
+            A generator like object to reduce to specified indices.
         indices : tuple[int], optional
             The indices to query. Negative indices are the Nth smallest values.
             Zero is not smallest value in the array.
@@ -83,7 +85,7 @@ class Tee(base.DataReducer):
         Parameters
         ----------
         generator: GeneratorLike
-            A generator like object to reduce to percentiles.
+            A generator like object to reduce.
         reducers: list[callable[base.GeneratorLike, base.DataReducer]]
             A sequence of callables that take a generator like object and
             returns a data reducer. Using the ``wraps`` class method with a
