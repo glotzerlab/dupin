@@ -1,11 +1,16 @@
 """Helper module for getting features accross an entire trajectory."""
 
 
-from typing import List
+from typing import Any, Dict, Iterator, Tuple
 
-import pandas as pd
+import event_detection.errors as errors
 
-from event_detection import signal
+from . import base
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = errors._RaiseModuleError("pandas")
 
 
 class SignalAggregator:
@@ -17,37 +22,42 @@ class SignalAggregator:
     usage.
     """
 
-    def __init__(self, generators: List[signal.Generator]):
+    def __init__(self, generator: base.GeneratorLike):
         """Create a `SignalAggregator` object.
 
         Parameters
         ----------
-        generators: list[event_detection.signal.Generator]
+        generator: event_detection.data.base.GeneratorLike
             A sequence of signal generators to use for generating the
             multivariate signal of a trajectory.
         """
-        self._generators = generators
+        self.generator = generator
         self._signals = []
 
-    def compute(self, trajectory):
-        """Compute signals from generators across the trajectory.
+    def compute(
+        self, iterator: Iterator[Tuple[Tuple[Any, ...], Dict[str, Any]]]
+    ):
+        """Compute signals from generator across the iterator.
 
-        These signals are stored internally unto asked for by `to_dataframe`.
+        These signals are stored internally until asked for by `to_dataframe`.
         This can be called multiple times, and the stored signals values will be
         appended.
 
         Parameters
         ----------
-        trajectory: a trajectory-like object
-            An object when iterated over, yields objects compatible with
-            `signal.Generator` objects. Examples include `gsd.hoomd.Trajectory`
-            and a Python generator of ``(box, positions)`` tuples.
-        """
-        for system in trajectory:
-            self.accumulate(system)
+        iterator: Iterator[Tuple[Tuple[Any,...], Dict[str, Any]]]
+            An object when iterated over, yields args and kwargs compatible with
+            the `data.base.GeneratorLike` object's call signature.
 
-    def accumulate(self, system):
-        """Add features from simulation snapshot to object.
+        Note:
+            Use the `from_base_iterator` staticmethod to convert a standard
+            iterator into one compatible with this method.
+        """
+        for args, kwargs in iterator:
+            self.accumulate(*args, **kwargs)
+
+    def accumulate(self, *args: Any, **kwargs: Any):
+        r"""Add features from simulation snapshot to object.
 
         Allows the addition of individual snapshots to aggregator. This can be
         useful for online detection or any case where computing the entire
@@ -55,19 +65,18 @@ class SignalAggregator:
 
         Parameters
         ----------
-        system: a system-like object
-            An object compatible with the current generators.
+        \*args: Any
+            Positional arguments to feed to the generator like object.
+        \*\*kwargs: Any
+            Keyword arguments to feed to the generator like object.
         """
-        self._signals.append(
-            {
-                name: signal
-                for generator in self._generators
-                for name, signal in generator.generate(system).items()
-            }
-        )
+        self._signals.append(self.generator(*args, **kwargs))
 
-    def to_dataframe(self) -> pd.DataFrame:
+    def to_dataframe(self) -> "pd.DataFrame":
         """Return the aggregated signals as a pandas DataFrame.
+
+        Note:
+            This method requires pandas to be available.
 
         Returns
         -------
@@ -82,3 +91,30 @@ class SignalAggregator:
                 for col in self._signals[0]
             }
         )
+
+    @staticmethod
+    def from_base_iterator(
+        iterator: Iterator[Any], is_args: bool = False, is_kwargs: bool = False
+    ):
+        """Convert a base iterator into one that works with `compute`.
+
+        The default behavior is to treat the items of the iterator as a single
+        positional argument. Read the argument list for alternative options.
+
+        Parameters
+        ----------
+        iterator: Iterator[Any]
+            The iterator to convert.
+        is_args: bool, optional
+            Whether to treat the iterator objects as positional arguments.
+            Defaults to False.
+        is_kwargs: bool, optional
+            Whether to treat the iterator objects as keyword arguments. Defaults
+            to False.
+
+        Returns
+        -------
+        new_iterator: Iterator[Tuple[Tuple[Any,...], Dict[str, Any]]]
+            The modified iterator.
+        """
+        return (((arg,), {}) for arg in iterator)
