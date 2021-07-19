@@ -1,5 +1,8 @@
-"""Functions for smoothing a signal."""
+"""Functions for smoothing a signal.
 
+`scipy.signal` provides many additional methods for signal processing that can
+be used to transform data in numerous ways.
+"""
 
 import numpy as np
 import scipy as sp
@@ -11,6 +14,7 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     For multidimensional arrays, the smoothing is done on the first axis. This
     is consistent when rows represent multiple variables or features and columns
     represent different instances.
+
     Parameters
     ----------
     y : input array to smooth.
@@ -31,14 +35,19 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     return average
 
 
-def fft_smoothing(y: np.ndarray, cut_off_percentage: int = 0.05):
-    """Smooth out the least contributing frequencies of a signal."""
+def fft_smoothing(y: np.ndarray, cut_off_percentage: float = 0.05):
+    """Smooth out the least contributing frequencies of a signal.
+
+    Parameters
+    ----------
+    y: :math:`(N, M)` numpy.ndarray of float
+        The signal to remove low contributing frequencies from. The FFT is
+        performed on the first dimension.
+    cut_off_percentage: float, optional
+        The fraction of the maximum signal in the FFT below which the signal
+        should be zeroed out.
+    """
     w = sp.fft.rfft(y, axis=0)
     spectrum = w ** 2
     w[spectrum < (cut_off_percentage * spectrum.max(axis=0))] = 0
     return sp.fft.irfft(w, len(y), axis=0)
-
-
-def savgol_filter(*args, **kwargs):
-    """Alias for `scipy.signal.savgol_filter`."""
-    return sp.signal.savgol_filter(*args, **kwargs)
