@@ -8,7 +8,7 @@ Python package for detecting rare events in molecular simulations.
 Conceptual Design
 -----------------
 
-`event-detection` is based around a five step model going from a raw simulation in the form of a trajectory into a set of change points defining the boundaries of events in a molecular simulation. The steps are
+``event-detection`` is based around a five step model going from a raw simulation in the form of a trajectory into a set of change points defining the boundaries of events in a molecular simulation. The steps are
 
 1. Data Collection - A variety of features need to be calculated in order to feed into the change point detection algorithms. These should cover any potential changes to a system that can be anticipated. Each feature can be a global value or a vector describing the system.
 2. Filters and Reducers - Many desirable features occur on a per particle level such as Minkowski structure metrics, but for change point detection, having a feature for each particle is not desirable, so reducers provide an avenue to take a per particle quantity and transform it into a set number scalar features. These reducers rely on the fact that only a few features of the distribution are necessary to detect a transition (namely those at the extremes of a distribution).
@@ -27,4 +27,6 @@ Features
 Credits
 -------
 
-This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the `b-butler/my-pypackage` project template which is based on [`audreyr/cookiecutter-pypackage`](https://github.com/audreyr/cookiecutter-pypackage).
+This package was created with `Cookiecutter <https://github.com/audreyr/cookiecutter>`_ and the
+``b-butler/my-pypackage`` project template which is based on
+`audreyr/cookiecutter-pypackage <https://github.com/audreyr/cookiecutter-pypackage>`_.
