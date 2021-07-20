@@ -31,3 +31,16 @@ Once you have a copy of the source, you can install it with:
 
 .. _Github repo: https://github.com/b-butler/event_detection
 .. _tarball: https://github.com/b-butler/event_detection/tarball/master
+
+
+Building Documentation
+----------------------
+
+Currently the documentation is not available online, but can be built locally. The required packages
+are
+
++ sphinx
+
+These can be installed with ``python3 -m pip install sphinx``. To build documentation in the project
+base directory run ``python3 -m sphinx ./docs ./docs/_build``. To view the built documentation open
+the ``index.html`` file in ``./docs/_build`` with your preferred browser.
