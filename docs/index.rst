@@ -8,10 +8,17 @@ Welcome to event-detection's documentation!
    readme
    installation
    usage
-   modules
    contributing
    authors
-   history
+   changelog
+
+.. toctree::
+    :maxdepth: 3
+    :caption: API:
+
+    module-data
+    module-detect
+    module-preprocessing
 
 Indices and tables
 ==================
