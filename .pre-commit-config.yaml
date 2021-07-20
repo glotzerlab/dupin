@@ -1,6 +1,6 @@
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v3.2.0
+      rev: v4.0.1
       hooks:
         - id: trailing-whitespace
         - id: end-of-file-fixer
@@ -8,21 +8,22 @@ repos:
         - id: check-added-large-files
         - id: check-ast
         - id: check-merge-conflict
+    - repo: https://github.com/pycqa/isort
+      rev: '5.9.2'
+      hooks:
+        - id: isort
+          args: ["--filter-files"]
     - repo: https://github.com/psf/black
-      rev: 20.8b1
+      rev: 21.7b0
       hooks:
          - id: black
            language_version: python3
     - repo: https://gitlab.com/pycqa/flake8
-      rev: '3.8.4'
+      rev: '3.9.2'
       hooks:
         - id: flake8
-    - repo: https://github.com/pycqa/isort
-      rev: '5.7.0'
-      hooks:
-        - id: isort
     - repo: https://github.com/pycqa/pydocstyle
-      rev: 5.1.1
+      rev: 6.1.1
       hooks:
         - id: pydocstyle
           files: ^((?!docs|tests).)*$
