@@ -30,10 +30,33 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+]
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "hoomd": ("https://hoomd-blue.readthedocs.io/en/latest/", None),
+    "gsd": ("https://gsd.readthedocs.io/en/stable/", None),
+}
+
+default_role = "any"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+
+autodoc_default_options = {
+    "special-members": True,
+    "inherit-members": True,
+}
+
+autodoc_typehints = "none"
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -45,7 +68,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "event-detection"
+project = "event_detection"
 copyright = "2021, Brandon Butler"
 author = "Brandon Butler"
 
@@ -94,7 +117,7 @@ html_theme = "alabaster"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 
 # -- Options for HTMLHelp output ---------------------------------------
