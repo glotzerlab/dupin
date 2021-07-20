@@ -2,6 +2,7 @@
 
 import numba
 import numpy as np
+import numpy.typing
 
 from . import base
 
