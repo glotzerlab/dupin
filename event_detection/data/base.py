@@ -161,11 +161,10 @@ class DataMap(_DataModifier):
 
 
 class Generator(Callable):
-    """The abstract base class for signals used for event detection.
+    """The abstract base class for generating signals used for event detection.
 
-    This just defines a simple `genrate` interface where a `detect.Detector`
-    subclass can generate a signal for a given input. These are essentially
-    features or descriptors that are placed in a particular API.
+    This just defines a simple interface through `__call__` where signals are
+    generated with name pairs in a `dict`.
     """
 
     @abstractmethod
@@ -178,7 +177,7 @@ class Generator(Callable):
 
         Returns
         -------
-        signals:
+        signals: dict[str, Union[float, np.typing.ArrayLike]]
             Returns a mapping of signal names to floating point or array like
             data. Array like data must be reduced before use in detection.
         """
