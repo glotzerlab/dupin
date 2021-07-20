@@ -42,7 +42,7 @@ class DetectorStatus(OrderedEnum):
 class Detector(ABC):
     """Abstract base class for rare event detectors.
 
-    A `Detector` takes in one or more `data.Generator` instances and uses
+    A `Detector` takes in one or more `data.base.Generator` instances and uses
     them to attempt to detect an _event_ occurring. All `Detector` subclasses
     must follow a 3 state paradigm: inactive, active, confirmed. The states are
     roughly:
@@ -56,10 +56,9 @@ class Detector(ABC):
     confirmed is up to the particular subclass.
 
     All subclasses must implement three things a `update_status` method that
-    updates its internal state and returns a `DetectorStatus` that state, a
-    `event_details` method that returns an `event.Event` instance or ``None``
-    if no event was detected yet, and a `generators` property that returns a
-    sequence of currently used `data.Generator` objects.
+    updates its internal state and returns a `DetectorStatus` that state
+    `generators` property that returns a sequence of currently used
+    `data.base.Generator` objects.
     """
 
     @abstractmethod
@@ -92,6 +91,6 @@ class Detector(ABC):
 
     @property
     @abstractmethod
-    def generators(self) -> Tuple[data.Generator, ...]:
-        """tuple[data.Generator] All current signals used for the detector."""
+    def generators(self) -> Tuple[data.base.Generator, ...]:
+        """tuple[data.base.Generator] All signals used for the detector."""
         pass

@@ -156,7 +156,7 @@ class StdDevDetector(Detector):
         ----------
         state: state-like object
             An object with a `hoomd.Snapshot` like API. Examples include
-            `gsd.hoomd.Frame` and `hoomd.Snapshot`. This is used to pass to
+            `gsd.hoomd.Snapshot` and `hoomd.Snapshot`. This is used to pass to
             generator to return the corresponding signals.
         """
         status = self._update_status(state)
