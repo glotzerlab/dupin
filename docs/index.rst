@@ -1,5 +1,5 @@
 Welcome to event-detection's documentation!
-======================================
+===========================================
 
 .. toctree::
    :maxdepth: 2
