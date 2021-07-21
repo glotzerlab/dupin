@@ -14,6 +14,12 @@ GeneratorLike = Union[
     "DataMap",
     typing.Callable[..., Dict[str, Union[float, np.typing.ArrayLike]]],
 ]
+GeneratorLike.__doc__ = """
+A type hint for objects that act like data generators for event_detection.
+
+The object can either be a `Generator`, `DataMap`, or callable with the
+appropriate return value.
+"""
 
 
 def _join_filter_none(string, sequence):
