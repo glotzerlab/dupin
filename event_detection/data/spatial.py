@@ -51,7 +51,7 @@ class NeighborAveraging(base.DataMap):
             Whether the specified ``expected_kwarg`` should be removed before
             passing through to the composed generators.
         """
-        self._expected_kwarg = "spatial_neighbors"
+        self._expected_kwarg = expected_kwarg
         self._remove_kwarg = remove_kwarg
         super().__init__(generator)
 
@@ -64,7 +64,7 @@ class NeighborAveraging(base.DataMap):
         self._current_neighbors = kwargs[self._expected_kwarg]
         if self._remove_kwarg:
             del kwargs[self._expected_kwarg]
-        super().__call__(*args, **kwargs)
+        return super().__call__(*args, **kwargs)
 
     def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """Perform spatial averaging using provided neighbors.
