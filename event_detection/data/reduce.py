@@ -20,7 +20,7 @@ class Percentile(base.DataReducer):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to reduce to percentiles.
 
         percentiles : tuple[int], optional
@@ -53,7 +53,7 @@ class NthGreatest(base.DataReducer):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to reduce to specified indices.
         indices : tuple[int], optional
             The indices to query. Negative indices are the Nth smallest values.
@@ -85,7 +85,7 @@ class Tee(base.DataReducer):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to reduce.
         reducers: list[callable[base.GeneratorLike, base.DataReducer]]
             A sequence of callables that take a generator like object and

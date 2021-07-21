@@ -38,11 +38,11 @@ class NeighborAveraging(base.DataMap):
         expected_kwarg: str = "spatial_neighbors",
         remove_kwarg: bool = True,
     ):
-        """Create a `SpatialAveraging` object.
+        """Create a `NeighborAveraging` object.
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to reduce.
         expected_kwarg: str, optional
             The expected key word argument passed to `__call__` to use as

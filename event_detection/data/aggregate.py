@@ -27,7 +27,7 @@ class SignalAggregator:
 
         Parameters
         ----------
-        generator: event_detection.data.base.GeneratorLike
+        generator: generator_like
             A sequence of signal generators to use for generating the
             multivariate signal of a trajectory.
         """
@@ -47,7 +47,7 @@ class SignalAggregator:
         ----------
         iterator: Iterator[Tuple[Tuple[Any,...], Dict[str, Any]]]
             An object when iterated over, yields args and kwargs compatible with
-            the `data.base.GeneratorLike` object's call signature.
+            the ``generator_like`` object's call signature.
 
         Note:
             Use the `from_base_iterator` staticmethod to convert a standard

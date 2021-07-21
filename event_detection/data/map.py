@@ -17,7 +17,7 @@ class Identity(base.DataMap):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to reduce.
         """
         self._generator = generator
@@ -51,9 +51,9 @@ class Tee(base.DataMap):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: generator_like
             A generator like object to map to another distribution.
-        reducers: list[callable[base.GeneratorLike, base.DataReducer]]
+        reducers: list[callable[generator_like, base.DataReducer]]
             A sequence of callables that take a generator like object and
             returns a data map. Using the ``wraps`` class method with a
             `DataMap` subclass is a useful combination.
