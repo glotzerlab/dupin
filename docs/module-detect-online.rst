@@ -1,6 +1,8 @@
 event_detection.detect.online
 -----------------------------
 
+**This module is not currently working.**
+
 .. rubric:: Overview
 
 .. py:currentmodule:: event_detection.detect.online
@@ -13,8 +15,6 @@ event_detection.detect.online
     StdDevDetector
 
 .. rubric:: Details
-
-    **This module is not currently working. **
 
 .. automodule:: event_detection.detect.online
     :synopsis: Methods and classes for offline change point detection.
