@@ -11,6 +11,7 @@ event_detection.data.base
     DataMap
     DataReducer
     Generator
+    GeneratorLike
 
 .. rubric:: Details
 
@@ -18,4 +19,7 @@ event_detection.data.base
     :synopsis: Base classes for data generation and manipulation.
     :members: DataMap,
         DataReducer,
-        Generator
+        Generator,
+
+
+.. autoclass:: GeneratorLike
