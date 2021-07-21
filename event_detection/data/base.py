@@ -34,10 +34,6 @@ class _DataModifier(Callable):
             A generator like object to reduce.
         """
         self._generator = generator
-        # __wrapped__ and __annotations__ allows interactive tools to get the
-        # correct signature
-        self.__call__.__wrapped__ = generator.__call__
-        self.__call__.__annotations__ = generator.__call__.__annotations__
 
     def __call__(self, *args: Any, **kwargs: Any):
         """Call the underlying generator performing the new modifications."""
@@ -75,18 +71,6 @@ class DataReducer(_DataModifier):
     Note:
         This is an abstract base class and cannot be instantiated.
     """
-
-    def __init__(self, generator: GeneratorLike):
-        """Create a DataReducer object.
-
-        This is an abstract base class and cannot be instantiated directlty.
-
-        Parameters
-        ----------
-        generator: GeneratorLike
-            A generator like object to reduce.
-        """
-        self._generator = generator
 
     @abstractmethod
     def compute(self, distribution: np.typing.ArrayLike) -> Dict[str, float]:
@@ -126,18 +110,6 @@ class DataMap(_DataModifier):
     Note:
         This is an abstract base class and cannot be instantiated.
     """
-
-    def __init__(self, generator: GeneratorLike):
-        """Create a DataReducer object.
-
-        This is an abstract base class and cannot be instantiated directlty.
-
-        Parameters
-        ----------
-        generator: GeneratorLike
-            A generator like object to reduce.
-        """
-        self._generator = generator
 
     @abstractmethod
     def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:

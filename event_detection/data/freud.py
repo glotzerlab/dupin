@@ -51,19 +51,6 @@ class FreudDescriptor(base.Generator):
         self.attrs = attrs
         self.compute_method = compute_method
 
-        # wrap documentation and call signature for __call__ for interactive
-        # use.
-        method = getattr(compute, compute_method)
-        self.__call__.__wrapped__ = method
-        self.__call__.__annotations__ = method.__annotations__
-        self.__call__.__doc__ = "\n".join(
-            (
-                self.__call__.__doc__,
-                self._prepend_compute_docstring,
-                method.__doc__,
-            )
-        )
-
     def __call__(
         self, *args: Any, **kwargs: Any
     ) -> Dict[str, Union[float, np.typing.ArrayLike]]:
