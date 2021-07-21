@@ -44,7 +44,13 @@ class Percentile(base.DataReducer):
 
 
 class NthGreatest(base.DataReducer):
-    """Reduce a distribution to the Nth greatest values."""
+    """Reduce a distribution to the Nth greatest values.
+
+    This reducer returns the greatest and least values from a distribution as
+    specified by the provided indices. Greatest values are specified by positive
+    integers and least by negative. The features keys are modified with the
+    index ordinal number and whether it is greatest or least.
+    """
 
     def __init__(
         self, generator: base.GeneratorLike, indices: Tuple[int]
@@ -55,22 +61,50 @@ class NthGreatest(base.DataReducer):
         ----------
         generator: generator_like
             A generator like object to reduce to specified indices.
-        indices : tuple[int], optional
-            The indices to query. Negative indices are the Nth smallest values.
-            Zero is not smallest value in the array.
+        indices : list[int], optional
+            The values to query. 1 is the greatest value in the distribution; 10
+            the tenth, and so on. Negative number consitute the smallest values
+            in the distribution. -1 is the least value in the distribution. 0 is
+            treated as 1.
         """
-        self._indices = indices
+        self._indices = self._fix_indices(indices)
+        self._names = [self._index_name(index) for index in self._indices]
         super().__init__(generator)
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with modified keys."""
         sorted_array = np.sort(distribution)
         return {
-            f"{index}-th-{'greatest' if index > 0 else 'least'}": sorted_array[
-                -index
-            ]
-            for index in self._indices
+            name: sorted_array[-index]
+            for index, name in zip(self._indices, self._names)
         }
+
+    @staticmethod
+    def _index_name(index: int) -> str:
+        if index >= 0:
+            index += 1
+        type_ = "greatest" if index > 0 else "least"
+        abs_index = abs(index)
+        unit_value = abs_index % 10
+        if unit_value == 1:
+            suffix = "st"
+        elif unit_value == 2:
+            suffix = "nd"
+        elif unit_value == 3:
+            suffix = "rd"
+        else:
+            suffix = "th"
+        return f"{abs_index}{suffix}_{type_}"
+
+    @staticmethod
+    def _fix_indices(indices: List[int]) -> List[int]:
+        array_indices = np.asarray(indices)
+        neg_array_indices = -array_indices
+        return np.unique(
+            np.where(
+                array_indices > 0, neg_array_indices, neg_array_indices - 1
+            )
+        )
 
 
 class Tee(base.DataReducer):
