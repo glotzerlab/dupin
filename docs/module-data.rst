@@ -5,7 +5,16 @@ event_detection.data
 
 .. py:currentmodule:: event_detection.data
 
+.. autosummary::
+    :nosignatures:
+
+    SignalAggregator
+
 .. rubric:: Details
+
+.. automodule:: event_detection.data
+    :synopsis: Module for data generation and modification on a per timestep basis.
+    :members: SignalAggregator
 
 .. rubric:: Modules
 
