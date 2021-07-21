@@ -69,7 +69,7 @@ class Detector(ABC):
         ----------
         state: state-like object
             An object with a `hoomd.Snapshot` like API. Examples include
-            `gsd.hoomd.Frame` and `hoomd.Snapshot`. This is used to pass to
+            `gsd.hoomd.Snapshot` and `hoomd.Snapshot`. This is used to pass to
             signals to return the individual signal.
 
         Returns

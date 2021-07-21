@@ -155,7 +155,7 @@ class Generator(Callable):
 
         Returns
         -------
-        signals: dict[str, Union[float, np.typing.ArrayLike]]
+        signals: dict[str, Union[float, numpy.typing.ArrayLike]]
             Returns a mapping of signal names to floating point or array like
             data. Array like data must be reduced before use in detection.
         """
