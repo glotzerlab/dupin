@@ -67,7 +67,7 @@ class FreudDescriptor(base.Generator):
             # multidimensional and split along dimension.
             datum = getattr(self.compute, attr)
             name = self.attrs[attr]
-            if isinstance(name, np.typing.ArrayLike):
+            if isinstance(name, Sequence):
                 if len(datum.shape) != 2:
                     raise ValueError(
                         f"Cannot specify multiple names for a single dimension "
