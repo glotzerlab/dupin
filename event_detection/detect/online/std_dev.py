@@ -4,10 +4,10 @@ from typing import Any, Dict
 
 import event_detection.data as data
 
-from . import Detector, DetectorStatus
+from . import DetectorStatus
 
 
-class StdDevDetector(Detector):
+class StdDevDetector:
     """Detects events using the standard deviation of a signal from a baseline.
 
     For array signals percentiles are taken and used as individual distributions
