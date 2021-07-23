@@ -32,7 +32,7 @@ class SignalAggregator:
             multivariate signal of a trajectory.
         """
         self.generator = generator
-        self._signals = []
+        self.signals = []
 
     def compute(
         self, iterator: Iterator[Tuple[Tuple[Any, ...], Dict[str, Any]]]
@@ -70,7 +70,7 @@ class SignalAggregator:
         \*\*kwargs: Any
             Keyword arguments to feed to the generator like object.
         """
-        self._signals.append(self.generator(*args, **kwargs))
+        self.signals.append(self.generator(*args, **kwargs))
 
     def to_dataframe(self) -> "pd.DataFrame":
         """Return the aggregated signals as a pandas DataFrame.
@@ -87,8 +87,8 @@ class SignalAggregator:
         """
         return pd.DataFrame(
             {
-                col: [frame[col] for frame in self._signals]
-                for col in self._signals[0]
+                col: [frame[col] for frame in self.signals]
+                for col in self.signals[0]
             }
         )
 
