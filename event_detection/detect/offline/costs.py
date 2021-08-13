@@ -19,6 +19,12 @@ class CostLinearFit(rpt.base.BaseCost):
     :math:`m` and :math:`b` can be vectors in the case of a multidimensional
     signal (the summation also goes across dimensions.
 
+    Parameters
+    ----------
+    metric : str, optional
+        What metric to use in computing the error. Defaults to `"l1"`. Options
+        are `"l1"` and `"l2"`.
+
     Note:
         For use in ``ruptures`` search algorithms. To use properly `fit` must be
         called first with the signal.
@@ -26,10 +32,13 @@ class CostLinearFit(rpt.base.BaseCost):
 
     model = "linear_regression"
     min_size = 2
+    _metrics = {"l1", "l2"}
 
-    def __init__(self):
+    def __init__(self, metric="l1"):
         """Create a CostLinearFit object."""
-        pass
+        if metric not in self._metrics:
+            raise ValueError(f"Available metrics are {self._metrics}.")
+        self._metric = "_" + metric
 
     def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
@@ -48,10 +57,15 @@ class CostLinearFit(rpt.base.BaseCost):
         x = self._x[start:end]
         for y in self._signal[:, start:end]:
             linear_regression = sp.stats.linregress(x, y)
-            errors.append(self._l1(linear_regression, x, y))
+            errors.append(getattr(self, self._mode)(linear_regression, x, y))
         return errors
 
     @staticmethod
     def _l1(linear_regression, x: np.ndarray, y: np.ndarray):
         predicted_y = linear_regression.slope * x + linear_regression.intercept
         return np.sum(np.abs(predicted_y - y))
+
+    @staticmethod
+    def _l2(linear_regression, x: np.ndarray, y: np.ndarray):
+        predicted_y = linear_regression.slope * x + linear_regression.intercept
+        return np.sqrt(np.add(np.sq(predicted_y - y)))
