@@ -1,10 +1,13 @@
 """General functions for analyzing change points once detected."""
 
+import warnings
 
 import event_detection.preprocessing
 
 
-def compute_features_in_event(signal, change_points, sample_size, sensitivity):
+def compute_features_in_event(
+    signal, change_points, sample_size, sensitivity, extend_small_regions=True
+):
     """Compute the participating features within a pair of change points.
 
     Warning:
@@ -33,6 +36,10 @@ def compute_features_in_event(signal, change_points, sample_size, sensitivity):
         the Gaussian approximation of the other end to require. In other words,
         the lower the number the increased probability that the difference in
         means is not random. Defaults to 0.01.
+    extend_small_regions: bool, optional
+        Whether to augment small regions (length less than 6) with previous and
+        following segment (if available) to allow for analysis of them.
+        Defaults to ``True``.
 
     Returns
     -------
@@ -43,7 +50,28 @@ def compute_features_in_event(signal, change_points, sample_size, sensitivity):
     """
     augmented_change_points = [0] + change_points + [len(signal)]
     participating_features = []
+
+    def extend_region(beg, end):
+        needed_extension = 7 - (end - beg)
+        if needed_extension <= 0:
+            return beg, end
+
+        if beg > 0:
+            beg = max(0, beg - needed_extension // 2)
+        new_extension = 7 - (end - beg)
+        if end < len(signal):
+            end = min(len(signal), end + new_extension)
+        if end - beg < 7:
+            warnings.warn(
+                "Subsignal could not be extended enough for analysis."
+            )
+        return beg, end
+
     for beg, end in zip(augmented_change_points, augmented_change_points[1:]):
+        if extend_small_regions:
+            print(beg, end)
+            beg, end = extend_region(beg, end)
+            print(beg, end)
         try:
             section_features = event_detection.preprocessing.filter.mean_shift(
                 signal[beg:end], sample_size, sensitivity, return_filter=True
