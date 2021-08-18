@@ -34,13 +34,24 @@ class Percentile(base.DataReducer):
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with dd% keys."""
+        indices = self._get_indices(len(distribution))
+        sorted_indices = np.argsort(distribution)
+        if self._logger is not None:
+            self._logger["Percentile"] = {
+                f"{percent}%": sorted_indices[index]
+                for index, percent in zip(indices, self._percentiles)
+            }
         return {
-            f"{percent}%": value
-            for percent, value in zip(
-                self._percentiles,
-                np.percentile(distribution, self._percentiles),
-            )
+            f"{percent}%": distribution[sorted_indices[index]]
+            for percent, index in zip(self._percentiles, indices)
         }
+
+    def _get_indices(self, distribution_size):
+        return np.round(
+            np.array(self._percentiles) / 100 * distribution_size,
+            decimals=0,
+            dtype=int,
+        )
 
 
 class NthGreatest(base.DataReducer):
@@ -73,9 +84,14 @@ class NthGreatest(base.DataReducer):
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with modified keys."""
-        sorted_array = np.sort(distribution)
+        sorted_indices = np.argsort(distribution)
+        if self._logger is not None:
+            self._logger["NthGreatest"] = {
+                name: sorted_indices[-index]
+                for index, name in zip(self._indices, self._names)
+            }
         return {
-            name: sorted_array[-index]
+            name: distribution[sorted_indices[-index]]
             for index, name in zip(self._indices, self._names)
         }
 
@@ -135,3 +151,32 @@ class Tee(base.DataReducer):
         for reducer in self._reducers:
             processed_data.update(reducer.compute(distribution))
         return processed_data
+
+    def attach_logger(self, logger):
+        """Add a logger to this step in the data pipeline.
+
+        Parameters
+        ----------
+        logger: event_detection.data.logging.Logger
+            A logger object to store data from the data pipeline for individual
+            elements of the composed maps.
+        """
+        self._logger = logger
+        for reducer in self._reducers:
+            try:
+                reducer.attach_logger(logger)
+            # Do nothing if generator does not have attach_logger logger
+            # function (e.g. custom map function).
+            except AttributeError:
+                pass
+
+    def remove_logger(self):
+        """Remove a logger from this step in the pipeline if it exists."""
+        self._logger = None
+        for reducer in self._reducers:
+            try:
+                reducer.remove_logger()
+            # Do nothing if generator does not have remove_logger logger
+            # function (e.g. custom reducer function).
+            except AttributeError:
+                pass

@@ -40,6 +40,7 @@ class _DataModifier(Callable):
             A generator like object to reduce.
         """
         self._generator = generator
+        self._logger = None
 
     def __call__(self, *args: Any, **kwargs: Any):
         """Call the underlying generator performing the new modifications."""
@@ -48,6 +49,8 @@ class _DataModifier(Callable):
         processed_data = {}
         for base_name, datum in data.items():
             if isinstance(datum, (Sequence, np.ndarray)):
+                if self._logger is not None:
+                    self._logger.set_context(base_name)
                 processed_data.update(
                     {
                         _join_filter_none(
@@ -69,7 +72,7 @@ class _DataModifier(Callable):
         return lambda generator: cls(generator, *args, **kwargs)
 
     def update(cls, args, kwargs):
-        """Helper function to update data modifier before compute.
+        """Update data modifier before compute if necessary.
 
         This is called before the internal generator is called. The method can
         consume arguments and returns the new args and kwargs (with potential
@@ -81,6 +84,33 @@ class _DataModifier(Callable):
     def compute(cls, distribution):
         """Perform the data modification on the array."""
         pass
+
+    def attach_logger(self, logger):
+        """Add a logger to this step in the data pipeline.
+
+        Parameters
+        ----------
+        logger: event_detection.data.logging.Logger
+            A logger object to store data from the data pipeline for individual
+            elements of the composed maps.
+        """
+        self._logger = logger
+        try:
+            self._generator.attach_logger(logger)
+        # Do nothing if generator does not have attach_logger logger function
+        # (e.g. custom generator function).
+        except AttributeError:
+            pass
+
+    def remove_logger(self):
+        """Remove a logger from this step in the pipeline if it exists."""
+        self._logger = None
+        try:
+            self._generator.remove_logger()
+        # Do nothing if generator does not have remove_logger logger function
+        # (e.g. custom generator function).
+        except AttributeError:
+            pass
 
 
 class DataReducer(_DataModifier):
@@ -175,3 +205,18 @@ class Generator(Callable):
             data. Array like data must be reduced before use in detection.
         """
         pass
+
+    def attach_logger(self, logger):
+        """Add a logger to this step in the data pipeline.
+
+        Parameters
+        ----------
+        logger: event_detection.data.logging.Logger
+            A logger object to store data from the data pipeline for individual
+            elements of the composed maps.
+        """
+        self._logger = logger
+
+    def remove_logger(self):
+        """Remove a logger from this step in the pipeline if it exists."""
+        self._logger = None

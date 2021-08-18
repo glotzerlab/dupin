@@ -1,11 +1,11 @@
 """Helper module for getting features accross an entire trajectory."""
 
 
-from typing import Any, Dict, Iterator, Tuple
+from typing import Any, Dict, Iterator, Optional, Tuple
 
 import event_detection.errors as errors
 
-from . import base
+from . import base, logging
 
 try:
     import pandas as pd
@@ -22,7 +22,11 @@ class SignalAggregator:
     usage.
     """
 
-    def __init__(self, generator: base.GeneratorLike):
+    def __init__(
+        self,
+        generator: base.GeneratorLike,
+        logger: Optional[logging.Logger] = None,
+    ):
         """Create a `SignalAggregator` object.
 
         Parameters
@@ -30,9 +34,13 @@ class SignalAggregator:
         generator: generator_like
             A sequence of signal generators to use for generating the
             multivariate signal of a trajectory.
+        logger: event_detection.data.logging.Logger or None
+            A logger object to store information about the data processing of
+            the given pipeline. Defaults to None
         """
         self.generator = generator
         self.signals = []
+        self.logger = logger
 
     def compute(
         self, iterator: Iterator[Tuple[Tuple[Any, ...], Dict[str, Any]]]
@@ -71,6 +79,8 @@ class SignalAggregator:
             Keyword arguments to feed to the generator like object.
         """
         self.signals.append(self.generator(*args, **kwargs))
+        if self._logger is not None:
+            self._logger.end_frame()
 
     def to_dataframe(self) -> "pd.DataFrame":
         """Return the aggregated signals as a pandas DataFrame.
@@ -118,3 +128,21 @@ class SignalAggregator:
             The modified iterator.
         """
         return (((arg,), {}) for arg in iterator)
+
+    @property
+    def logger(self):
+        """event_detection.data.logging.Logger: Logger for the aggregator."""
+        return self._logger
+
+    @logger.setter
+    def logger(self, new_logger):
+        self._logger = new_logger
+        if new_logger is None:
+            try:
+                self.generator.remove_logger()
+            except AttributeError:
+                pass
+        try:
+            self.generator.attach_logger(new_logger)
+        except AttributeError:
+            pass
