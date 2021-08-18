@@ -69,3 +69,8 @@ class Tee(base.DataMap):
         for map_ in self._maps:
             processed_data.update(map_.compute(distribution))
         return processed_data
+
+    def update(self, args, kwargs):
+        for map_ in self._maps:
+            args, kwargs = map_.update(args, kwargs)
+        return args, kwargs

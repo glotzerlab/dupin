@@ -55,7 +55,7 @@ class NeighborAveraging(base.DataMap):
         self._remove_kwarg = remove_kwarg
         super().__init__(generator)
 
-    def __call__(self, *args, **kwargs):
+    def update(self, args, kwargs):
         """Call the underlying generator performing the spatial averaging.
 
         The call signature is the same as the composed generator with the
@@ -64,7 +64,7 @@ class NeighborAveraging(base.DataMap):
         self._current_neighbors = kwargs[self._expected_kwarg]
         if self._remove_kwarg:
             del kwargs[self._expected_kwarg]
-        return super().__call__(*args, **kwargs)
+        return args, kwargs
 
     def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """Perform spatial averaging using provided neighbors.

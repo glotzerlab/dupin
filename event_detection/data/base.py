@@ -43,6 +43,7 @@ class _DataModifier(Callable):
 
     def __call__(self, *args: Any, **kwargs: Any):
         """Call the underlying generator performing the new modifications."""
+        args, kwargs = self.update(args, kwargs)
         data = self._generator(*args, **kwargs)
         processed_data = {}
         for base_name, datum in data.items():
@@ -66,6 +67,20 @@ class _DataModifier(Callable):
         """Create the class wrapping around the composed callable."""
         # Expects that generator is the first argument
         return lambda generator: cls(generator, *args, **kwargs)
+
+    def update(cls, args, kwargs):
+        """Helper function to update data modifier before compute.
+
+        This is called before the internal generator is called. The method can
+        consume arguments and returns the new args and kwargs (with potential
+        arguments removed).
+        """
+        return args, kwargs
+
+    @abstractmethod
+    def compute(cls, distribution):
+        """Perform the data modification on the array."""
+        pass
 
 
 class DataReducer(_DataModifier):
