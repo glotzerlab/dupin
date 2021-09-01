@@ -22,11 +22,60 @@ appropriate return value.
 """
 
 
+class PipeComponent:
+    def pipe(self, next_):
+        if isinstance(next_, PreparedPipeComponent):
+            return next_(self)
+        elif callable(next_):
+            raise ValueError(
+                "To use custom callable use map or reduce as desired, "
+                "or wrap in appropriate custom class."
+            )
+        else:
+            raise ValueError("Expected the output of DataModifier.wraps.")
+
+    def map(self, map_):
+        if isinstance(map_, PreparedPipeComponent):
+            if issubclass(map_._target_cls, DataMap):
+                return map_(self)
+            else:
+                raise ValueError("Expected output of DataMap.wraps().")
+        elif callable(map_):
+            return CustomMap(self, map_)
+        else:
+            raise ValueError(
+                "Expected a callable or the output of DataMap.wraps()"
+            )
+
+    def reduce(self, reduce_):
+        if isinstance(reduce_, PreparedPipeComponent):
+            if issubclass(reduce_._target_cls, DataReducer):
+                return reduce_(self)
+            else:
+                raise ValueError("Expected output of DataReduce.wraps().")
+        elif callable(reduce_):
+            return CustomReduce(self, reduce_)
+        else:
+            raise ValueError(
+                "Expected a callable or the output of DataReduce.wraps()"
+            )
+
+
+class PreparedPipeComponent:
+    def __init__(self, cls, *args, **kwargs):
+        self._target_cls = cls
+        self._args = args
+        self._kwargs = kwargs
+
+    def __call__(self, generator):
+        return self._target_cls(generator, *self._args, **self._kwargs)
+
+
 def _join_filter_none(string, sequence):
     return string.join(filter(lambda x: x is not None, sequence))
 
 
-class _DataModifier(Callable):
+class DataModifier(Callable):
     """Generalized modifier of data in a pipeline."""
 
     def __init__(self, generator: GeneratorLike):
@@ -69,7 +118,7 @@ class _DataModifier(Callable):
     def wraps(cls, *args, **kwargs):
         """Create the class wrapping around the composed callable."""
         # Expects that generator is the first argument
-        return lambda generator: cls(generator, *args, **kwargs)
+        return PreparedPipeComponent(cls, *args, **kwargs)
 
     def update(cls, args, kwargs):
         """Update data modifier before compute if necessary.
@@ -113,7 +162,7 @@ class _DataModifier(Callable):
             pass
 
 
-class DataReducer(_DataModifier):
+class DataReducer(DataModifier):
     """Base class for reducing distributions into scalar features.
 
     The class automatically skips over scalar features in its reduction.
@@ -144,7 +193,7 @@ class DataReducer(_DataModifier):
         pass
 
 
-class DataMap(_DataModifier):
+class DataMap(DataModifier, PipeComponent):
     """Base class for mapping distributions to another distribution.
 
     When the raw distribution of a given simulation snapshot is not appropriate
@@ -183,7 +232,7 @@ class DataMap(_DataModifier):
         pass
 
 
-class Generator(Callable):
+class Generator(Callable, PipeComponent):
     """The abstract base class for generating signals used for event detection.
 
     This just defines a simple interface through `__call__` where signals are
@@ -220,3 +269,45 @@ class Generator(Callable):
     def remove_logger(self):
         """Remove a logger from this step in the pipeline if it exists."""
         self._logger = None
+
+
+class CustomMap(DataMap):
+    """Wrap a custom mapping callable."""
+
+    def __init__(
+        self,
+        generator: GeneratorLike,
+        custom_function: typing.Callable[
+            [np.typing.ArrayLike], Dict[str, np.ndarray]
+        ],
+    ):
+        self._generator = generator
+        self.function = custom_function
+
+    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        return self.function(data)
+
+
+class CustomReduce(DataReducer):
+    """Wrap a custom reducing callable."""
+
+    def __init__(
+        self,
+        generator: GeneratorLike,
+        custom_function: typing.Callable[
+            [np.typing.ArrayLike], Dict[str, float]
+        ],
+    ):
+        self._generator = generator
+        self.function = custom_function
+
+    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        return self.function(data)
+
+
+class CustomGenerator(Generator):
+    def __init__(self, function):
+        self.function = function
+
+    def __call__(self, *args, **kwargs):
+        return self.function(*args, **kwargs)
