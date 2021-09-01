@@ -1,6 +1,10 @@
 """General functions for analyzing change points once detected."""
 
+import itertools
 import warnings
+
+import numpy as np
+import pandas as pd
 
 import event_detection.preprocessing
 
@@ -82,3 +86,27 @@ def compute_features_in_event(
         else:
             participating_features.append(section_features)
     return participating_features
+
+
+def retrieve_positions(log_df, trajectory):
+    """Retreive positions from data pipeline logger data frame."""
+    column_mask = np.array(
+        [
+            any(name in {"Percentile", "NthGreatest"} for name in column)
+            for column in log_df.columns
+        ],
+        dtype=bool,
+    )
+    num_indices = column_mask.sum()
+    positions = np.empty((len(log_df), num_indices * 3), dtype=float)
+    for i, snapshot_positions in enumerate(trajectory):
+        positions[i, :] = snapshot_positions[
+            log_df.iloc[i, column_mask].to_numpy().astype(int)
+        ].ravel()
+    new_columns = pd.MultiIndex.from_tuples(
+        original_column + (coord,)
+        for original_column, coord in itertools.product(
+            log_df.columns, ("x", "y", "z")
+        )
+    )
+    return pd.DataFrame(positions, columns=new_columns)
