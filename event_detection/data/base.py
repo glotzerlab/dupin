@@ -23,7 +23,29 @@ appropriate return value.
 
 
 class PipeComponent:
+    """Base class for piping methods for intermediate date pipeline elements.
+
+    Provides helper methods for defining steps in a pipeline from a left to
+    right or top to bottom approach.
+    """
+
     def pipe(self, next_):
+        """Add a step after current one in the data pipeline.
+
+        Expects the output of `event_detection.data.base.DataModifier.wraps`.
+
+        Parameters
+        ----------
+        next_: event_detection.data.base.PreparedPipeComponent
+            The next step in the data pipeline. To get such an object use
+            `DataModifier.wraps`.
+
+        Returns
+        -------
+        DataMap or DataReducer:
+            Returns either a `DataMap` or `DataReducer` object based on the
+            input to the method.
+        """
         if isinstance(next_, PreparedPipeComponent):
             return next_(self)
         elif callable(next_):
@@ -35,6 +57,24 @@ class PipeComponent:
             raise ValueError("Expected the output of DataModifier.wraps.")
 
     def map(self, map_):
+        """Add a mapping step after the current step in the data pipeline.
+
+        Expects a custom callable or the output of a `DataMap.wraps` call.
+
+        Parameters
+        ----------
+            map_: event_detection.data.base.PreparedPipeComponent \
+                    or callable[numpy.ndarray, dict[str, numpy.ndarray]]:
+                The next step in the data pipeline. Can be a custom callable
+                mapping function or an ``event_detection`` any of the built in
+                mapping operations through `DataMap.wraps`.
+
+        Returns
+        -------
+            DataMap:
+                Returns either a `DataMap` subclass based on the passed in
+                object.
+        """
         if isinstance(map_, PreparedPipeComponent):
             if issubclass(map_._target_cls, DataMap):
                 return map_(self)
@@ -48,6 +88,23 @@ class PipeComponent:
             )
 
     def reduce(self, reduce_):
+        """Add a reducing step after the current step in the data pipeline.
+
+        Expects a custom callable or the output of a `DataReducer.wraps` call.
+
+        Parameters
+        ----------
+            reduce_: event_detection.data.base.PreparedPipeComponent \
+                    or callable[numpy.ndarray, dict[str, float]]
+                The next step in the data pipeline. Can be a custom callable
+                reducing function or an ``event_detection`` any of the built in
+                reducing operations through `DataReducer.wraps`.
+
+        Returns
+        -------
+        DataReducer:
+            Returns a `DataReducer` subclass based on the passed in object.
+        """
         if isinstance(reduce_, PreparedPipeComponent):
             if issubclass(reduce_._target_cls, DataReducer):
                 return reduce_(self)
@@ -62,12 +119,23 @@ class PipeComponent:
 
 
 class PreparedPipeComponent:
+    """An intermediate class allowing for piping and decorating data pipelines.
+
+    This class is the output of `DataModifier.wraps` and allows for both the
+    pipeline and decorator syntax for creating data pipelines.
+
+    Warning:
+        The class should not be instantiated directly.
+    """
+
     def __init__(self, cls, *args, **kwargs):
+        """Create a PreparedPipeComponent object."""
         self._target_cls = cls
         self._args = args
         self._kwargs = kwargs
 
     def __call__(self, generator):
+        """Create internal pipeline component."""
         return self._target_cls(generator, *self._args, **self._kwargs)
 
 
@@ -79,14 +147,14 @@ class DataModifier(Callable):
     """Generalized modifier of data in a pipeline."""
 
     def __init__(self, generator: GeneratorLike):
-        """Create a DataReducer object.
+        """Create a DataModifier object.
 
         This is an abstract base class and cannot be instantiated directlty.
 
         Parameters
         ----------
         generator: GeneratorLike
-            A generator like object to reduce.
+            A generator like object to modify.
         """
         self._generator = generator
         self._logger = None
@@ -272,7 +340,13 @@ class Generator(Callable, PipeComponent):
 
 
 class CustomMap(DataMap):
-    """Wrap a custom mapping callable."""
+    """Wrap a custom mapping callable.
+
+    Attributes
+    ----------
+    function: callable[[numpy.ndarray], dict[str, numpy.ndarray]]
+        The provided callable.
+    """
 
     def __init__(
         self,
@@ -281,15 +355,33 @@ class CustomMap(DataMap):
             [np.typing.ArrayLike], Dict[str, np.ndarray]
         ],
     ):
+        """Create a `CustomMap` object.
+
+        Parameters
+        ----------
+        generator: GeneratorLike
+            A generator like object to transform.
+        custom_function:callable[numpy.ndarray, dict[str, numpy.ndarray]
+            A custom callable that takes in a NumPy array and returns a
+            dictionary with keys indicating the tranformation and values the
+            transformed distribution (array).
+        """
         self._generator = generator
         self.function = custom_function
 
     def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        """Call the internal function."""
         return self.function(data)
 
 
 class CustomReduce(DataReducer):
-    """Wrap a custom reducing callable."""
+    """Wrap a custom reducing callable.
+
+    Attributes
+    ----------
+    function: callable[[numpy.ndarray], dict[str, float]
+        The provided callable.
+    """
 
     def __init__(
         self,
@@ -298,16 +390,49 @@ class CustomReduce(DataReducer):
             [np.typing.ArrayLike], Dict[str, float]
         ],
     ):
+        """Create a `CustomReduce` object.
+
+        Parameters
+        ----------
+        generator: GeneratorLike
+            A generator like object to reduce.
+        custom_function: callable[numpy.ndarray, dict[str, float]
+            A custom callable that takes in a NumPy array and returns a
+            dictionary with keys indicating the reduction and values the reduced
+            distribution value.
+        """
         self._generator = generator
         self.function = custom_function
 
     def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        """Call the internal function."""
         return self.function(data)
 
 
 class CustomGenerator(Generator):
-    def __init__(self, function):
-        self.function = function
+    """Wrap a user callable for starting a data pipeline.
+
+    This class allows custom user functions to be the generator of the initial
+    data from a pipeline. The call signature is arbitrary but has an expected
+    output given in the `__init__` documentation.
+
+    Attributes
+    ----------
+    function: callable[[...], dict[str, numpy.ndarray or float]]
+        The provided callable.
+    """
+
+    def __init__(self, custom_function):
+        """Wrap a user callable for using a data pipeline.
+
+        Parameters
+        ----------
+        custom_function: callable[[...], dict[str, numpy.ndarray or float]]
+            A custom callable that returns a dictionary with feature names for
+            keys and feature values for values (as either floats or arrays).
+        """
+        self.function = custom_function
 
     def __call__(self, *args, **kwargs):
+        """Call the internal function."""
         return self.function(*args, **kwargs)
