@@ -68,3 +68,9 @@ class CostLinearFit(rpt.base.BaseCost):
     @staticmethod
     def _l2(y: np.ndarray, predicted_y: np.ndarray):
         return np.sqrt(np.sum(np.sq(predicted_y - y)))
+
+    @property
+    def signal(self) -> np.ndarray:
+        """numpy.ndarray: Required by Ruptures to exist in \
+                (N_samples, N_dimensions)."""
+        return self._signal.T
