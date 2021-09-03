@@ -31,7 +31,7 @@ class CostLinearFit(rpt.base.BaseCost):
     """
 
     model = "linear_regression"
-    min_size = 2
+    min_size = 3
     _metrics = {"l1", "l2"}
 
     def __init__(self, metric="l1"):
@@ -56,16 +56,15 @@ class CostLinearFit(rpt.base.BaseCost):
         errors = []
         x = self._x[start:end]
         for y in self._signal[:, start:end]:
-            linear_regression = sp.stats.linregress(x, y)
-            errors.append(getattr(self, self._mode)(linear_regression, x, y))
+            regression = sp.stats.linregress(x, y)
+            predicted_y = regression.slope * x + regression.intercept
+            errors.append(getattr(self, self._metric)(y, predicted_y))
         return errors
 
     @staticmethod
-    def _l1(linear_regression, x: np.ndarray, y: np.ndarray):
-        predicted_y = linear_regression.slope * x + linear_regression.intercept
+    def _l1(y: np.ndarray, predicted_y: np.ndarray):
         return np.sum(np.abs(predicted_y - y))
 
     @staticmethod
-    def _l2(linear_regression, x: np.ndarray, y: np.ndarray):
-        predicted_y = linear_regression.slope * x + linear_regression.intercept
-        return np.sqrt(np.add(np.sq(predicted_y - y)))
+    def _l2(y: np.ndarray, predicted_y: np.ndarray):
+        return np.sqrt(np.sum(np.sq(predicted_y - y)))
