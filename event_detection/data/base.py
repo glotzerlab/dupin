@@ -3,7 +3,7 @@
 import typing
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -139,8 +139,10 @@ class PreparedPipeComponent:
         return self._target_cls(generator, *self._args, **self._kwargs)
 
 
-def _join_filter_none(string, sequence):
-    return string.join(filter(lambda x: x is not None, sequence))
+def _join_filter_none(
+    string: str, sequence: typing.Sequence[Optional[str]]
+) -> str:
+    return string.join(s for s in sequence if s is not None)
 
 
 class DataModifier(Callable):
