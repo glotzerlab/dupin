@@ -12,8 +12,8 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     """Smooth an array via a moving average.
 
     For multidimensional arrays, the smoothing is done on the first axis. This
-    is consistent when rows represent multiple variables or features and columns
-    represent different instances.
+    is consistent when columns represent multiple variables or features and
+    rows represent different instances.
 
     Parameters
     ----------

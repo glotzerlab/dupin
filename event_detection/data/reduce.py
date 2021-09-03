@@ -3,7 +3,7 @@
 from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 
 from . import base
 
@@ -145,7 +145,7 @@ class Tee(base.DataReducer):
         self._reducers = [reduce(generator) for reduce in reducers]
         super().__init__(generator)
 
-    def compute(self, distribution: np.typing.ArrayLike) -> Dict[str, float]:
+    def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
         """Run all composed reducer computes."""
         processed_data = {}
         for reducer in self._reducers:

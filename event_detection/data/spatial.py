@@ -2,7 +2,7 @@
 
 import numba
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 
 from . import base
 
@@ -66,7 +66,7 @@ class NeighborAveraging(base.DataMap):
             del kwargs[self._expected_kwarg]
         return args, kwargs
 
-    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Perform spatial averaging using provided neighbors.
 
         Parameters

@@ -6,13 +6,13 @@ from collections.abc import Callable, Sequence
 from typing import Any, Dict, Union
 
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 
 # must use strings to forward types
 GeneratorLike = Union[
     "Generator",
     "DataMap",
-    typing.Callable[..., Dict[str, Union[float, np.typing.ArrayLike]]],
+    typing.Callable[..., Dict[str, Union[float, npt.ArrayLike]]],
 ]
 GeneratorLike.__doc__ = """
 A type hint for objects that act like data generators for event_detection.
@@ -241,7 +241,7 @@ class DataReducer(DataModifier):
     """
 
     @abstractmethod
-    def compute(self, distribution: np.typing.ArrayLike) -> Dict[str, float]:
+    def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
         """Turn a distribution into scalar features.
 
         Parameters
@@ -280,7 +280,7 @@ class DataMap(DataModifier, PipeComponent):
     """
 
     @abstractmethod
-    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Turn a distribution into another distribution.
 
         Parameters
@@ -310,7 +310,7 @@ class Generator(Callable, PipeComponent):
     @abstractmethod
     def __call__(
         self, *args, **kwargs
-    ) -> Dict[str, Union[float, np.typing.ArrayLike]]:
+    ) -> Dict[str, Union[float, npt.ArrayLike]]:
         """Return the output signal(s) for given inputs.
 
         This method can have an arbitrary signature in subclasses.
@@ -352,7 +352,7 @@ class CustomMap(DataMap):
         self,
         generator: GeneratorLike,
         custom_function: typing.Callable[
-            [np.typing.ArrayLike], Dict[str, np.ndarray]
+            [npt.ArrayLike], Dict[str, np.ndarray]
         ],
     ):
         """Create a `CustomMap` object.
@@ -369,7 +369,7 @@ class CustomMap(DataMap):
         self._generator = generator
         self.function = custom_function
 
-    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Call the internal function."""
         return self.function(data)
 
@@ -386,9 +386,7 @@ class CustomReduce(DataReducer):
     def __init__(
         self,
         generator: GeneratorLike,
-        custom_function: typing.Callable[
-            [np.typing.ArrayLike], Dict[str, float]
-        ],
+        custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
     ):
         """Create a `CustomReduce` object.
 
@@ -404,7 +402,7 @@ class CustomReduce(DataReducer):
         self._generator = generator
         self.function = custom_function
 
-    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Call the internal function."""
         return self.function(data)
 

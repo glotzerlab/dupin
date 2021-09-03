@@ -3,6 +3,7 @@
 from typing import Callable, Dict, List, Union
 
 import numpy as np
+import numpy.typing as npt
 
 from . import base
 
@@ -22,7 +23,7 @@ class Identity(base.DataMap):
         """
         self._generator = generator
 
-    def compute(self, data: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Do nothing to the base distribution.
 
         Parameters
@@ -65,7 +66,7 @@ class Tee(base.DataMap):
         super().__init__(generator)
 
     def compute(
-        self, distribution: np.typing.ArrayLike
+        self, distribution: npt.ArrayLike
     ) -> Dict[str, Union[float, np.ndarray]]:
         """Run all composed map computes."""
         processed_data = {}

@@ -3,8 +3,7 @@
 from collections.abc import Sequence
 from typing import Any, Dict, List, Union
 
-import numpy as np
-import numpy.typing
+import numpy.typing as npt
 
 import event_detection.errors as error
 
@@ -53,7 +52,7 @@ class FreudDescriptor(base.Generator):
 
     def __call__(
         self, *args: Any, **kwargs: Any
-    ) -> Dict[str, Union[float, np.typing.ArrayLike]]:
+    ) -> Dict[str, Union[float, npt.ArrayLike]]:
         """Return computed attributes specified in a dictionary.
 
         The keys of the dictionary are the attributes specified, unless a `dict`

@@ -3,7 +3,7 @@
 from typing import Optional, Union
 
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 import scipy
 
 
@@ -23,7 +23,7 @@ def _get_sample_size(signal_len: int, sample_size: Optional[Union[int, float]]):
 
 
 def mean_shift(
-    signal: np.typing.ArrayLike,
+    signal: npt.ArrayLike,
     sample_size: Union[int, float] = 0.1,
     sensitivity=0.01,
     return_filter: Optional[bool] = False,
