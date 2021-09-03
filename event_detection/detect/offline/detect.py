@@ -1,10 +1,13 @@
 """Implements offline methods for detecting events in molecular simulations."""
 
+import logging
 from typing import Callable, List, Optional, Tuple, Union
 
 import kneed as kd
 import numpy as np
 import ruptures as rpt
+
+_logger = logging.getLogger()
 
 ElbowDetector = Callable[[List[float]], int]
 
@@ -171,10 +174,17 @@ def two_pass_elbow_detection(
     def find_elbow(costs: List[float]) -> int:
         first_pass = detector(costs)
         if first_pass is None:
+            _logger.debug(
+                "No elbow detected in first pass of two_pass_elbow_detection."
+            )
             return None
         if first_pass < threshold:
             second_pass = detector(costs[first_pass:])
             if second_pass is None:
+                _logger.debug(
+                    "No second elbow detected in second pass of "
+                    "two_pass_elbow_detection."
+                )
                 return first_pass
             else:
                 return second_pass + first_pass
@@ -198,7 +208,11 @@ class _RupturesWrapper:
         # by a decector. We return (None, 0) to indicate the failure.
         try:
             change_points = self.detector.fit_predict(data, n_change_points)
-        except AssertionError:
+        except rpt.exceptions.BadSegmentationParameters as err:
+            _logger.error(
+                f"Error detecting {n_change_points} change points. "
+                f"Original error: {type(err).__name__}({str(err)})."
+            )
             return None, 0
         # If we reach here, then cost has been fit on the data.
         self._cost_fit = True
