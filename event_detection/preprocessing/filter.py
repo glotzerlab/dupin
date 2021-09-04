@@ -86,7 +86,7 @@ class MeanShift:
         self.filter_ = self.likelihoods_ <= self.sensitivity
         if return_filter:
             return self.filter_
-        return signal[self.filter_]
+        return signal[:, self.filter_]
 
     @staticmethod
     def _get_sample_size(
@@ -242,7 +242,7 @@ class Correlated:
 
         if return_filter:
             return self.filter_
-        return signal[self.filter_, :]
+        return signal[:, self.filter_]
 
     def _get_similiarity_matrix(
         self, signal: npt.ArrayLike
