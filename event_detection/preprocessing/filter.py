@@ -273,8 +273,10 @@ class Correlated:
         ids = self.labels_
         features = []
         for label in range(self.n_clusters_):
+            in_cluster = ids == label
+            sorted_indices = np.argsort(feature_importance[in_cluster])
             features.append(
-                np.argsort(feature_importance[ids == label])[
+                np.flatnonzero(in_cluster)[sorted_indices][
                     :features_per_cluster
                 ]
             )
