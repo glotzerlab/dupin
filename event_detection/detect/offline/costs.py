@@ -74,3 +74,37 @@ class CostLinearFit(rpt.base.BaseCost):
         """numpy.ndarray: Required by Ruptures to exist in \
                 (N_samples, N_dimensions)."""
         return self._signal.T
+
+
+class CostLinearBiasedFit(CostLinearFit):
+    """Compute a start to end linear fit and pentalize error and bias."""
+
+    def _individual_errors(self, start: int, end: int):
+        errors = []
+        x = self._x[start:end]
+        for y in self._signal[:, start:end]:
+            slope = self._get_slope(x, y)
+            intercept = self._get_intercept(x[0], y[0], slope)
+            predicted_y = slope * x + intercept
+            errors.append(getattr(self, self._metric)(y, predicted_y))
+        return errors
+
+    @staticmethod
+    def _get_slope(x: np.ndarray, y: np.ndarray) -> float:
+        return (y[-1] - y[0]) / (x[-1] - x[0])
+
+    @staticmethod
+    def _get_intercept(x: float, y: float, slope: float) -> float:
+        return y - slope * (x)
+
+    @staticmethod
+    def _l1(y: np.ndarray, predicted_y: np.ndarray):
+        diff = predicted_y - y
+        base_error = np.sum(np.abs(diff))
+        return (1 + np.sum(diff) / base_error) * base_error
+
+    @staticmethod
+    def _l2(y: np.ndarray, predicted_y: np.ndarray):
+        diff = predicted_y - y
+        base_error = np.sqrt(np.sum(np.sq(diff)))
+        return (1 + np.sum(diff) / np.sum(np.abs(diff))) * base_error
