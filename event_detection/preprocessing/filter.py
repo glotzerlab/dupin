@@ -249,6 +249,7 @@ class Correlated:
     ) -> Tuple[np.ndarray, np.ndarray]:
         if self.correlation == "pearson":
             similarity_matrix = np.abs(np.corrcoef(signal, rowvar=False))
+            similarity_matrix[np.isnan(similarity_matrix)] = 0
             distance_matrix = np.abs(1 - similarity_matrix)
             return similarity_matrix, distance_matrix
         else:
