@@ -34,7 +34,7 @@ class MeanShift:
         The array of features selected.
     """
 
-    def __init__(self, sensitivity):
+    def __init__(self, sensitivity: float):
         """Create a MeanShift filter.
 
         Parameters
@@ -52,7 +52,7 @@ class MeanShift:
         signal: npt.ArrayLike,
         sample_size: Union[int, float] = 0.1,
         return_filter: Optional[bool] = False,
-    ):
+    ) -> npt.ArrayLike:
         """Filter dimensions without a detected mean shift.
 
         Parameters
@@ -91,7 +91,7 @@ class MeanShift:
     @staticmethod
     def _get_sample_size(
         signal_len: int, sample_size: Optional[Union[int, float]]
-    ):
+    ) -> int:
         # 3 on each side is the minimum to perform this analysis.
         if signal_len < 7:
             raise ValueError(
@@ -156,7 +156,7 @@ class Correlated:
         max_clusters: int = 10,
         method_args: Tuple[Any, ...] = (),
         method_kwargs: Dict[str, Any] = None,
-    ):
+    ) -> None:
         """Construct a Correlated filter.
 
         Parameters
@@ -188,7 +188,7 @@ class Correlated:
         features_per_cluster: int = 1,
         return_filter: bool = False,
         feature_importance: Optional[npt.ArrayLike] = None,
-    ):
+    ) -> None:
         """Filter out correlated features.
 
         Parameters
