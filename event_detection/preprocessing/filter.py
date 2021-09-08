@@ -112,23 +112,27 @@ class MeanShift:
     def _get_mean_shift_std(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         mu_a, std_a = a.mean(axis=0), a.std(axis=0)
         mu_b, std_b = b.mean(axis=0), b.std(axis=0)
-        shift_ab = np.abs(mu_b - mu_a) / std_a
-        zero_std_a = std_a == 0
-        if np.any(zero_std_a):
-            warnings.warn(
-                "MeanShift: Zero standard deviation found in beginning.",
-                RuntimeWarning,
-            )
-        shift_ab[zero_std_a] = np.infty
 
-        shift_ba = np.abs(mu_a - mu_b) / std_b
-        zero_std_b = std_b == 0
-        if np.any(zero_std_b):
-            warnings.warn(
-                "MeanShift: Zero standard deviationfound in end.",
-                RuntimeWarning,
-            )
-        shift_ba[zero_std_b] = np.infty
+        def calc_mean_shift_with_warn(diff, std):
+            zeros_found = False
+            with warnings.catch_warnings(record=True) as warns:
+                shift = diff / std
+                if len(warns) != 0:
+                    zeros_found = True
+            if zeros_found:
+                mask = std == 0
+                diff_zeros = diff == 0
+                shift[mask & np.logical_not(diff_zeros)] = np.infty
+                shift[mask & diff_zeros] = 0
+                warnings.warn(
+                    "MeanShift: Zero standard deviation found.",
+                    RuntimeWarning,
+                )
+            return shift
+
+        diff = np.abs(mu_a, mu_b)
+        shift_ab = calc_mean_shift_with_warn(diff, std_a)
+        shift_ba = calc_mean_shift_with_warn(diff, std_b)
         return np.maximum(shift_ab, shift_ba)
 
     @staticmethod
