@@ -1,6 +1,7 @@
 """Filters to reduce the dimensions of the signal."""
 
 import logging
+import warnings
 from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
@@ -112,7 +113,22 @@ class MeanShift:
         mu_a, std_a = a.mean(axis=0), a.std(axis=0)
         mu_b, std_b = b.mean(axis=0), b.std(axis=0)
         shift_ab = np.abs(mu_b - mu_a) / std_a
+        zero_std_a = std_a == 0
+        if np.any(zero_std_a):
+            warnings.warn(
+                "MeanShift: Zero standard deviation found in beginning.",
+                RuntimeWarning,
+            )
+        shift_ab[zero_std_a] = np.infty
+
         shift_ba = np.abs(mu_a - mu_b) / std_b
+        zero_std_b = std_b == 0
+        if np.any(zero_std_b):
+            warnings.warn(
+                "MeanShift: Zero standard deviationfound in end.",
+                RuntimeWarning,
+            )
+        shift_ba[zero_std_b] = np.infty
         return np.maximum(shift_ab, shift_ba)
 
     @staticmethod
