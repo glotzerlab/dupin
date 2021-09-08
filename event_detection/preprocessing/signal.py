@@ -35,7 +35,9 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     return average
 
 
-def fft_smoothing(y: np.ndarray, cut_off_percentage: float = 0.05):
+def fft_smoothing(
+    y: np.ndarray, cut_off_percentage: float = 0.05
+) -> np.ndarray:
     """Smooth out the least contributing frequencies of a signal.
 
     Parameters
