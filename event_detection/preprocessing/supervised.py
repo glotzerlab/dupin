@@ -1,6 +1,6 @@
 """Classes for use in utilizing supervised learning for event detection."""
 
-from typing import Callable, List, Optional
+from typing import Callable, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -13,19 +13,19 @@ except ImportError:
     sk = errors._RaiseModuleError("sklearn")
 
 
-def window_iter(seq, window_size):
+def window_iter(seq: Sequence, window_size: int) -> Sequence:
     """Iterate over a sequence in slices of length window_size.
 
     Parameters
     ----------
-    seq: List[Any]
+    seq: list [``any``]
         The sequence to yield windows of.
     window_size: int
         The size of window iter iterator over.
 
     Yields
     ------
-    window: List[Any]
+    window: list [ ``any`` ]
         The current window of the original data.
     """
     L = len(seq)
@@ -59,7 +59,7 @@ class Window:
             Callable[[np.ndarray, np.ndarray], float]
         ] = None,
         store_intermediate_classifiers: bool = False,
-    ):
+    ) -> None:
         """Create a `Window` object.
 
         Parameters
@@ -93,7 +93,7 @@ class Window:
             self._loss_function = loss_function
         self.store_intermediate_classifiers = store_intermediate_classifiers
 
-    def compute(self, X: np.ndarray) -> List[float]:
+    def compute(self, X: np.ndarray) -> np.ndarray:
         """Compute the loss for classifiers trained on discerning window halves.
 
         Parameters
@@ -134,4 +134,5 @@ class Window:
             if self.store_intermediate_classifiers:
                 self._classifiers.append(self._classifier)
                 self._classifier = sk.base.clone(self._classifier)
+        self.errors = np.array(self.errors)
         return self.errors
