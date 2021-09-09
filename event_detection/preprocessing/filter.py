@@ -233,6 +233,7 @@ class Correlated:
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
         """
+        _logger.debug(f"signal dimension, {signal.shape[1]}")
         similarity_matrix, distance_matrix = self._get_similiarity_matrix(
             signal
         )
