@@ -7,7 +7,7 @@ import kneed as kd
 import numpy as np
 import ruptures as rpt
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 ElbowDetector = Callable[[List[float]], int]
 

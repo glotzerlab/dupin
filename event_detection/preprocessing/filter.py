@@ -11,7 +11,7 @@ import sklearn as sk
 import sklearn.cluster
 import sklearn.metrics
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 
 class MeanShift:
@@ -233,7 +233,7 @@ class Correlated:
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
         """
-        _logger.debug(f"signal dimension, {signal.shape[1]}")
+        _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
         similarity_matrix, distance_matrix = self._get_similiarity_matrix(
             signal
         )
