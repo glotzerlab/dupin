@@ -130,7 +130,7 @@ class MeanShift:
                 )
             return shift
 
-        diff = np.abs(mu_a, mu_b)
+        diff = np.abs(mu_a - mu_b)
         shift_ab = calc_mean_shift_with_warn(diff, std_a)
         shift_ba = calc_mean_shift_with_warn(diff, std_b)
         return np.maximum(shift_ab, shift_ba)
