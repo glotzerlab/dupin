@@ -237,6 +237,19 @@ class Correlated:
         similarity_matrix, distance_matrix = self._get_similiarity_matrix(
             signal
         )
+        (
+            isolated_components,
+            connected_components,
+        ) = self._get_isolated_components(similarity_matrix)
+        n_isolated_components = np.sum(isolated_components)
+        if n_isolated_components >= 1:
+            warnings.warn(
+                f"{n_isolated_components} Isolated components detected "
+                f"removing."
+            )
+        similarity_matrix, distance_matrix = self._remove_isolated_components(
+            similarity_matrix, distance_matrix, connected_components
+        )
         if feature_importance is None:
             rng = np.random.default_rng()
             feature_importance = rng.random(signal.shape[1])
@@ -252,13 +265,15 @@ class Correlated:
 
         self.scores_ = np.array(scores)
         best_cluster_index = self.scores_.argmin()
-        self.labels_ = cluster_ids[best_cluster_index]
+        self.labels_ = np.full(signal.shape[1], -1, dtype=int)
+        self.labels_[connected_components] = cluster_ids[best_cluster_index]
         self.n_clusters_ = best_cluster_index + 2
 
         filter_ = np.zeros(similarity_matrix.shape[0], dtype=bool)
-        filter_[
-            self._choose_features(feature_importance, features_per_cluster)
-        ] = True
+        chosen_features = self._choose_features(
+            feature_importance[connected_components], features_per_cluster
+        )
+        filter_[np.flatnonzero(connected_components)[chosen_features]] = True
         self.filter_ = filter_
 
         if return_filter:
@@ -278,6 +293,21 @@ class Correlated:
             raise ValueError(
                 f"Unsupported correlation type {self.correlation}."
             )
+
+    def _get_isolated_components(self, similarity_matrix: np.ndarray):
+        connected_components = np.any(similarity_matrix != 0, axis=1)
+        return (np.logical_not(connected_components), connected_components)
+
+    def _remove_isolated_components(
+        self,
+        similarity_matrix: np.ndarray,
+        distance_matrix: np.ndarray,
+        connected_components: np.ndarray,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return (
+            similarity_matrix[:, connected_components][connected_components, :],
+            distance_matrix[:, connected_components][connected_components, :],
+        )
 
     def _get_method_instance(self, n_clusters: int) -> sk.base.ClusterMixin:
         if self.method == "spectral":
@@ -311,6 +341,7 @@ class Correlated:
         similarity_matrix: np.ndarray,
         distance_matrix: np.ndarray,
     ) -> Tuple[np.ndarray, float]:
+
         clusterer = self._get_method_instance(n_clusters)
         clusterer.fit(similarity_matrix)
         score = sk.metrics.silhouette_score(
