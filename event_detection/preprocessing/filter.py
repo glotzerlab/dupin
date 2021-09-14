@@ -269,9 +269,9 @@ class Correlated:
         self.labels_[connected_components] = cluster_ids[best_cluster_index]
         self.n_clusters_ = best_cluster_index + 2
 
-        filter_ = np.zeros(similarity_matrix.shape[0], dtype=bool)
+        filter_ = np.zeros(signal.shape[1], dtype=bool)
         chosen_features = self._choose_features(
-            feature_importance[connected_components], features_per_cluster
+            feature_importance, features_per_cluster
         )
         filter_[np.flatnonzero(connected_components)[chosen_features]] = True
         self.filter_ = filter_
