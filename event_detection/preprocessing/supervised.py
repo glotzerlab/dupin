@@ -59,6 +59,8 @@ class Window:
             Callable[[np.ndarray, np.ndarray], float]
         ] = None,
         store_intermediate_classifiers: bool = False,
+        n_classifiers: int = 1,
+        combine_errors: str = "mean",
     ) -> None:
         """Create a `Window` object.
 
@@ -83,6 +85,13 @@ class Window:
             classifier stores some or all of the sequence in fitting as is the
             case for kernelized classifiers, this optional will lead a much use
             of memory.
+        n_classifiers : int, optional
+            The number of classifiers and test train splits to use per window,
+            defaults to 1. Higher numbers naturally smooth the error across a
+            trajectory.
+        combine_errors : str, optional
+            What function to reduce the errors of ``n_classifiers`` which,
+            defauts to "mean". Available values are "mean" and "median".
         """
         self._classifier = classifier
         self.window_size = window_size
@@ -92,6 +101,12 @@ class Window:
         else:
             self._loss_function = loss_function
         self.store_intermediate_classifiers = store_intermediate_classifiers
+        self.n_classifiers = n_classifiers
+        self.combine_errors = combine_errors
+
+    @property
+    def _reduce(self):
+        return np.mean if self.combine_errors == "mean" else np.median
 
     def compute(self, X: np.ndarray) -> np.ndarray:
         """Compute the loss for classifiers trained on discerning window halves.
@@ -107,32 +122,32 @@ class Window:
         errors : list
             Returns the list of loss function values for each window in ``X``.
         """
-        self.errors = []
+        errors = []
         if self.store_intermediate_classifiers:
             self._classifiers = []
         y = np.repeat([0, 1], np.ceil(self.window_size / 2))[: self.window_size]
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
+        shuffle_splits = sk.model_selection.StratifiedShuffleSplit(
+            n_splits=self.n_classifiers, test_size=self.test_size
+        )
         for x in window_iter(X, self.window_size):
-            (
-                x_train,
-                x_test,
-                y_train,
-                y_test,
-            ) = sk.model_selection.train_test_split(
-                x,
-                y,
-                test_size=self.test_size,
-                stratify=y,
-            )
-            self._classifier.fit(x_train, y_train)
-            self.errors.append(
-                self._loss_function(y_test, self._classifier.predict(x_test))
-            )
-            # If storing intermediate classifiers clone the classifier to ensure
-            # we train/fit on a new identical model.
             if self.store_intermediate_classifiers:
-                self._classifiers.append(self._classifier)
-                self._classifier = sk.base.clone(self._classifier)
-        self.errors = np.array(self.errors)
+                self._classifiers.append([])
+            slice_errors = []
+            for train_indices, test_indices in shuffle_splits.split(x, y):
+                self._classifier.fit(x[train_indices], y[train_indices])
+                slice_errors.append(
+                    self._loss_function(
+                        y[test_indices],
+                        self._classifier.predict(x[test_indices]),
+                    )
+                )
+                # If storing intermediate classifiers clone the classifier to
+                # ensure we train/fit on a new identical model.
+                if self.store_intermediate_classifiers:
+                    self._classifiers[-1].append(self._classifier)
+                    self._classifier = sk.base.clone(self._classifier)
+            errors.append(self._reduce(slice_errors))
+        self.errors = np.array(errors)
         return self.errors
