@@ -74,11 +74,12 @@ class Window:
         test_size : float
             Fraction of samples to use for computing the error through the loss
             function. This fraction is not fitted on.
-        loss_function : callable[[hp.ndarray, np.ndarray], float], optional
-            A callable that takes in the predicted and actual class labels for a
-            given window and outputs a score. Examples of this include the
-            zero-one loss and logistic loss. Defaults to the zero-one loss, when
-            scikit-learn is available otherwise this will error.
+        loss_function : callable[[sklearn.base.ClassifierMixin, \
+                                  np.ndarray, np.ndarray], float], optional
+            A callable that takes in the fitted classifier, the test x and test
+            y values and returns a loss (lower is better). By default this
+            computes the zero-one loss if `sklearn` is available, otherwise this
+            errors.
         store_intermediate_classifiers : bool, optional
             Whether to store the fitted classifier for each window in the
             sequence passed to `compute`. Defaults to False. **Warning**: If the
@@ -97,7 +98,7 @@ class Window:
         self.window_size = window_size
         self.test_size = test_size
         if loss_function is None:
-            self._loss_function = sk.metrics.zero_one_loss
+            self._loss_function = self._default_loss
         else:
             self._loss_function = loss_function
         self.store_intermediate_classifiers = store_intermediate_classifiers
@@ -139,8 +140,9 @@ class Window:
                 self._classifier.fit(x[train_indices], y[train_indices])
                 slice_errors.append(
                     self._loss_function(
+                        self._classifier,
+                        x[test_indices],
                         y[test_indices],
-                        self._classifier.predict(x[test_indices]),
                     )
                 )
                 # If storing intermediate classifiers clone the classifier to
@@ -151,3 +153,7 @@ class Window:
             errors.append(self._reduce(slice_errors))
         self.errors = np.array(errors)
         return self.errors
+
+    @staticmethod
+    def _default_loss(classifier, x, y):
+        return sk.metrics.zero_one_loss(y, classifier(x))
