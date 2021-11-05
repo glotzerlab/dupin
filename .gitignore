@@ -104,7 +104,5 @@ ENV/
 # IDE settings
 .vscode/
 
-# Temporary notebooks and files to test package functionality
-*.ipynb
-.ipynb_checkpoints/
+# GSD files
 *.gsd
