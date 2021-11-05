@@ -234,46 +234,21 @@ class Correlated:
             array filtering features is returned.
         """
         _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
-        similarity_matrix, distance_matrix = self._get_similiarity_matrix(
-            signal
+
+        sim_matrix, dist_matrix = self._get_similiarity_matrix(signal)
+        isolated, connected = self._get_isolated(sim_matrix)
+        sim_matrix, dist_matrix = self._handle_isolated(
+            sim_matrix, dist_matrix, isolated, connected
         )
-        (
-            isolated_components,
-            connected_components,
-        ) = self._get_isolated_components(similarity_matrix)
-        n_isolated_components = np.sum(isolated_components)
-        if n_isolated_components >= 1:
-            warnings.warn(
-                f"{n_isolated_components} Isolated components detected "
-                f"removing."
-            )
-        similarity_matrix, distance_matrix = self._remove_isolated_components(
-            similarity_matrix, distance_matrix, connected_components
-        )
-        if feature_importance is None:
-            rng = np.random.default_rng()
-            feature_importance = rng.random(signal.shape[1])
 
-        cluster_ids = []
-        scores = []
-        for n_clusters in range(2, self.max_clusters + 1):
-            labels, score = self._compute_clusters(
-                n_clusters, similarity_matrix, distance_matrix
-            )
-            cluster_ids.append(labels)
-            scores.append(score)
+        self._cluster(sim_matrix, dist_matrix)
 
-        self.scores_ = np.array(scores)
-        best_cluster_index = self.scores_.argmin()
-        self.labels_ = np.full(signal.shape[1], -1, dtype=int)
-        self.labels_[connected_components] = cluster_ids[best_cluster_index]
-        self.n_clusters_ = best_cluster_index + 2
-
-        filter_ = np.zeros(signal.shape[1], dtype=bool)
         chosen_features = self._choose_features(
             feature_importance, features_per_cluster
         )
-        filter_[np.flatnonzero(connected_components)[chosen_features]] = True
+
+        filter_ = np.zeros(signal.shape[1], dtype=bool)
+        filter_[np.flatnonzero(connected)[chosen_features]] = True
         self.filter_ = filter_
 
         if return_filter:
@@ -284,29 +259,29 @@ class Correlated:
         self, signal: npt.ArrayLike
     ) -> Tuple[np.ndarray, np.ndarray]:
         if self.correlation == "pearson":
-            similarity_matrix = np.abs(np.corrcoef(signal, rowvar=False))
-            similarity_matrix[np.isnan(similarity_matrix)] = 0
-            distance_matrix = np.abs(1 - similarity_matrix)
-            np.fill_diagonal(distance_matrix, 0)
-            return similarity_matrix, distance_matrix
+            sim_matrix = np.abs(np.corrcoef(signal, rowvar=False))
+            sim_matrix[np.isnan(sim_matrix)] = 0
+            dist_matrix = np.abs(1 - sim_matrix)
+            np.fill_diagonal(dist_matrix, 0)
+            return sim_matrix, dist_matrix
         else:
             raise ValueError(
                 f"Unsupported correlation type {self.correlation}."
             )
 
-    def _get_isolated_components(self, similarity_matrix: np.ndarray):
-        connected_components = np.any(similarity_matrix != 0, axis=1)
-        return (np.logical_not(connected_components), connected_components)
+    def _get_isolated(self, sim_matrix: np.ndarray):
+        connected = np.any(sim_matrix != 0, axis=1)
+        return (np.logical_not(connected), connected)
 
-    def _remove_isolated_components(
+    def _remove_isolated(
         self,
-        similarity_matrix: np.ndarray,
-        distance_matrix: np.ndarray,
-        connected_components: np.ndarray,
+        sim_matrix: np.ndarray,
+        dist_matrix: np.ndarray,
+        connected: np.ndarray,
     ) -> Tuple[np.ndarray, np.ndarray]:
         return (
-            similarity_matrix[:, connected_components][connected_components, :],
-            distance_matrix[:, connected_components][connected_components, :],
+            sim_matrix[:, connected][connected, :],
+            dist_matrix[:, connected][connected, :],
         )
 
     def _get_method_instance(self, n_clusters: int) -> sk.base.ClusterMixin:
@@ -323,6 +298,11 @@ class Correlated:
     def _choose_features(
         self, feature_importance: np.ndarray, features_per_cluster: int
     ) -> np.ndarray:
+
+        if feature_importance is None:
+            rng = np.random.default_rng()
+            feature_importance = rng.random(len(self.labels_))
+
         ids = self.labels_
         features = []
         for label in range(self.n_clusters_):
@@ -338,15 +318,57 @@ class Correlated:
     def _compute_clusters(
         self,
         n_clusters: int,
-        similarity_matrix: np.ndarray,
-        distance_matrix: np.ndarray,
+        sim_matrix: np.ndarray,
+        dist_matrix: np.ndarray,
     ) -> Tuple[np.ndarray, float]:
 
+        if n_clusters == 1:
+            labels = np.zeros(sim_matrix.shape[0], dtype=int)
+            return labels, sk.metrics.silhouette_score(
+                dist_matrix, metric="precomputed", labels=labels
+            )
+
         clusterer = self._get_method_instance(n_clusters)
-        clusterer.fit(similarity_matrix)
+        clusterer.fit(sim_matrix)
         score = sk.metrics.silhouette_score(
-            distance_matrix,
+            dist_matrix,
             metric="precomputed",
             labels=clusterer.labels_,
         )
         return clusterer.labels_, score
+
+    def _handle_isolated(
+        self,
+        sim_matrix: np.ndarray,
+        dist_matrix: np.ndarray,
+        isolated: np.ndarray,
+        connected: np.ndarray,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        n_isolated = np.sum(isolated)
+        if n_isolated >= 1:
+            warnings.warn(
+                f"{n_isolated} Isolated components detected " f"removing."
+            )
+            return self._remove_isolated(sim_matrix, dist_matrix, connected)
+        return sim_matrix, dist_matrix
+
+    def _cluster(
+        self,
+        sim_matrix: np.ndarray,
+        dist_matrix: np.ndarray,
+        connected: np.ndarray,
+    ) -> None:
+        cluster_ids = []
+        scores = []
+        for n_clusters in range(1, self.max_clusters + 1):
+            labels, score = self._compute_clusters(
+                n_clusters, sim_matrix, dist_matrix
+            )
+            cluster_ids.append(labels)
+            scores.append(score)
+
+        self.scores_ = np.array(scores)
+        best_cluster_index = self.scores_.argmin()
+        self.labels_ = np.full(connected.shape[0], -1, dtype=int)
+        self.labels_[connected] = cluster_ids[best_cluster_index]
+        self.n_clusters_ = best_cluster_index + 1
