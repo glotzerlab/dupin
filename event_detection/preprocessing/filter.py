@@ -4,6 +4,7 @@ import logging
 import warnings
 from typing import Any, Dict, Optional, Tuple, Union
 
+import bottleneck as bn
 import numpy as np
 import numpy.typing as npt
 import scipy as sp
@@ -365,3 +366,88 @@ class Correlated:
         self.labels_ = np.full(connected.shape[0], -1, dtype=int)
         self.labels_[connected] = cluster_ids[best_cluster_index]
         self.n_clusters_ = best_cluster_index + 2
+
+
+def _to_unit_len(arr):
+    min_, max_ = arr.min(), arr.max()
+    return (arr - min_) / (max_ - min_)
+
+
+def local_smoothness_importance(
+    signal: np.ndarray, dim: int = 1, spacing: Optional[int] = None
+) -> npt.NDArray[float]:
+    r"""Rank features based on how well a spaced LSQ spline fits the feature.
+
+    Uses the negative MSE projected to a range of :math:`[0, 1]`.
+
+    Parameters
+    ----------
+    signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+        The potentially multidimensional signal.
+    dim: int, optional
+        The dimension of spline to use, defaults to 1.
+    spacing: int, optional
+        The number of spaces beyond the dimension to space knots, defaults to
+        ``None``. When ``None``, the behavior is :math:`\lceil d / 2 \rceil`.
+
+    Returns
+    -------
+    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+        Feature rankings from 0 to 1 (higher is more important), for all
+        features. A higher ranking indicates that the fit was better.
+    """
+    x = np.arange(signal.shape[0])
+    spacing = dim + int(np.round(dim / 2)) if spacing is None else dim + spacing
+    beg = dim + 2
+    start, end = (x[0],) * (dim + 1), (x[-1],) * (dim + 1)
+    knots = np.r_[start, x[beg:-beg:spacing], end]
+    spline = sp.interpolate.make_lsq_spline(x, signal, t=knots, k=dim)
+    mse = np.sqrt(np.sum((signal - spline(x)) ** 2, axis=0))
+    return _to_unit_len(-mse)
+
+
+def mean_shift_importance(likelihoods: np.ndarray) -> npt.NDArray[float]:
+    """Rank features based on how strong of a mean shift they have.
+
+    Parameters
+    ----------
+    likelihoods: :math:`(N_{features})` np.ndarray of float
+        The likelihoods given from a `MeanShift` object or the likelihood that
+        the given feature's signal happened by chance.
+
+    Returns
+    -------
+    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+        Feature rankings from 0 to 1 (higher is more important), for all
+        features. A higher ranking indicates that the likelihood was lower.
+    """
+    return _to_unit_len(-likelihoods)
+
+
+def noise_importance(
+    signal: np.ndarray, window_size: int
+) -> npt.NDArray[float]:
+    """Rank features based on how well a spaced LSQ spline fits the feature.
+
+    Uses the rolling standard deviation over mean ignoring a mean of zero.
+
+    Parameters
+    ----------
+    signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+        The potentially multidimensional signal.
+    window_size: int
+        The size of rolling window to use.
+
+    Returns
+    -------
+    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+        Feature rankings from 0 to 1 (higher is more important), for all
+        features. A higher ranking indicates the standard deviation relative to
+        the mean is low across the feature.
+    """
+    noise = np.nanmean(
+        bn.move_std(signal, window_size, axis=0)
+        / bn.move_mean(signal, window_size, axis=0),
+        axis=0,
+    )
+    return _to_unit_len(-noise)
