@@ -156,4 +156,4 @@ class Window:
 
     @staticmethod
     def _default_loss(classifier, x, y):
-        return sk.metrics.zero_one_loss(y, classifier(x))
+        return sk.metrics.zero_one_loss(y, classifier.predict(x))
