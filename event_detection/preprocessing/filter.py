@@ -241,7 +241,7 @@ class Correlated:
             sim_matrix, dist_matrix, isolated, connected
         )
 
-        self._cluster(sim_matrix, dist_matrix)
+        self._cluster(sim_matrix, dist_matrix, connected)
 
         chosen_features = self._choose_features(
             feature_importance, features_per_cluster
@@ -321,13 +321,6 @@ class Correlated:
         sim_matrix: np.ndarray,
         dist_matrix: np.ndarray,
     ) -> Tuple[np.ndarray, float]:
-
-        if n_clusters == 1:
-            labels = np.zeros(sim_matrix.shape[0], dtype=int)
-            return labels, sk.metrics.silhouette_score(
-                dist_matrix, metric="precomputed", labels=labels
-            )
-
         clusterer = self._get_method_instance(n_clusters)
         clusterer.fit(sim_matrix)
         score = sk.metrics.silhouette_score(
@@ -360,7 +353,7 @@ class Correlated:
     ) -> None:
         cluster_ids = []
         scores = []
-        for n_clusters in range(1, self.max_clusters + 1):
+        for n_clusters in range(2, self.max_clusters + 1):
             labels, score = self._compute_clusters(
                 n_clusters, sim_matrix, dist_matrix
             )
@@ -371,4 +364,4 @@ class Correlated:
         best_cluster_index = self.scores_.argmin()
         self.labels_ = np.full(connected.shape[0], -1, dtype=int)
         self.labels_[connected] = cluster_ids[best_cluster_index]
-        self.n_clusters_ = best_cluster_index + 1
+        self.n_clusters_ = best_cluster_index + 2
