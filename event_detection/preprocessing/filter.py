@@ -375,7 +375,7 @@ def _to_unit_len(arr):
 
 def local_smoothness_importance(
     signal: np.ndarray, dim: int = 1, spacing: Optional[int] = None
-) -> npt.NDArray[float]:
+) -> np.ndarray:
     r"""Rank features based on how well a spaced LSQ spline fits the feature.
 
     Uses the negative MSE projected to a range of :math:`[0, 1]`.
@@ -406,7 +406,7 @@ def local_smoothness_importance(
     return _to_unit_len(-mse)
 
 
-def mean_shift_importance(likelihoods: np.ndarray) -> npt.NDArray[float]:
+def mean_shift_importance(likelihoods: np.ndarray) -> np.ndarray:
     """Rank features based on how strong of a mean shift they have.
 
     Parameters
@@ -424,9 +424,7 @@ def mean_shift_importance(likelihoods: np.ndarray) -> npt.NDArray[float]:
     return _to_unit_len(-likelihoods)
 
 
-def noise_importance(
-    signal: np.ndarray, window_size: int
-) -> npt.NDArray[float]:
+def noise_importance(signal: np.ndarray, window_size: int) -> np.ndarray:
     """Rank features based on how well a spaced LSQ spline fits the feature.
 
     Uses the rolling standard deviation over mean ignoring a mean of zero.
