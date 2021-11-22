@@ -1,9 +1,9 @@
-event_detection.data
+dupin.data
 --------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data
+.. py:currentmodule:: dupin.data
 
 .. autosummary::
     :nosignatures:
@@ -12,7 +12,7 @@ event_detection.data
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data
+.. automodule:: dupin.data
     :synopsis: Module for data generation and modification on a per timestep basis.
     :members: SignalAggregator
 

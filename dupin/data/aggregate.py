@@ -3,7 +3,7 @@
 
 from typing import Any, Dict, Iterator, Optional, Tuple
 
-import event_detection.errors as errors
+import dupin.errors as errors
 
 from . import base, logging
 
@@ -34,7 +34,7 @@ class SignalAggregator:
         generator: generator_like
             A sequence of signal generators to use for generating the
             multivariate signal of a trajectory.
-        logger: event_detection.data.logging.Logger or None
+        logger: dupin.data.logging.Logger or None
             A logger object to store information about the data processing of
             the given pipeline. Defaults to None
         """
@@ -131,7 +131,7 @@ class SignalAggregator:
 
     @property
     def logger(self):
-        """event_detection.data.logging.Logger: Logger for the aggregator."""
+        """dupin.data.logging.Logger: Logger for the aggregator."""
         return self._logger
 
     @logger.setter

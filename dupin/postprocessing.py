@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-import event_detection.preprocessing
+import dupin.preprocessing
 
 
 def compute_features_in_event(
@@ -20,7 +20,7 @@ def compute_features_in_event(
         mean-shift signals).
 
     Internally this function uses
-    `event_detection.preprocessing.filter.mean_shift`.
+    `dupin.preprocessing.filter.mean_shift`.
 
     Parameters
     ----------
@@ -77,7 +77,7 @@ def compute_features_in_event(
             beg, end = extend_region(beg, end)
             print(beg, end)
         try:
-            section_features = event_detection.preprocessing.filter.mean_shift(
+            section_features = dupin.preprocessing.filter.mean_shift(
                 signal[beg:end], sample_size, sensitivity, return_filter=True
             )
         # If signal is too small, then we just append None as an indicator.

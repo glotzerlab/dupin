@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 
-import event_detection.data as data
+import dupin.data as data
 
 from . import DetectorStatus
 
@@ -121,7 +121,7 @@ class StdDevDetector:
 
         Returns
         -------
-        status: event_detection.detect.online.DetectorStatus
+        status: dupin.detect.online.DetectorStatus
             The status of the detector (whether an event has been detected).
         """
         status = self._update_status(*args, **kwargs)

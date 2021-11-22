@@ -5,7 +5,7 @@ from typing import Callable, Optional, Sequence
 import numpy as np
 import pandas as pd
 
-import event_detection.errors as errors
+import dupin.errors as errors
 
 try:
     import sklearn as sk

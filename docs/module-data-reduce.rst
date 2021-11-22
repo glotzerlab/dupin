@@ -1,9 +1,9 @@
-event_detection.data.reduce
+dupin.data.reduce
 ---------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data.reduce
+.. py:currentmodule:: dupin.data.reduce
 
 .. autosummary::
     :nosignatures:
@@ -14,7 +14,7 @@ event_detection.data.reduce
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data.reduce
+.. automodule:: dupin.data.reduce
     :synopsis: Base classes for data reduction into scalar features.
     :members: NthGreatest,
         Percentile,

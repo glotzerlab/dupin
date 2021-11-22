@@ -37,10 +37,10 @@ setup(
     install_requires=requirements,
     long_description=readme + "\n\n" + history,
     include_package_data=True,
-    keywords="event_detection",
-    name="event_detection",
+    keywords="event detection",
+    name="dupin",
     packages=find_packages(),
-    url="https://github.com/b-butler/event_detection",
+    url="https://github.com/b-butler/dupin",
     version="0.0.1",
     zip_safe=False,
 )

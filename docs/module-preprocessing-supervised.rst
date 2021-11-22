@@ -1,9 +1,9 @@
-event_detection.preprocessing.supervised
+dupin.preprocessing.supervised
 ----------------------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.preprocessing.supervised
+.. py:currentmodule:: dupin.preprocessing.supervised
 
 .. autosummary::
     :nosignatures:
@@ -13,7 +13,7 @@ event_detection.preprocessing.supervised
 
 .. rubric:: Details
 
-.. automodule:: event_detection.preprocessing.supervised
+.. automodule:: dupin.preprocessing.supervised
     :synopsis: Supervised learning techniques for signal processing.
     :members: window_iter,
         Window

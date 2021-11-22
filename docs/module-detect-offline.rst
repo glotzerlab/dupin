@@ -1,9 +1,9 @@
-event_detection.detect.offline
+dupin.detect.offline
 ------------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.detect.offline
+.. py:currentmodule:: dupin.detect.offline
 
 .. autosummary::
     :nosignatures:
@@ -16,7 +16,7 @@ event_detection.detect.offline
 
 .. rubric:: Details
 
-.. automodule:: event_detection.detect.offline
+.. automodule:: dupin.detect.offline
     :synopsis: Methods and classes for offline change point detection.
     :members: kneedle_elbow_detection,
         CostLinearFit,

@@ -1,9 +1,9 @@
-event_detection.preprocessing
+dupin.preprocessing
 -----------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.preprocessing
+.. py:currentmodule:: dupin.preprocessing
 
 .. rubric:: Details
 

@@ -1,9 +1,9 @@
-event_detection.detect
+dupin.detect
 ----------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.detect
+.. py:currentmodule:: dupin.detect
 
 .. rubric:: Details
 

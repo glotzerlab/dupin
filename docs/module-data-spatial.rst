@@ -1,9 +1,9 @@
-event_detection.data.spatial
+dupin.data.spatial
 ----------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data.spatial
+.. py:currentmodule:: dupin.data.spatial
 
 .. autosummary::
     :nosignatures:
@@ -12,6 +12,6 @@ event_detection.data.spatial
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data.spatial
+.. automodule:: dupin.data.spatial
     :synopsis: Classes for performing spatial averaging over distributions across space.
     :members: NeighborAveraging

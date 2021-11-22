@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# event_detection documentation build configuration file, created by
+# dupin documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -68,7 +68,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "event_detection"
+project = "dupin"
 copyright = "2021, Brandon Butler"
 author = "Brandon Butler"
 
@@ -123,7 +123,7 @@ html_theme = "alabaster"
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "event_detectiondoc"
+htmlhelp_basename = "dupindoc"
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -149,7 +149,7 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "event_detection.tex",
+        "dupin.tex",
         "event-detection Documentation",
         "Brandon Butler",
         "manual",
@@ -164,7 +164,7 @@ latex_documents = [
 man_pages = [
     (
         master_doc,
-        "event_detection",
+        "dupin",
         "event-detection Documentation",
         [author],
         1,
@@ -180,10 +180,10 @@ man_pages = [
 texinfo_documents = [
     (
         master_doc,
-        "event_detection",
+        "dupin",
         "event-detection Documentation",
         author,
-        "event_detection",
+        "dupin",
         "One line description of project.",
         "Miscellaneous",
     ),

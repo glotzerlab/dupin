@@ -1,9 +1,9 @@
-event_detection.data.base
+dupin.data.base
 -------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data.base
+.. py:currentmodule:: dupin.data.base
 
 .. autosummary::
     :nosignatures:
@@ -15,7 +15,7 @@ event_detection.data.base
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data.base
+.. automodule:: dupin.data.base
     :synopsis: Base classes for data generation and manipulation.
     :members: DataMap,
         DataReducer,

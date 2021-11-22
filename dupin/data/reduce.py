@@ -157,7 +157,7 @@ class Tee(base.DataReducer):
 
         Parameters
         ----------
-        logger: event_detection.data.logging.Logger
+        logger: dupin.data.logging.Logger
             A logger object to store data from the data pipeline for individual
             elements of the composed maps.
         """

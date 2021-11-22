@@ -58,7 +58,7 @@ class Tee(base.DataMap):
             A sequence of callables that take a generator like object and
             returns a data map. Using the ``wraps`` class method with a
             `DataMap` subclass is a useful combination.
-        logger: event_detection.data.logging.Logger
+        logger: dupin.data.logging.Logger
             A logger object to store data from the data pipeline for individual
             elements of the composed maps.
         """
@@ -85,7 +85,7 @@ class Tee(base.DataMap):
 
         Parameters
         ----------
-        logger: event_detection.data.logging.Logger
+        logger: dupin.data.logging.Logger
             A logger object to store data from the data pipeline for individual
             elements of the composed maps.
         """

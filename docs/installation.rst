@@ -14,13 +14,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/b-butler/event_detection
+    $ git clone git://github.com/b-butler/dupin
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/b-butler/event_detection/tarball/master
+    $ curl -OJL https://github.com/b-butler/dupin/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -29,8 +29,8 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/b-butler/event_detection
-.. _tarball: https://github.com/b-butler/event_detection/tarball/master
+.. _Github repo: https://github.com/b-butler/dupin
+.. _tarball: https://github.com/b-butler/dupin/tarball/master
 
 
 Building Documentation

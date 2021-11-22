@@ -1,9 +1,9 @@
-event_detection.preprocessing.signal
+dupin.preprocessing.signal
 ------------------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.preprocessing.signal
+.. py:currentmodule:: dupin.preprocessing.signal
 
 .. autosummary::
     :nosignatures:
@@ -13,7 +13,7 @@ event_detection.preprocessing.signal
 
 .. rubric:: Details
 
-.. automodule:: event_detection.preprocessing.signal
+.. automodule:: dupin.preprocessing.signal
     :synopsis: Functions for transforming feature signals across time.
     :members: fft_smoothing,
         moving_average

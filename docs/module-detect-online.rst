@@ -1,11 +1,11 @@
-event_detection.detect.online
+dupin.detect.online
 -----------------------------
 
 **This module is not currently working.**
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.detect.online
+.. py:currentmodule:: dupin.detect.online
 
 .. autosummary::
     :nosignatures:
@@ -16,7 +16,7 @@ event_detection.detect.online
 
 .. rubric:: Details
 
-.. automodule:: event_detection.detect.online
+.. automodule:: dupin.detect.online
     :synopsis: Methods and classes for offline change point detection.
     :members: Detector,
         DetectorStatus,

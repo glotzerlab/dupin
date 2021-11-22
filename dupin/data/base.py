@@ -15,7 +15,7 @@ GeneratorLike = Union[
     typing.Callable[..., Dict[str, Union[float, npt.ArrayLike]]],
 ]
 GeneratorLike.__doc__ = """
-A type hint for objects that act like data generators for event_detection.
+A type hint for objects that act like data generators for dupin.
 
 The object can either be a `Generator`, `DataMap`, or callable with the
 appropriate return value.
@@ -32,11 +32,11 @@ class PipeComponent:
     def pipe(self, next_):
         """Add a step after current one in the data pipeline.
 
-        Expects the output of `event_detection.data.base.DataModifier.wraps`.
+        Expects the output of `dupin.data.base.DataModifier.wraps`.
 
         Parameters
         ----------
-        next_: event_detection.data.base.PreparedPipeComponent
+        next_: dupin.data.base.PreparedPipeComponent
             The next step in the data pipeline. To get such an object use
             `DataModifier.wraps`.
 
@@ -63,10 +63,10 @@ class PipeComponent:
 
         Parameters
         ----------
-            map_: event_detection.data.base.PreparedPipeComponent \
+            map_: dupin.data.base.PreparedPipeComponent \
                     or callable[numpy.ndarray, dict[str, numpy.ndarray]]:
                 The next step in the data pipeline. Can be a custom callable
-                mapping function or an ``event_detection`` any of the built in
+                mapping function or an ``dupin`` any of the built in
                 mapping operations through `DataMap.wraps`.
 
         Returns
@@ -94,10 +94,10 @@ class PipeComponent:
 
         Parameters
         ----------
-            reduce_: event_detection.data.base.PreparedPipeComponent \
+            reduce_: dupin.data.base.PreparedPipeComponent \
                     or callable[numpy.ndarray, dict[str, float]]
                 The next step in the data pipeline. Can be a custom callable
-                reducing function or an ``event_detection`` any of the built in
+                reducing function or an ``dupin`` any of the built in
                 reducing operations through `DataReducer.wraps`.
 
         Returns
@@ -209,7 +209,7 @@ class DataModifier(Callable):
 
         Parameters
         ----------
-        logger: event_detection.data.logging.Logger
+        logger: dupin.data.logging.Logger
             A logger object to store data from the data pipeline for individual
             elements of the composed maps.
         """
@@ -330,7 +330,7 @@ class Generator(Callable, PipeComponent):
 
         Parameters
         ----------
-        logger: event_detection.data.logging.Logger
+        logger: dupin.data.logging.Logger
             A logger object to store data from the data pipeline for individual
             elements of the composed maps.
         """

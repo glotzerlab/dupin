@@ -1,11 +1,11 @@
-"""Interface from freud to event_detection."""
+"""Interface from freud to dupin."""
 
 from collections.abc import Sequence
 from typing import Any, Dict, List, Union
 
 import numpy.typing as npt
 
-import event_detection.errors as error
+import dupin.errors as error
 
 from . import base
 
@@ -17,7 +17,7 @@ except ImportError:
 
 
 class FreudDescriptor(base.Generator):
-    """Defines the interface between freud and event_detection."""
+    """Defines the interface between freud and dupin."""
 
     _prepend_compute_docstring = "The composed docstring is below."
 

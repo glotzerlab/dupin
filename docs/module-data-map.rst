@@ -1,9 +1,9 @@
-event_detection.data.map
+dupin.data.map
 -------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data.map
+.. py:currentmodule:: dupin.data.map
 
 .. autosummary::
     :nosignatures:
@@ -13,7 +13,7 @@ event_detection.data.map
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data.map
+.. automodule:: dupin.data.map
     :synopsis: Classes for modifying distributions.
     :members: Identity,
         Tee

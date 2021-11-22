@@ -1,9 +1,9 @@
-event_detection.data.freud
+dupin.data.freud
 --------------------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: event_detection.data.freud
+.. py:currentmodule:: dupin.data.freud
 
 .. autosummary::
     :nosignatures:
@@ -12,6 +12,6 @@ event_detection.data.freud
 
 .. rubric:: Details
 
-.. automodule:: event_detection.data.freud
-    :synopsis: Helper classes/functions for working with freud in ``event_detection``.
+.. automodule:: dupin.data.freud
+    :synopsis: Helper classes/functions for working with freud in ``dupin``.
     :members: FreudDescriptor
