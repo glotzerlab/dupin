@@ -5,87 +5,186 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import scipy as sp
+import scipy.stats
 
 import dupin.preprocessing
 
 
-def compute_features_in_event(
-    signal, change_points, sample_size, sensitivity, extend_small_regions=True
-):
-    """Compute the participating features within a pair of change points.
+def _ipairs(sequence, n=2):
+    yield from zip(sequence, *[sequence[i:] for i in range(1, n)])
 
-    Warning:
-        This function is designed to work with a linear cost function, and
-        assumes change points denote differences in linear signals (e.g. not
-        mean-shift signals).
 
-    Internally this function uses
-    `dupin.preprocessing.filter.mean_shift`.
+class EventFeatures:
+    """Finds features out of a signal that constitute changes.
 
-    Parameters
-    ----------
-    signal: :math:`(N_{samples}, N_{features})` numpy.ndarray of float
-        The signal the change points are from.
-    change_points: list[int]
-        A list of all interior change points (beginning and end of signal not
-        included).
-    sample_size: float or int, optional
-        Either the fraction of the overall signal to use to evaluate the
-        statistics of each end of all subsignals defined by the change points,
-        or the number of data points to use on each end of the signal for
-        statistics. Default to 0.1. If this would result in less than three data
-        points, three will be used.
-    sensitivity: float, optional
-        The minimum likelihood that one of the signal's end's mean is drawn from
-        the Gaussian approximation of the other end to require. In other words,
-        the lower the number the increased probability that the difference in
-        means is not random. Defaults to 0.01.
-    extend_small_regions: bool, optional
-        Whether to augment small regions (length less than 6) with previous and
-        following segment (if available) to allow for analysis of them.
-        Defaults to ``True``.
-
-    Returns
-    -------
-    participating_features: list [`numpy.ndarray` of float]
-        Returns a list of Boolean arrays that filter the original data into
-        participating features during each interval. A value of ``None`` is used
-        for all intervals that are too small to analyze.
+    The class provides multiple methods for detecting features that explain a
+    particular partitioning of space.
     """
-    augmented_change_points = [0] + change_points + [len(signal)]
-    participating_features = []
 
-    def extend_region(beg, end):
-        needed_extension = 7 - (end - beg)
-        if needed_extension <= 0:
+    def __init__(self, signal, change_points):
+        """Create a `EventFeatures` object.
+
+        Parameters
+        ----------
+        signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+            The signal to find features from.
+        change_points: list[int]
+            The change points associated with the signal.
+        """
+        self._signal = signal
+        self._change_points = [0] + change_points + [len(self._signal)]
+
+    def linear(self, sample_size, sensitivity, extend_small_regions=True):
+        """Find features that change between a pair of change points.
+
+        Warning:
+            This function is designed to events that involve changes within
+            pairs of change points. This will not detect mean shift events.
+
+        Internally this function uses `dupin.preprocessing.filter.MeanShift`.
+
+        Parameters
+        ----------
+        signal: :math:`(N_{samples}, N_{features})` numpy.ndarray of float
+            The signal the change points are from.
+        change_points: list[int]
+            A list of all interior change points (beginning and end of signal
+            not included).
+        sample_size: float or int, optional
+            Either the fraction of the overall signal to use to evaluate the
+            statistics of each end of all subsignals defined by the change
+            points, or the number of data points to use on each end of the
+            signal for statistics. Default to 0.1. If this would result in less
+            than three data points, three will be used.
+        sensitivity: float, optional
+            The minimum likelihood that one of the signal's end's mean is drawn
+            from the Gaussian approximation of the other end to require. In
+            other words, the lower the number the increased probability that the
+            difference in means is not random.
+        extend_small_regions: bool, optional
+            Whether to augment small regions (length less than 6) with previous
+            and following segment (if available) to allow for analysis of them.
+            Defaults to ``True``.
+
+        Returns
+        -------
+        features: list [`numpy.ndarray` of float]
+            Returns a list of Boolean arrays that filter the original data into
+            participating features during each interval. A value of ``None`` is
+            used for all intervals that are too small to analyze.
+        """
+
+        def extend_region(beg, end):
+            needed_extension = 7 - (end - beg)
+            if needed_extension <= 0:
+                return beg, end
+
+            if beg > 0:
+                beg = max(0, beg - needed_extension // 2)
+            new_extension = 7 - (end - beg)
+            if end < len(self._signal):
+                end = min(len(self._signal), end + new_extension)
+            if end - beg < 7:
+                warnings.warn(
+                    "Subsignal could not be extended enough for analysis."
+                )
             return beg, end
 
-        if beg > 0:
-            beg = max(0, beg - needed_extension // 2)
-        new_extension = 7 - (end - beg)
-        if end < len(signal):
-            end = min(len(signal), end + new_extension)
-        if end - beg < 7:
-            warnings.warn(
-                "Subsignal could not be extended enough for analysis."
-            )
-        return beg, end
+        mean_shift = dupin.preprocessing.filter.MeanShift(sensitivity)
 
-    for beg, end in zip(augmented_change_points, augmented_change_points[1:]):
-        if extend_small_regions:
-            print(beg, end)
-            beg, end = extend_region(beg, end)
-            print(beg, end)
-        try:
-            section_features = dupin.preprocessing.filter.mean_shift(
-                signal[beg:end], sample_size, sensitivity, return_filter=True
+        features = []
+        for beg, end in _ipairs(self._change_points):
+            if extend_small_regions:
+                beg, end = extend_region(beg, end)
+            if end - beg < 7:
+                features.append(None)
+                continue
+
+            features.append(
+                mean_shift(
+                    self._signal[beg:end], sample_size, return_filter=True
+                )
             )
-        # If signal is too small, then we just append None as an indicator.
-        except ValueError:
-            participating_features.append(None)
-        else:
-            participating_features.append(section_features)
-    return participating_features
+        return features
+
+    def mean_shift(self, sensitivity=0.01):
+        """Find features that have a shift in mean between change points.
+
+        Parameters
+        ----------
+        sensitivity: float, optional
+            The minimum likelihood that one of the mean of one section is drawn
+            from the Gaussian approximation of the other section. In
+            other words, the lower the number the increased probability that the
+            difference in means is not random. Defaults to 0.01.
+
+        Returns
+        -------
+        features: list [`numpy.ndarray` of float]
+            Returns a list of Boolean arrays that filter the original data into
+            participating features during each interval. A value of ``None`` is
+            used for all change_points that are too small to analyze.
+        """
+        features = []
+        for beg, mid, end in _ipairs(self._change_points, 3):
+            if mid - beg < 3 or end - mid < 3:
+                features.append(None)
+                continue
+            likelihoods = dupin.preprocessing.filter.MeanShift._get_likelihood(
+                dupin.preprocessing.filter.MeanShift._get_mean_shift_std(
+                    self._signal[beg:mid, :], self._signal[mid:end, :]
+                )
+            )
+            features.append(likelihoods < sensitivity)
+        return features
+
+    def inter_linear(self, threshold=0.1):
+        """Find features that have a shift in linear fit between change points.
+
+        The method searches for any features whose fitted slope and intercept
+        change above ``threshold`` between change points.
+
+        Parameters
+        ----------
+        threshold: float, optional
+            The percentile change between change points to indicate that a
+            feature changes between change points. Defaults to 0.1.
+
+        Returns
+        -------
+        features: list [`numpy.ndarray` of float]
+            Returns a list of Boolean arrays that filter the original data into
+            participating features during each interval. A value of ``None`` is
+            used for all change_points that are too small to analyze.
+        """
+
+        def get_line_features(start, end):
+            m = np.empty(self._signal.shape[1])
+            b = np.empty(self._signal.shape[1])
+            for i in range(self._signal.shape[1]):
+                line = sp.stats.linregress(
+                    np.arange(start, end), self._signal[start:end, i]
+                )
+                m[i] = line.slope
+                b[i] = line.intercept
+            return m, b
+
+        def max_percent_diff(a, b):
+            abs_diff = np.abs(b - a)
+            return abs_diff / np.maximum(a, b)
+
+        features = []
+        for beg, mid, end in _ipairs(self._change_points, 3):
+            m1, b1 = get_line_features(beg, mid)
+            m2, b2 = get_line_features(mid, end)
+            percentile_m_shift = max_percent_diff(m1, m2)
+            percentile_b_shift = max_percent_diff(b1, b2)
+            features.append(
+                (percentile_m_shift > threshold)
+                | (percentile_b_shift > threshold)
+            )
+        return features
 
 
 def retrieve_positions(log_df, trajectory):
