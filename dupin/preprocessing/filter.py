@@ -397,7 +397,7 @@ def local_smoothness_importance(
         features. A higher ranking indicates that the fit was better.
     """
     x = np.arange(signal.shape[0])
-    spacing = dim + int(np.round(dim / 2)) if spacing is None else dim + spacing
+    spacing = dim + int(np.ceil(dim / 2)) if spacing is None else dim + spacing
     beg = dim + 2
     start, end = (x[0],) * (dim + 1), (x[-1],) * (dim + 1)
     knots = np.r_[start, x[beg:-beg:spacing], end]
