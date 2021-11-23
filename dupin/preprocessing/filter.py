@@ -425,7 +425,7 @@ def mean_shift_importance(likelihoods: np.ndarray) -> np.ndarray:
 
 
 def noise_importance(signal: np.ndarray, window_size: int) -> np.ndarray:
-    """Rank features based on how well a spaced LSQ spline fits the feature.
+    """Rank features based on how standard deviation compares to the mean.
 
     Uses the rolling standard deviation over mean ignoring a mean of zero.
 
