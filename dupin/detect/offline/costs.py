@@ -37,7 +37,7 @@ class CostLinearFit(rpt.base.BaseCost):
         """Create a CostLinearFit object."""
         if metric not in self._metrics:
             raise ValueError(f"Available metrics are {self._metrics}.")
-        self._metric = "_" + metric
+        self._metric = getattr(self, "_" + metric)
 
     def _compute_cumsum(self, arr: np.ndarray):
         """Compute a cumulative sum for use in computing partial sums.
@@ -69,10 +69,8 @@ class CostLinearFit(rpt.base.BaseCost):
     def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
         m, b = self._get_regression(start, end)
-        self._m = m
-        self._b = b
         predicted_y = m * self._x[start:end, None] + b
-        return getattr(self, self._metric)(self._y[start:end, :], predicted_y)
+        return self._metric(self._y[start:end, :], predicted_y)
 
     def _get_regression(self, start: int, end: int):
         """Compute a least squared regression on each dimension.
