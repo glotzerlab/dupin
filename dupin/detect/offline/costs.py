@@ -2,7 +2,6 @@
 
 import numpy as np
 import ruptures as rpt
-import scipy as sp
 from sklearn import preprocessing
 
 
@@ -40,26 +39,57 @@ class CostLinearFit(rpt.base.BaseCost):
             raise ValueError(f"Available metrics are {self._metrics}.")
         self._metric = "_" + metric
 
+    def _compute_cumsum(self, arr: np.ndarray):
+        """Compute a cumulative sum for use in computing partial sums.
+
+        Only works for 1 or 2D arrays.
+        """
+        if arr.ndim > 1:
+            shape = arr.shape[:-1] + (arr.shape[-1] + 1,)
+        else:
+            shape = len(arr) + 1
+        out = np.empty(shape)
+        out[..., 0] = 0
+        np.cumsum(arr, out=out[..., 1:], axis=arr.ndim - 1)
+        return out
+
     def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
         if len(signal.shape) == 1:
             signal = signal.reshape((-1, 1))
-        signal = preprocessing.MinMaxScaler().fit_transform(signal)
-        self._signal = np.ascontiguousarray(signal.T)
-        self._x = np.linspace(0, 1, self._signal.shape[1], dtype=float)
+        y = preprocessing.MinMaxScaler().fit_transform(signal)
+        self._y = y
+        self._x = np.linspace(0, 1, len(y), dtype=float)
+        self._x_cumsum = self._compute_cumsum(self._x)
+        self._x_sq_cumsum = self._compute_cumsum(self._x ** 2)
+        y_T = y.T
+        self._xy_cumsum = self._compute_cumsum(self._x[None, :] * y_T)
+        self._y_cumsum = self._compute_cumsum(y_T)
 
     def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
-        return sum(self._individual_errors(start, end))
+        m, b = self._get_regression(start, end)
+        self._m = m
+        self._b = b
+        predicted_y = m * self._x[start:end, None] + b
+        return getattr(self, self._metric)(self._y[start:end, :], predicted_y)
 
-    def _individual_errors(self, start: int, end: int):
-        errors = []
-        x = self._x[start:end]
-        for y in self._signal[:, start:end]:
-            regression = sp.stats.linregress(x, y)
-            predicted_y = regression.slope * x + regression.intercept
-            errors.append(getattr(self, self._metric)(y, predicted_y))
-        return errors
+    def _get_regression(self, start: int, end: int):
+        """Compute a least squared regression on each dimension.
+
+        Though never explicitly done the computations follow an X martix with a
+        1 vector prepended to allow for a non-zero intercept.
+        """
+        # Given their off by one nature no offset for computing the partial sum
+        # in needed.
+        sum_x = self._x_cumsum[end] - self._x_cumsum[start]
+        sum_x_sq = self._x_sq_cumsum[end] - self._x_sq_cumsum[start]
+        sum_xy = self._xy_cumsum[:, end] - self._xy_cumsum[:, start]
+        sum_y = self._y_cumsum[:, end] - self._y_cumsum[:, start]
+        N = end - start
+        m = (N * sum_xy - (sum_x * sum_y)) / (N * sum_x_sq - (sum_x * sum_x))
+        b = (sum_y - (m * sum_x)) / N
+        return m, b
 
     @staticmethod
     def _l1(y: np.ndarray, predicted_y: np.ndarray):
@@ -73,11 +103,39 @@ class CostLinearFit(rpt.base.BaseCost):
     def signal(self) -> np.ndarray:
         """numpy.ndarray: Required by Ruptures to exist in \
                 (N_samples, N_dimensions)."""
-        return self._signal.T
+        return self._y
 
 
 class CostLinearBiasedFit(CostLinearFit):
     """Compute a start to end linear fit and pentalize error and bias."""
+
+    model = "linear_regression"
+    min_size = 3
+    _metrics = {"l1", "l2"}
+
+    def __init__(self, metric="l1"):
+        """Create a CostLinearFit object."""
+        if metric not in self._metrics:
+            raise ValueError(f"Available metrics are {self._metrics}.")
+        self._metric = "_" + metric
+
+    def fit(self, signal: np.ndarray):
+        """Store signal and compute base errors for later cost checking."""
+        if len(signal.shape) == 1:
+            signal = signal.reshape((-1, 1))
+        signal = preprocessing.MinMaxScaler().fit_transform(signal)
+        self._signal = np.ascontiguousarray(signal.T)
+        self._x = np.linspace(0, 1, self._signal.shape[1], dtype=float)
+
+    def error(self, start: int, end: int):
+        """Return the cost for signal[start:end]."""
+        return sum(self._individual_errors(start, end))
+
+    @property
+    def signal(self) -> np.ndarray:
+        """numpy.ndarray: Required by Ruptures to exist in \
+                (N_samples, N_dimensions)."""
+        return self._signal.T
 
     def _individual_errors(self, start: int, end: int):
         errors = []
