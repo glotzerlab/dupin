@@ -57,20 +57,19 @@ class CostLinearFit(rpt.base.BaseCost):
         """Store signal and compute base errors for later cost checking."""
         if len(signal.shape) == 1:
             signal = signal.reshape((-1, 1))
-        y = preprocessing.MinMaxScaler().fit_transform(signal)
+        y = preprocessing.MinMaxScaler().fit_transform(signal).T
         self._y = y
-        self._x = np.linspace(0, 1, len(y), dtype=float)
+        self._x = np.linspace(0, 1, y.shape[1], dtype=float)
         self._x_cumsum = self._compute_cumsum(self._x)
         self._x_sq_cumsum = self._compute_cumsum(self._x ** 2)
-        y_T = y.T
-        self._xy_cumsum = self._compute_cumsum(self._x[None, :] * y_T)
-        self._y_cumsum = self._compute_cumsum(y_T)
+        self._xy_cumsum = self._compute_cumsum(self._x[None, :] * y)
+        self._y_cumsum = self._compute_cumsum(y)
 
     def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
         m, b = self._get_regression(start, end)
-        predicted_y = m * self._x[start:end, None] + b
-        return self._metric(self._y[start:end, :], predicted_y)
+        predicted_y = m[:, None] * self._x[None, start:end] + b[:, None]
+        return self._metric(self._y[:, start:end], predicted_y)
 
     def _get_regression(self, start: int, end: int):
         """Compute a least squared regression on each dimension.
@@ -101,7 +100,7 @@ class CostLinearFit(rpt.base.BaseCost):
     def signal(self) -> np.ndarray:
         """numpy.ndarray: Required by Ruptures to exist in \
                 (N_samples, N_dimensions)."""
-        return self._y
+        return self._y.T
 
 
 class CostLinearBiasedFit(CostLinearFit):
