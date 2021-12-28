@@ -235,6 +235,13 @@ class Correlated:
             array filtering features is returned.
         """
         _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
+        if signal.shape[1] <= 2:
+            self.labels_ = np.array([0, 1])
+            self.scores_ = np.array([np.nan])
+            self.n_clusters_ = 2
+            if return_filter:
+                return np.ones(2, dtype=bool)
+            return np.copy(signal)
 
         sim_matrix, dist_matrix = self._get_similiarity_matrix(signal)
         isolated, connected = self._get_isolated(sim_matrix)
@@ -354,7 +361,9 @@ class Correlated:
     ) -> None:
         cluster_ids = []
         scores = []
-        for n_clusters in range(2, self.max_clusters + 1):
+        for n_clusters in range(
+            2, max(len(sim_matrix) - 1, self.max_clusters + 1)
+        ):
             labels, score = self._compute_clusters(
                 n_clusters, sim_matrix, dist_matrix
             )
