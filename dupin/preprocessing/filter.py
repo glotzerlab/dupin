@@ -379,6 +379,8 @@ class Correlated:
 
 def _to_unit_len(arr):
     min_, max_ = arr.min(), arr.max()
+    if min_ == max_:
+        return np.zeros_like(arr)
     return (arr - min_) / (max_ - min_)
 
 
