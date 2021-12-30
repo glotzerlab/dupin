@@ -9,12 +9,13 @@ from . import base
 
 @numba.njit
 def _freud_neighbor_summing(
-    arr: np.ndarray, particle_index: np.ndarray, neighbor_index: np.ndarray
+    arr: np.ndarray,
+    particle_index: np.ndarray,
+    neighbor_index: np.ndarray,
+    base: np.ndarray,
 ) -> np.ndarray:
-    summed_array = np.zeros(arr.shape)
     for i, j in zip(particle_index, neighbor_index):
-        summed_array[i] += arr[j]
-    return summed_array
+        base[i] += arr[j]
 
 
 class NeighborAveraging(base.DataMap):
@@ -24,8 +25,11 @@ class NeighborAveraging(base.DataMap):
     passed in manually in :math:`(i, j)` pairs through a tuple of arrays or
     through a freud neighbor list.
 
-    In general, you should not exclude self-neighbors as this will make the
-    averaging not include the central particle in the averaging.
+    Warning:
+        The correct setting of ``exclude_ii`` is important for correct results.
+        The original particle's data should be included once in the averaging.
+        Incorrect setting can lead to the original data not being included at
+        all or twice.
 
     Note:
         This class does not support wrapping the call signature of the composed
@@ -37,6 +41,7 @@ class NeighborAveraging(base.DataMap):
         generator: base.GeneratorLike,
         expected_kwarg: str = "spatial_neighbors",
         remove_kwarg: bool = True,
+        exclude_ii: bool = True,
     ):
         """Create a `NeighborAveraging` object.
 
@@ -50,9 +55,14 @@ class NeighborAveraging(base.DataMap):
         remove_kwargs: bool, optional
             Whether the specified ``expected_kwarg`` should be removed before
             passing through to the composed generators.
+        exclude_ii: bool, optional
+            Whether the passed neighbor list will excludes ``ii`` interactions.
+            Defaults to ``True``. If set incorrectly this will cause erroneous
+            results.
         """
         self._expected_kwarg = expected_kwarg
         self._remove_kwarg = remove_kwarg
+        self._exclude_ii = exclude_ii
         super().__init__(generator)
 
     def update(self, args, kwargs):
@@ -61,7 +71,21 @@ class NeighborAveraging(base.DataMap):
         The call signature is the same as the composed generator with the
         addition of the ``expected_kwarg``.
         """
-        self._current_neighbors = kwargs[self._expected_kwarg]
+        nlist = kwargs[self._expected_kwarg]
+        if isinstance(nlist, tuple):
+            i_index, j_index = self._current_neighbors
+            counts = np.unique(i_index, return_counts=True)[1]
+        # Assume freud nlist
+        else:
+            i_index = nlist.point_indices
+            j_index = nlist.query_point_indices
+            counts = np.copy(nlist.neighbor_counts)
+
+        if self._exclude_ii:
+            counts += 1
+        self._i_index = i_index
+        self._j_index = j_index
+        self._counts = counts
         if self._remove_kwarg:
             del kwargs[self._expected_kwarg]
         return args, kwargs
@@ -80,14 +104,11 @@ class NeighborAveraging(base.DataMap):
             A dictionary with the key "spatially_averaged" and spatially
             averaged distribution as a value.
         """
-        if isinstance(self._current_neighbors, tuple):
-            i_index, j_index = self._current_neighbors
-        # Assume freud nlist
+        if self._exclude_ii:
+            averaged_data = np.copy(data)
         else:
-            i_index = self._current_neighbors.point_indices
-            j_index = self._current_neighbors.query_point_indices
-        return {
-            "spatially_averaged": _freud_neighbor_summing(
-                data, i_index, j_index
-            )
-        }
+            averaged_data = np.zeros(data.shape)
+        _freud_neighbor_summing(
+            data, self._i_index, self._j_index, averaged_data
+        )
+        return {"spatially_averaged": averaged_data / self._counts}
