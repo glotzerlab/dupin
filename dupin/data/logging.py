@@ -12,11 +12,15 @@ class Logger:
         self._data = []
         self._current_frame = {}
         self._current_context = None
+        self._current_key = None
 
     def set_context(self, key):
         """Set the current distribution to store information on."""
-        self._current_frame.setdefault(key, {})
-        self._current_context = self._current_frame[key]
+        # is not none or empty
+        if self._current_context:
+            self._current_frame[self._context_key] = self._current_context
+        self._current_context = {}
+        self._context_key = key
 
     def __setitem__(self, key, value):
         """Internally store information from data pipeline."""
@@ -24,6 +28,9 @@ class Logger:
 
     def end_frame(self):
         """End the current frame of data. Allows separate by time of data."""
+        # is not none or empty
+        if self._current_context:
+            self._current_frame[self._context_key] = self._current_context
         self._data.append(self._current_frame)
         self._current_frame = {}
 
