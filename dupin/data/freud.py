@@ -42,12 +42,14 @@ class FreudDescriptor(base.Generator):
             The method name to use for computing the attrs specified. Defaults
             to "compute".
         """
+        if not hasattr(compute, compute_method):
+            raise ValueError("compute_method must exist for the compute.")
         self.compute = compute
         if isinstance(attrs, str):
             attrs = {attrs: attrs}
         elif isinstance(attrs, Sequence):
             attrs = {attr: attr for attr in attrs}
-        self.attrs = attrs
+        self.attrs = self._convert_attrs(attrs)
         self.compute_method = compute_method
 
     def __call__(
@@ -81,3 +83,20 @@ class FreudDescriptor(base.Generator):
             else:
                 collected_data[name] = datum
         return collected_data
+
+    def _convert_attrs(self, attrs):
+        if isinstance(attrs, str):
+            return {attrs: attrs}
+        elif isinstance(attrs, Sequence):
+            return {attr: attr for attr in attrs}
+        elif isinstance(attrs, dict):
+            if not all(
+                isinstance(v, (type(None), str, Sequence))
+                for v in attrs.values()
+            ):
+                raise ValueError("Improper specification of compute attributes")
+            return attrs
+        raise TypeError(
+            "attrs must be a str, list of strings, or dict of string values "
+            "and keys"
+        )
