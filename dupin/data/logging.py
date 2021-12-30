@@ -35,7 +35,7 @@ class Logger:
         self._current_frame = {}
 
     @property
-    def frame(self):
+    def frames(self):
         """`list` [`dict`]: Assess a particular frame of data."""
         return self._data
 
