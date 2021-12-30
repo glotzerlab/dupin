@@ -21,7 +21,7 @@ class Identity(base.DataMap):
         generator: generator_like
             A generator like object to reduce.
         """
-        self._generator = generator
+        super().__init__(generator)
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
         """Do nothing to the base distribution.
