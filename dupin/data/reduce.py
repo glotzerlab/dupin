@@ -87,11 +87,11 @@ class NthGreatest(base.DataReducer):
         sorted_indices = np.argsort(distribution)
         if self._logger is not None:
             self._logger["NthGreatest"] = {
-                name: sorted_indices[-index]
+                name: sorted_indices[index]
                 for index, name in zip(self._indices, self._names)
             }
         return {
-            name: distribution[sorted_indices[-index]]
+            name: distribution[sorted_indices[index]]
             for index, name in zip(self._indices, self._names)
         }
 
