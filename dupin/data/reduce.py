@@ -47,11 +47,11 @@ class Percentile(base.DataReducer):
         }
 
     def _get_indices(self, distribution_size):
+        """Map to percentiles to [0, len - 1]."""
         return np.round(
-            np.array(self._percentiles) / 100 * distribution_size,
+            np.array(self._percentiles) / 100 * (distribution_size - 1),
             decimals=0,
-            dtype=int,
-        )
+        ).astype(int)
 
 
 class NthGreatest(base.DataReducer):
