@@ -111,7 +111,7 @@ class PipeComponent:
             else:
                 raise ValueError("Expected output of DataReduce.wraps().")
         elif callable(reduce_):
-            return CustomReduce(self, reduce_)
+            return CustomReducer(self, reduce_)
         else:
             raise ValueError(
                 "Expected a callable or the output of DataReduce.wraps()"
@@ -376,7 +376,7 @@ class CustomMap(DataMap):
         return self.function(data)
 
 
-class CustomReduce(DataReducer):
+class CustomReducer(DataReducer):
     """Wrap a custom reducing callable.
 
     Attributes
@@ -390,7 +390,7 @@ class CustomReduce(DataReducer):
         generator: GeneratorLike,
         custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
     ):
-        """Create a `CustomReduce` object.
+        """Create a `CustomReducer` object.
 
         Parameters
         ----------
