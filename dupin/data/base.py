@@ -368,7 +368,7 @@ class CustomMap(DataMap):
             dictionary with keys indicating the tranformation and values the
             transformed distribution (array).
         """
-        self._generator = generator
+        super().__init__(generator)
         self.function = custom_function
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
@@ -401,7 +401,7 @@ class CustomReduce(DataReducer):
             dictionary with keys indicating the reduction and values the reduced
             distribution value.
         """
-        self._generator = generator
+        super().__init__(generator)
         self.function = custom_function
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
