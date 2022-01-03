@@ -108,3 +108,6 @@ class Tee(base.DataMap):
             # function (e.g. custom map function).
             except AttributeError:
                 pass
+
+
+CustomMap = base.CustomMap

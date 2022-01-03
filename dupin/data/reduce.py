@@ -180,3 +180,6 @@ class Tee(base.DataReducer):
             # function (e.g. custom reducer function).
             except AttributeError:
                 pass
+
+
+CustomReducer = base.CustomReducer
