@@ -4,6 +4,8 @@
 be used to transform data in numerous ways.
 """
 
+from typing import Any
+
 import bottleneck as bn
 import numpy as np
 import scipy as sp
@@ -43,20 +45,36 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
 
 
 def fft_smoothing(
-    y: np.ndarray, cut_off_percentage: float = 0.05
+    y: np.ndarray,
+    max_frequency: float,
+    sampling_frequency: float,
+    **kwargs: Any
 ) -> np.ndarray:
-    """Smooth out the least contributing frequencies of a signal.
+    r"""Smooth out the highest frequencies of a signal.
 
     Parameters
     ----------
     y: :math:`(N, M)` numpy.ndarray of float
         The signal to remove low contributing frequencies from. The FFT is
         performed on the first dimension.
-    cut_off_percentage: float, optional
-        The fraction of the maximum signal in the FFT below which the signal
-        should be zeroed out.
+    max_frequency: float
+        The maximum frequency in the signal to allow. The unit for frequency
+        must be consistent with ``sampling_frequency``.
+    sampling_frequency: float
+        The sampling frequency. The unit for frequency must be consistent with
+        ``max_frequency``.
+    \*\*kwargs:
+        Key word arguments to pass to `scipy.signal.ellip`.
     """
-    w = sp.fft.rfft(y, axis=0)
-    spectrum = w ** 2
-    w[spectrum < (cut_off_percentage * spectrum.max(axis=0))] = 0
-    return sp.fft.irfft(w, len(y), axis=0)
+    ellip_kwargs = {
+        "N": 8,
+        "rp": 1,
+        "rs": 100,
+        "Wn": max_frequency,
+        "fs": sampling_frequency,
+        "btype": "lowpass",
+        "output": "sos",
+    }
+    ellip_kwargs.update(kwargs)
+    sos = sp.signal.ellip(**ellip_kwargs)
+    return sp.signal.sosfilt(sos, y)
