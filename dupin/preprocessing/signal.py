@@ -4,6 +4,7 @@
 be used to transform data in numerous ways.
 """
 
+import bottleneck as bn
 import numpy as np
 import scipy as sp
 
@@ -17,21 +18,27 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
 
     Parameters
     ----------
-    y : input array to smooth.
+    y : np.ndarray
+        input array to smooth.
     span : int, optional
+        The window size to compute the moving mean over. Defaults to 1 which
+        does nothing.
 
     Returns
     -------
     smoothed_array: np.ndarray
     """
-    cumulative_sum = np.cumsum(y, axis=0)
+    if span % 2 == 0:
+        raise ValueError("The window span must be an odd number.")
+    if span == 1:
+        return np.copy(y)
+
+    half_span = span // 2
     average = np.empty(y.shape, dtype=y.dtype)
-    average[span:-span] = (
-        cumulative_sum[2 * span :] - cumulative_sum[: -2 * span]
-    ) / (2 * span)
-    for i in range(span):
-        average[i] = np.average(y[: span + i], axis=0)
-        average[-(i + 1)] = np.average(y[-(span + i) :], axis=0)
+    average[half_span:-half_span] = bn.move_mean(y, span)[2 * half_span :]
+    for i in range(half_span):
+        average[i] = np.mean(y[: half_span + i + 1], axis=0)
+        average[-(i + 1)] = np.mean(y[-(half_span + i + 1) :], axis=0)
     return average
 
 
