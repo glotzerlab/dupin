@@ -361,9 +361,7 @@ class Correlated:
     ) -> None:
         cluster_ids = []
         scores = []
-        for n_clusters in range(
-            2, max(len(sim_matrix) - 1, self.max_clusters + 1)
-        ):
+        for n_clusters in range(2, min(len(sim_matrix), self.max_clusters + 1)):
             labels, score = self._compute_clusters(
                 n_clusters, sim_matrix, dist_matrix
             )
