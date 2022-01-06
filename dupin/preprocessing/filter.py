@@ -170,6 +170,9 @@ class Correlated:
         The array of features selected.
     """
 
+    _methods = {"spectral"}
+    _correlations = {"pearson"}
+
     def __init__(
         self,
         method: str = "spectral",
@@ -197,8 +200,20 @@ class Correlated:
         method_kwargs: dict[str, ``any``], optional
             Any keyword arguments to pass to the selected method's construction.
         """
+        if method not in self._methods:
+            raise ValueError(
+                f"Unsupported method {method}. Supported options "
+                f"{self._methods}"
+            )
         self.method = method
+        if correlation not in self._correlations:
+            raise ValueError(
+                f"Unsupported correlation option {correlation}. Supported "
+                f"options {self._correlations}"
+            )
         self.correlation = correlation
+        if max_clusters < 2:
+            raise ValueError("Max clusters must be greater than 1.")
         self.max_clusters = max_clusters
         self._method_args = method_args
         self._method_kwargs = {} if method_kwargs is None else method_kwargs
@@ -235,6 +250,8 @@ class Correlated:
             array filtering features is returned.
         """
         _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
+        if features_per_cluster < 1:
+            raise ValueError("features_per_cluster must be 1 or greater.")
         if signal.shape[1] <= 2:
             self.labels_ = np.array([0, 1])
             self.scores_ = np.array([np.nan])
