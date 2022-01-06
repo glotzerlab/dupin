@@ -369,7 +369,7 @@ class Correlated:
             scores.append(score)
 
         self.scores_ = np.array(scores)
-        best_cluster_index = self.scores_.argmin()
+        best_cluster_index = self.scores_.argmax()
         self.labels_ = np.full(connected.shape[0], -1, dtype=int)
         self.labels_[connected] = cluster_ids[best_cluster_index]
         self.n_clusters_ = best_cluster_index + 2
