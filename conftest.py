@@ -5,6 +5,16 @@ import numpy as np
 import pytest
 
 
+@pytest.fixture(autouse=True, scope="session")
+def seeds(rng):
+    """Return a random integer seed."""
+
+    def seed():
+        return rng.integers(1_000_000)
+
+    return seed
+
+
 @pytest.fixture(scope="session")
 def rng():  # noqa: D401
     """A random number generator for tests that have need for random numbers."""
