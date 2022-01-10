@@ -202,7 +202,7 @@ class Window:
         """
         errors = []
         if self.store_intermediate_classifiers:
-            self._classifiers = []
+            self.classifiers_ = []
         y = np.repeat([0, 1], np.ceil(self.window_size / 2))[: self.window_size]
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
@@ -211,7 +211,7 @@ class Window:
         )
         for x in window_iter(X, self.window_size):
             if self.store_intermediate_classifiers:
-                self._classifiers.append([])
+                self.classifiers_.append([])
             slice_errors = []
             for train_indices, test_indices in shuffle_splits.split(x, y):
                 self.classifier.fit(x[train_indices], y[train_indices])
@@ -225,7 +225,7 @@ class Window:
                 # If storing intermediate classifiers clone the classifier to
                 # ensure we train/fit on a new identical model.
                 if self.store_intermediate_classifiers:
-                    self._classifiers[-1].append(self.classifier)
+                    self.classifiers_[-1].append(self.classifier)
                     self.classifier = sk.base.clone(self.classifier)
             errors.append(self._reduce(slice_errors))
         self.errors = np.array(errors)
