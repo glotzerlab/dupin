@@ -91,19 +91,96 @@ class Window:
             defaults to 1. Higher numbers naturally smooth the error across a
             trajectory.
         combine_errors : str, optional
-            What function to reduce the errors of ``n_classifiers`` which,
+            What function to reduce the errors of ``n_classifiers`` with,
             defauts to "mean". Available values are "mean" and "median".
         """
-        self._classifier = classifier
+        self.classifier = classifier
         self.window_size = window_size
         self.test_size = test_size
         if loss_function is None:
-            self._loss_function = self._default_loss
-        else:
-            self._loss_function = loss_function
+            loss_function = self._default_loss
+        self.loss_function = loss_function
         self.store_intermediate_classifiers = store_intermediate_classifiers
         self.n_classifiers = n_classifiers
         self.combine_errors = combine_errors
+
+    @property
+    def window_size(self):
+        """int: The size of windows to learn on."""
+        return self._window_size
+
+    @window_size.setter
+    def window_size(self, value):
+        if value < 2:
+            raise ValueError("window_size must be greater than 1.")
+        self._window_size = value
+
+    @property
+    def store_intermediate_classifiers(self):
+        """bool: Whether to store the classifiers for each window.
+
+        If ``True`` the classifiers are stored in ``classifiers_`` after calling
+        ``compute``.
+        """
+        return self._store_intermediate_classifiers
+
+    @store_intermediate_classifiers.setter
+    def store_intermediate_classifiers(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("Expected bool for store_intermediate_classifiers.")
+        self._store_intermediate_classifiers = value
+
+    @property
+    def loss_function(self):
+        """``callable`` [[sklearn.base.ClassifierMixin, numpy.ndarray, \
+                numpy.ndarray], float]: Returns the loss for a fitted \
+                classifier given the test x and y."""
+        return self._loss_function
+
+    @loss_function.setter
+    def loss_function(self, value):
+        if not callable(value):
+            raise TypeError("loss_function must be callable.")
+        self._loss_function = value
+
+    @property
+    def test_size(self):
+        """float: Fraction of samples to use for computing the error."""
+        return self._test_size
+
+    @test_size.setter
+    def test_size(self, value):
+        if value <= 0.0 or value >= 1.0:
+            raise ValueError("test_size must be between 0 and 1.")
+        self._test_size = value
+
+    @property
+    def n_classifiers(self):
+        """int: Number of classifiers and test-train splits per window.
+
+        Higher numbers naturally smooth the error across a trajectory.
+        """
+        return self._n_classifiers
+
+    @n_classifiers.setter
+    def n_classifiers(self, value):
+        if value < 1:
+            raise ValueError("n_classifiers must be greater than 0.")
+        self._n_classifiers = value
+
+    @property
+    def combine_errors(self):
+        """str: What function to reduce the errors of ``n_classifiers`` with.
+
+        Available values are "mean" and "median".
+        """
+        return self._combine_errors
+
+    @combine_errors.setter
+    def combine_errors(self, value):
+        if value not in ("mean", "median"):
+            raise ValueError("combine_errors must be im ('mean', 'median').")
+        self._combine_errors = value
 
     @property
     def _reduce(self):
@@ -137,10 +214,10 @@ class Window:
                 self._classifiers.append([])
             slice_errors = []
             for train_indices, test_indices in shuffle_splits.split(x, y):
-                self._classifier.fit(x[train_indices], y[train_indices])
+                self.classifier.fit(x[train_indices], y[train_indices])
                 slice_errors.append(
                     self._loss_function(
-                        self._classifier,
+                        self.classifier,
                         x[test_indices],
                         y[test_indices],
                     )
@@ -148,8 +225,8 @@ class Window:
                 # If storing intermediate classifiers clone the classifier to
                 # ensure we train/fit on a new identical model.
                 if self.store_intermediate_classifiers:
-                    self._classifiers[-1].append(self._classifier)
-                    self._classifier = sk.base.clone(self._classifier)
+                    self._classifiers[-1].append(self.classifier)
+                    self.classifier = sk.base.clone(self.classifier)
             errors.append(self._reduce(slice_errors))
         self.errors = np.array(errors)
         return self.errors
