@@ -1,5 +1,7 @@
 """Implements cost functions for use in event detection."""
 
+from typing import Tuple
+
 import numpy as np
 import ruptures as rpt
 from sklearn import preprocessing
@@ -68,8 +70,13 @@ class CostLinearFit(rpt.base.BaseCost):
     def error(self, start: int, end: int):
         """Return the cost for signal[start:end]."""
         m, b = self._get_regression(start, end)
-        predicted_y = m[:, None] * self._x[None, start:end] + b[:, None]
+        predicted_y = self._get_predicted(m, b, start, end)
         return self._metric(self._y[:, start:end], predicted_y)
+
+    def _get_predicted(
+        self, m: np.ndarray, b: np.ndarray, start: int, end: int
+    ):
+        return m[:, None] * self._x[None, start:end] + b[:, None]
 
     def _get_regression(self, start: int, end: int):
         """Compute a least squared regression on each dimension.
@@ -94,72 +101,47 @@ class CostLinearFit(rpt.base.BaseCost):
 
     @staticmethod
     def _l2(y: np.ndarray, predicted_y: np.ndarray):
-        return np.sqrt(np.sum(np.sq(predicted_y - y)))
+        return np.sqrt(np.sum(np.square(predicted_y - y)))
 
     @property
     def signal(self) -> np.ndarray:
-        """numpy.ndarray: Required by Ruptures to exist in \
-                (N_samples, N_dimensions)."""
+        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
+            signal fitted on."""
         return self._y.T
 
 
 class CostLinearBiasedFit(CostLinearFit):
     """Compute a start to end linear fit and pentalize error and bias."""
 
-    model = "linear_regression"
-    min_size = 3
-    _metrics = {"l1", "l2"}
+    model = "biased_linear_regression"
 
     def __init__(self, metric="l1"):
         """Create a CostLinearFit object."""
-        if metric not in self._metrics:
-            raise ValueError(f"Available metrics are {self._metrics}.")
-        self._metric = "_" + metric
+        super().__init__(metric)
 
     def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
         if len(signal.shape) == 1:
             signal = signal.reshape((-1, 1))
-        signal = preprocessing.MinMaxScaler().fit_transform(signal)
-        self._signal = np.ascontiguousarray(signal.T)
-        self._x = np.linspace(0, 1, self._signal.shape[1], dtype=float)
-
-    def error(self, start: int, end: int):
-        """Return the cost for signal[start:end]."""
-        return sum(self._individual_errors(start, end))
+        self._y = preprocessing.MinMaxScaler().fit_transform(signal)
+        self._x = np.linspace(0, 1, self._y.shape[0], dtype=float)
 
     @property
-    def signal(self) -> np.ndarray:
-        """numpy.ndarray: Required by Ruptures to exist in \
-                (N_samples, N_dimensions)."""
-        return self._signal.T
+    def signal(self):
+        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
+            signal fitted on."""
+        return self._y
 
-    def _individual_errors(self, start: int, end: int):
-        errors = []
-        x = self._x[start:end]
-        for y in self._signal[:, start:end]:
-            slope = self._get_slope(x, y)
-            intercept = self._get_intercept(x[0], y[0], slope)
-            predicted_y = slope * x + intercept
-            errors.append(getattr(self, self._metric)(y, predicted_y))
-        return errors
+    def _get_predicted(
+        self, m: np.ndarray, b: np.ndarray, start: int, end: int
+    ):
+        return m * self._x[start:end, None] + b
 
-    @staticmethod
-    def _get_slope(x: np.ndarray, y: np.ndarray) -> float:
-        return (y[-1] - y[0]) / (x[-1] - x[0])
-
-    @staticmethod
-    def _get_intercept(x: float, y: float, slope: float) -> float:
-        return y - slope * (x)
-
-    @staticmethod
-    def _l1(y: np.ndarray, predicted_y: np.ndarray):
-        diff = predicted_y - y
-        base_error = np.sum(np.abs(diff))
-        return (1 + np.sum(diff) / base_error) * base_error
-
-    @staticmethod
-    def _l2(y: np.ndarray, predicted_y: np.ndarray):
-        diff = predicted_y - y
-        base_error = np.sqrt(np.sum(np.sq(diff)))
-        return (1 + np.sum(diff) / np.sum(np.abs(diff))) * base_error
+    def _get_regression(
+        self, start: int, end: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        m = (self._y[end - 1] - self._y[start]) / (
+            self._x[end - 1] - self._x[start]
+        )
+        b = self._y[start] - (m * self._x[start])
+        return m, b
