@@ -17,6 +17,7 @@ requirements = [
     "freud-analysis",
     "numba",
     "scikit-learn",
+    "bottleneck",
 ]
 
 setup(
