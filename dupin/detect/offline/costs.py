@@ -1,5 +1,6 @@
 """Implements cost functions for use in event detection."""
 
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import numpy as np
@@ -7,7 +8,56 @@ import ruptures as rpt
 from sklearn import preprocessing
 
 
-class CostLinearFit(rpt.base.BaseCost):
+class BaseLinearCost(rpt.base.BaseCost, ABC):
+    """Base class for costs using linear fits of features across signal."""
+
+    _metrics = {"l1", "l2"}
+    min_size = 3
+
+    def __init__(self, metric="l1"):
+        """Create a CostLinearFit object."""
+        if metric not in self._metrics:
+            raise ValueError(f"Available metrics are {self._metrics}.")
+        self._metric = getattr(self, "_" + metric)
+
+    def fit(self, signal: np.ndarray):
+        """Store signal and compute base errors for later cost checking."""
+        if len(signal.shape) == 1:
+            signal = signal.reshape((-1, 1))
+        self._y = preprocessing.MinMaxScaler().fit_transform(signal).T
+        self._x = np.linspace(0, 1, self._y.shape[1], dtype=float)
+
+    def error(self, start: int, end: int):
+        """Return the cost for signal[start:end]."""
+        m, b = self._get_regression(start, end)
+        predicted_y = self._get_predicted(m, b, start, end)
+        return self._metric(self._y[:, start:end], predicted_y)
+
+    def _get_predicted(
+        self, m: np.ndarray, b: np.ndarray, start: int, end: int
+    ):
+        return m[:, None] * self._x[None, start:end] + b[:, None]
+
+    @abstractmethod
+    def _get_regression(self, start: int, end: int):
+        pass
+
+    @staticmethod
+    def _l1(y: np.ndarray, predicted_y: np.ndarray):
+        return np.sum(np.abs(predicted_y - y))
+
+    @staticmethod
+    def _l2(y: np.ndarray, predicted_y: np.ndarray):
+        return np.sqrt(np.sum(np.square(predicted_y - y)))
+
+    @property
+    def signal(self) -> np.ndarray:
+        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
+            signal fitted on."""
+        return self._y.T
+
+
+class CostLinearFit(BaseLinearCost):
     r"""Compute the L1 cumulative error of piecewise linear fits in time.
 
     Used to compute the relative cumulative L1 deviation from a linear piecewise
@@ -32,14 +82,6 @@ class CostLinearFit(rpt.base.BaseCost):
     """
 
     model = "linear_regression"
-    min_size = 3
-    _metrics = {"l1", "l2"}
-
-    def __init__(self, metric="l1"):
-        """Create a CostLinearFit object."""
-        if metric not in self._metrics:
-            raise ValueError(f"Available metrics are {self._metrics}.")
-        self._metric = getattr(self, "_" + metric)
 
     def _compute_cumsum(self, arr: np.ndarray):
         """Compute a cumulative sum for use in computing partial sums.
@@ -57,26 +99,11 @@ class CostLinearFit(rpt.base.BaseCost):
 
     def fit(self, signal: np.ndarray):
         """Store signal and compute base errors for later cost checking."""
-        if len(signal.shape) == 1:
-            signal = signal.reshape((-1, 1))
-        y = preprocessing.MinMaxScaler().fit_transform(signal).T
-        self._y = y
-        self._x = np.linspace(0, 1, y.shape[1], dtype=float)
+        super().fit(signal)
         self._x_cumsum = self._compute_cumsum(self._x)
         self._x_sq_cumsum = self._compute_cumsum(self._x ** 2)
-        self._xy_cumsum = self._compute_cumsum(self._x[None, :] * y)
-        self._y_cumsum = self._compute_cumsum(y)
-
-    def error(self, start: int, end: int):
-        """Return the cost for signal[start:end]."""
-        m, b = self._get_regression(start, end)
-        predicted_y = self._get_predicted(m, b, start, end)
-        return self._metric(self._y[:, start:end], predicted_y)
-
-    def _get_predicted(
-        self, m: np.ndarray, b: np.ndarray, start: int, end: int
-    ):
-        return m[:, None] * self._x[None, start:end] + b[:, None]
+        self._xy_cumsum = self._compute_cumsum(self._x[None, :] * self._y)
+        self._y_cumsum = self._compute_cumsum(self._y)
 
     def _get_regression(self, start: int, end: int):
         """Compute a least squared regression on each dimension.
@@ -95,53 +122,17 @@ class CostLinearFit(rpt.base.BaseCost):
         b = (sum_y - (m * sum_x)) / N
         return m, b
 
-    @staticmethod
-    def _l1(y: np.ndarray, predicted_y: np.ndarray):
-        return np.sum(np.abs(predicted_y - y))
-
-    @staticmethod
-    def _l2(y: np.ndarray, predicted_y: np.ndarray):
-        return np.sqrt(np.sum(np.square(predicted_y - y)))
-
-    @property
-    def signal(self) -> np.ndarray:
-        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
-            signal fitted on."""
-        return self._y.T
-
 
 class CostLinearBiasedFit(CostLinearFit):
     """Compute a start to end linear fit and pentalize error and bias."""
 
     model = "biased_linear_regression"
 
-    def __init__(self, metric="l1"):
-        """Create a CostLinearFit object."""
-        super().__init__(metric)
-
-    def fit(self, signal: np.ndarray):
-        """Store signal and compute base errors for later cost checking."""
-        if len(signal.shape) == 1:
-            signal = signal.reshape((-1, 1))
-        self._y = preprocessing.MinMaxScaler().fit_transform(signal).T
-        self._x = np.linspace(0, 1, self._y.shape[0], dtype=float)
-
-    @property
-    def signal(self):
-        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
-            signal fitted on."""
-        return self._y
-
-    def _get_predicted(
-        self, m: np.ndarray, b: np.ndarray, start: int, end: int
-    ):
-        return m * self._x[start:end, None] + b
-
     def _get_regression(
         self, start: int, end: int
     ) -> Tuple[np.ndarray, np.ndarray]:
-        m = (self._y[end - 1] - self._y[start]) / (
-            self._x[end - 1] - self._x[start]
+        m = (self._y[:, end - 1] - self._y[:, start]) / (
+            self._x[None, end - 1] - self._x[None, start]
         )
-        b = self._y[start] - (m * self._x[start])
+        b = self._y[:, start] - (m * self._x[None, start])
         return m, b
