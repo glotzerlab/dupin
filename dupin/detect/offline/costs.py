@@ -123,7 +123,7 @@ class CostLinearBiasedFit(CostLinearFit):
         """Store signal and compute base errors for later cost checking."""
         if len(signal.shape) == 1:
             signal = signal.reshape((-1, 1))
-        self._y = preprocessing.MinMaxScaler().fit_transform(signal)
+        self._y = preprocessing.MinMaxScaler().fit_transform(signal).T
         self._x = np.linspace(0, 1, self._y.shape[0], dtype=float)
 
     @property
