@@ -72,9 +72,9 @@ class CostLinearFit(BaseLinearCost):
 
     Parameters
     ----------
-    metric : str, optional
-        What metric to use in computing the error. Defaults to `"l1"`. Options
-        are `"l1"` and `"l2"`.
+    metric : `str`, optional
+        What metric to use in computing the error. Defaults to ``"l1"``. Options
+        are ``"l1"`` and ``"l2"``.
 
     Note:
         For use in ``ruptures`` search algorithms. To use properly `fit` must be

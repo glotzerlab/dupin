@@ -20,10 +20,10 @@ class Percentile(base.DataReducer):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce to percentiles.
 
-        percentiles : tuple[int], optional
+        percentiles : `tuple` [ `int` ], optional
             The percentiles in integer form (i.e. 100% equals 100). By defualt,
             every 10% increment from 0% to 100% (inclusive) is taken.
         """
@@ -70,9 +70,9 @@ class NthGreatest(base.DataReducer):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce to specified indices.
-        indices : list[int], optional
+        indices : `list` [ `int` ], optional
             The values to query. 1 is the greatest value in the distribution; 10
             the tenth, and so on. Negative number consitute the smallest values
             in the distribution. -1 is the least value in the distribution. 0 is
@@ -135,9 +135,10 @@ class Tee(base.DataReducer):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce.
-        reducers: list[callable[base.GeneratorLike, base.DataReducer]]
+        reducers: `list` [``callable``[:py:obj`dupin.data.base.GeneratorLike`, \
+                `base.DataReducer`]]
             A sequence of callables that take a generator like object and
             returns a data reducer. Using the ``wraps`` class method with a
             `DataReducer` subclass is a useful combination.

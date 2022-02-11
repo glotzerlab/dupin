@@ -35,17 +35,18 @@ class SweepDetector:
 
         Parameters
         ----------
-        detector: Union[ruptures.base.BaseEstimator,
-                        Callable[[numpy.ndarray, int], Tuple[List[int], float]]:
+        detector: Union[``ruptures.base.BaseEstimator``, \
+                        ``callable`` [[`numpy.ndarray`, `int`], \
+                                `tuple` [`list` [`int` ], `float` ]]:
             The detector to use for each round of change point detection.
         max_change_points: int
             The maximum number of change points to attempt to detect.
-        elbow_detector: Callable[[List[float]], int], optional
+        elbow_detector: ``callable`` [[ `list` [ `float` ]], `int`], optional
             A callable that takes in a list of costs and outputs the elbow of
             the data. The callable should return ``None`` if no elbow can be
             detected. Defaults to the KNEEDLE algorithm provided by the kneedle
             package.
-        tolerance: float, optional
+        tolerance: `float`, optional
             The percentile change in cost below which to stop detecting higher
             numbers of change points. Since detecting :math:`n+1` change points
             is by definition going to decrease the cost less than the last
@@ -70,7 +71,7 @@ class SweepDetector:
 
         Parameters
         ----------
-        data: np.ndarray
+        data: numpy.ndarray
             The data to detect change points for.
         """
         change_points, penalties = self._get_change_points(data)
@@ -116,7 +117,7 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
 
     Parameters
     ----------
-    costs : list[float]
+    costs : `list` [` float` ]
         The list/array of costs along some implicit x.
     \*\*kwargs : dict
         keyword arguments to pass to ``kneed.KneeLocator``.
@@ -159,13 +160,13 @@ def two_pass_elbow_detection(
         If the first pass of the elbow detector computes an elbow less than
         threshold, run a second pass. Otherwise, the detector just returns the
         first pass.
-    detector : callable[[list[float]], int], optional
+    detector : ``callable`` [[`list` [`float` ]], `int`], optional
         The callable to use for both sweeps of elbow detection. Defaults to
         `kneedle_elbow_detection`.
 
     Returns
     -------
-    new_detector : callable[[list[float], list[float]], int]
+    new_detector : ``callable`` [[`list` [`float`], `list` [`float` ]], `int`]
         Returns a new elbow detector that uses the two steps scheme shown above.
     """
     if detector is None:

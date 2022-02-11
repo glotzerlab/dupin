@@ -31,14 +31,14 @@ class FreudDescriptor(base.Generator):
 
         Parameters
         ----------
-        compute: freud.util._Compute
+        compute:
             A freud object for computation.
         attrs: str or Sequence[str] or dict[str, str]
             A mapping of attribute names to desired signal names. If the value
             in a entry is ``None`` the key value is used. A single string or
             sequence of strings can be passed and will be converted to the
             appropriate dict instance.
-        compute_method: str, optional
+        compute_method: `str`, optional
             The method name to use for computing the attrs specified. Defaults
             to "compute".
         """

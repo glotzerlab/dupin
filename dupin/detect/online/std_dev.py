@@ -43,13 +43,13 @@ class StdDevDetector:
         generators: list[data.base.Generator]
             The generators used for signal generation to use for event
             detection.
-        n_training: int, optional
+        n_training: `int`, optional
             The number of calls to use for generating the baseline before
             attempting to detect a signal.
-        n_stdev: float, optional
+        n_stdev: `float`, optional
             The number of standard deviations from the base line that consitutes
             triggering an event.
-        theshold: int, optional
+        theshold: `int`, optional
             The number of consequative calls that a signal is over/under the set
             number of standard deviations.
         """

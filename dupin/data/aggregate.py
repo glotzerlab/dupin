@@ -31,7 +31,7 @@ class SignalAggregator:
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A sequence of signal generators to use for generating the
             multivariate signal of a trajectory.
         logger: dupin.data.logging.Logger or None
@@ -115,10 +115,10 @@ class SignalAggregator:
         ----------
         iterator: Iterator[Any]
             The iterator to convert.
-        is_args: bool, optional
+        is_args: `bool`, optional
             Whether to treat the iterator objects as positional arguments.
             Defaults to False.
-        is_kwargs: bool, optional
+        is_kwargs: `bool`, optional
             Whether to treat the iterator objects as keyword arguments. Defaults
             to False.
 
@@ -146,3 +146,6 @@ class SignalAggregator:
             self.generator.attach_logger(new_logger)
         except AttributeError:
             pass
+
+
+__all__ = ["SignalAggregator"]

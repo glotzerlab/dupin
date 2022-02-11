@@ -9,6 +9,7 @@ dupin.data.base
     :nosignatures:
 
     DataMap
+    DataModifier
     DataReducer
     Generator
     GeneratorLike
@@ -18,6 +19,7 @@ dupin.data.base
 .. automodule:: dupin.data.base
     :synopsis: Base classes for data generation and manipulation.
     :members: DataMap,
+        DataModifier,
         DataReducer,
         Generator,
 

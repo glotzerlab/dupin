@@ -44,6 +44,11 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
     "hoomd": ("https://hoomd-blue.readthedocs.io/en/latest/", None),
     "gsd": ("https://gsd.readthedocs.io/en/stable/", None),
+    "pandas": ("http://pandas.pydata.org/pandas-docs/dev", None),
+    "scikit-learn": (
+        "http://scikit-learn.org/stable",
+        (None, "./_intersphinx/sklearn-objects.inv"),
+    ),
 }
 
 default_role = "any"

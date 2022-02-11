@@ -155,7 +155,7 @@ class DataModifier(Callable):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: :py:obj:`GeneratorLike`
             A generator like object to modify.
         """
         self._generator = generator
@@ -319,7 +319,7 @@ class Generator(Callable, PipeComponent):
 
         Returns
         -------
-        signals: dict[str, Union[float, numpy.typing.ArrayLike]]
+        signals: dict[str, Union[float, numpy.ndarray]]
             Returns a mapping of signal names to floating point or array like
             data. Array like data must be reduced before use in detection.
         """
@@ -361,9 +361,10 @@ class CustomMap(DataMap):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: :py:obj:`GeneratorLike`
             A generator like object to transform.
-        custom_function:callable[numpy.ndarray, dict[str, numpy.ndarray]
+        custom_function: ``callable`` [`numpy.ndarray`, \
+                `dict` [`str`, `numpy.ndarray`]
             A custom callable that takes in a NumPy array and returns a
             dictionary with keys indicating the tranformation and values the
             transformed distribution (array).
@@ -394,9 +395,9 @@ class CustomReducer(DataReducer):
 
         Parameters
         ----------
-        generator: GeneratorLike
+        generator: :py:obj:`GeneratorLike`
             A generator like object to reduce.
-        custom_function: callable[numpy.ndarray, dict[str, float]
+        custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
             A custom callable that takes in a NumPy array and returns a
             dictionary with keys indicating the reduction and values the reduced
             distribution value.

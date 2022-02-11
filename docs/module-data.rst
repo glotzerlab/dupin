@@ -8,13 +8,15 @@ dupin.data
 .. autosummary::
     :nosignatures:
 
+    Logger
     SignalAggregator
 
 .. rubric:: Details
 
 .. automodule:: dupin.data
     :synopsis: Module for data generation and modification on a per timestep basis.
-    :members: SignalAggregator
+    :members: Logger,
+        SignalAggregator
 
 .. rubric:: Modules
 
@@ -22,7 +24,7 @@ dupin.data
    :maxdepth: 3
 
    module-data-base
+   module-data-freud
    module-data-map
    module-data-reduce
-   module-data-freud
    module-data-spatial

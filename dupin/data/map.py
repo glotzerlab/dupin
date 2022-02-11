@@ -18,7 +18,7 @@ class Identity(base.DataMap):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce.
         """
         super().__init__(generator)
@@ -28,7 +28,7 @@ class Identity(base.DataMap):
 
         Parameters
         ----------
-        distribution : :math:`(N,)` np.ndarray of float
+        distribution : :math:`(N,)` numpy.ndarray of float
             The array representing a distribution to map.
 
         Return
@@ -52,9 +52,11 @@ class Tee(base.DataMap):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to map to another distribution.
-        reducers: list[callable[generator_like, base.DataReducer]]
+        reducers: `list` [``callable`` `
+                [:py:obj:`dupin.data.base.GeneratorLike`, \
+                 `dupin.data.base.DataReducer`]]
             A sequence of callables that take a generator like object and
             returns a data map. Using the ``wraps`` class method with a
             `DataMap` subclass is a useful combination.

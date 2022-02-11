@@ -66,7 +66,7 @@ class Window:
 
         Parameters
         ----------
-        classifier : sklearn compatible classifier
+        classifier : sklearn.base.ClassifierMixin
             A sklearn compatible classifier that is ready to fit to data.
         window_size : int
             The size of windows to learn on, should be a even number for best
@@ -74,23 +74,24 @@ class Window:
         test_size : float
             Fraction of samples to use for computing the error through the loss
             function. This fraction is not fitted on.
-        loss_function : callable[[sklearn.base.ClassifierMixin, \
-                                  np.ndarray, np.ndarray], float], optional
+        loss_function : ``callable`` [[`sklearn.base.ClassifierMixin`, \
+                                  `numpy.ndarray`, `numpy.ndarray`], \
+                                  `float`], optional
             A callable that takes in the fitted classifier, the test x and test
             y values and returns a loss (lower is better). By default this
-            computes the zero-one loss if `sklearn` is available, otherwise this
+            computes the zero-one loss if sklearn is available, otherwise this
             errors.
-        store_intermediate_classifiers : bool, optional
+        store_intermediate_classifiers : `bool`, optional
             Whether to store the fitted classifier for each window in the
             sequence passed to `compute`. Defaults to False. **Warning**: If the
             classifier stores some or all of the sequence in fitting as is the
             case for kernelized classifiers, this optional will lead a much use
             of memory.
-        n_classifiers : int, optional
+        n_classifiers : `int`, optional
             The number of classifiers and test train splits to use per window,
             defaults to 1. Higher numbers naturally smooth the error across a
             trajectory.
-        combine_errors : str, optional
+        combine_errors : `str`, optional
             What function to reduce the errors of ``n_classifiers`` with,
             defauts to "mean". Available values are "mean" and "median".
         """
@@ -132,8 +133,8 @@ class Window:
 
     @property
     def loss_function(self):
-        """``callable`` [[sklearn.base.ClassifierMixin, numpy.ndarray, \
-                numpy.ndarray], float]: Returns the loss for a fitted \
+        """``callable`` [[ `sklearn.base.ClassifierMixin`, `numpy.ndarray`, \
+                `numpy.ndarray` ], `float` ]: Returns the loss for a fitted \
                 classifier given the test x and y."""
         return self._loss_function
 

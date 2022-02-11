@@ -47,15 +47,16 @@ class NeighborAveraging(base.DataMap):
 
         Parameters
         ----------
-        generator: generator_like
+        generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce.
-        expected_kwarg: str, optional
-            The expected key word argument passed to `__call__` to use as
-            neighbors. Defaults to "spatial_neighbors".
-        remove_kwargs: bool, optional
+        expected_kwarg: `str`, optional
+            The expected key word argument passed to
+            `dupin.data.base.DataModifier.__call__` to use as neighbors.
+            Defaults to "spatial_neighbors".
+        remove_kwargs: `bool`, optional
             Whether the specified ``expected_kwarg`` should be removed before
             passing through to the composed generators.
-        exclude_ii: bool, optional
+        exclude_ii: `bool`, optional
             Whether the passed neighbor list will excludes ``ii`` interactions.
             Defaults to ``True``. If set incorrectly this will cause erroneous
             results.
@@ -95,12 +96,12 @@ class NeighborAveraging(base.DataMap):
 
         Parameters
         ----------
-        distribution : :math:`(N,)` np.ndarray of float
+        distribution : :math:`(N,)` numpy.ndarray of float
             The array representing a distribution to spatially average.
 
         Return
         -------
-        signals : dict[str, np.ndarray]
+        signals : dict[str, numpy.ndarray]
             A dictionary with the key "spatially_averaged" and spatially
             averaged distribution as a value.
         """

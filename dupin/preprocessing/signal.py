@@ -20,15 +20,15 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
 
     Parameters
     ----------
-    y : np.ndarray
+    y : numpy.ndarray
         input array to smooth.
-    span : int, optional
+    span : `int`, optional
         The window size to compute the moving mean over. Defaults to 1 which
         does nothing.
 
     Returns
     -------
-    smoothed_array: np.ndarray
+    smoothed_array: numpy.ndarray
     """
     if span % 2 == 0:
         raise ValueError("The window span must be an odd number.")
