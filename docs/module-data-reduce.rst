@@ -8,6 +8,7 @@ dupin.data.reduce
 .. autosummary::
     :nosignatures:
 
+    CustomReducer
     NthGreatest
     Percentile
     Tee
@@ -16,6 +17,7 @@ dupin.data.reduce
 
 .. automodule:: dupin.data.reduce
     :synopsis: Base classes for data reduction into scalar features.
-    :members: NthGreatest,
+    :members: CustomReducer,
+        NthGreatest,
         Percentile,
         Tee

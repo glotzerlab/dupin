@@ -137,8 +137,8 @@ class Tee(base.DataReducer):
         ----------
         generator: :py:obj:`dupin.data.base.GeneratorLike`
             A generator like object to reduce.
-        reducers: `list` [``callable``[:py:obj`dupin.data.base.GeneratorLike`, \
-                `base.DataReducer`]]
+        reducers: `list` [``callable`` [\
+                :py:obj`dupin.data.base.GeneratorLike`, `base.DataReducer`]]
             A sequence of callables that take a generator like object and
             returns a data reducer. Using the ``wraps`` class method with a
             `DataReducer` subclass is a useful combination.

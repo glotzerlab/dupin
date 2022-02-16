@@ -155,7 +155,7 @@ class DataModifier(Callable):
 
         Parameters
         ----------
-        generator: :py:obj:`GeneratorLike`
+        generator: :py:obj:`~.GeneratorLike`
             A generator like object to modify.
         """
         self._generator = generator
@@ -346,7 +346,7 @@ class CustomMap(DataMap):
 
     Attributes
     ----------
-    function: callable[[numpy.ndarray], dict[str, numpy.ndarray]]
+    function: ``callable`` [[`numpy.ndarray`], `dict` [`str`, `numpy.ndarray`]]
         The provided callable.
     """
 
@@ -361,7 +361,7 @@ class CustomMap(DataMap):
 
         Parameters
         ----------
-        generator: :py:obj:`GeneratorLike`
+        generator: :py:obj:`~.GeneratorLike`
             A generator like object to transform.
         custom_function: ``callable`` [`numpy.ndarray`, \
                 `dict` [`str`, `numpy.ndarray`]
@@ -382,7 +382,7 @@ class CustomReducer(DataReducer):
 
     Attributes
     ----------
-    function: callable[[numpy.ndarray], dict[str, float]
+    function: ``callable`` [[`numpy.ndarray`], `dict` [`str`, `numpy.ndarray`]]
         The provided callable.
     """
 
@@ -395,7 +395,7 @@ class CustomReducer(DataReducer):
 
         Parameters
         ----------
-        generator: :py:obj:`GeneratorLike`
+        generator: :py:obj:`~.GeneratorLike`
             A generator like object to reduce.
         custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
             A custom callable that takes in a NumPy array and returns a

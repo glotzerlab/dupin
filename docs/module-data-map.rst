@@ -8,6 +8,7 @@ dupin.data.map
 .. autosummary::
     :nosignatures:
 
+    CustomMap
     Identity
     Tee
 
@@ -15,5 +16,6 @@ dupin.data.map
 
 .. automodule:: dupin.data.map
     :synopsis: Classes for modifying distributions.
-    :members: Identity,
+    :members: CustomMap,
+        Identity,
         Tee
