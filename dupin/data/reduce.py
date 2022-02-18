@@ -99,7 +99,7 @@ class NthGreatest(base.DataReducer):
     def _index_name(index: int) -> str:
         if index >= 0:
             index += 1
-        type_ = "greatest" if index > 0 else "least"
+        type_ = "least" if index > 0 else "greatest"
         abs_index = abs(index)
         unit_value = abs_index % 10
         if unit_value == 1:
