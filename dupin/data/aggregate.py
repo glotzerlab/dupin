@@ -3,6 +3,8 @@
 
 from typing import Any, Dict, Iterator, Optional, Tuple
 
+import numpy as np
+
 import dupin.errors as errors
 
 from . import base, logging
@@ -11,6 +13,10 @@ try:
     import pandas as pd
 except ImportError:
     pd = errors._RaiseModuleError("pandas")
+try:
+    import xarray as xa
+except ImportError:
+    xa = errors._RaiseModuleError("pandas")
 
 
 class SignalAggregator:
@@ -100,6 +106,36 @@ class SignalAggregator:
                 col: [frame[col] for frame in self.signals]
                 for col in self.signals[0]
             }
+        )
+
+    def to_xarray(self, third_dim_name="third_dim") -> "xa.DataArray":
+        """Return the aggregated signal as a `xarray.DataArray`.
+
+        Note:
+            This method requires `xarray` to be available.
+
+        Warning:
+            This method only works when all arrays have the same first dimension
+            size.
+
+        Returns
+        -------
+        signal: xarray.DataArray
+            The aggregated signal. The first dimension is frames, the second is
+            features, and the third the first dimension of the aggregated
+            features (eg. number of particles).
+        """
+        feature_order = self.signals[0].keys()
+        data = np.stack(
+            [
+                np.stack([frame[k].squeeze() for k in feature_order])
+                for frame in self.signals
+            ]
+        )
+        return xa.DataArray(
+            data=data,
+            dims=("frame", "feature", third_dim_name),
+            coords={"feature": list(feature_order)},
         )
 
     @staticmethod
