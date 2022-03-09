@@ -101,6 +101,20 @@ class SignalAggregator:
             correspond to system frames in the order passed to `accumulate` or
             `compute`.
         """
+
+        def is_array(v):
+            if hasattr(v, "__len__"):
+                return len(v) > 1
+            return False
+
+        # We assume that all frames "look" alike in their structure. If this is
+        # broken than this check will not catch it. However, this breaks one our
+        # assumptions so is outside what we should check for.
+        if any(is_array(value) for value in self.signals[0].values()):
+            raise ValueError(
+                "Signal is 3 dimensional. ~.to_dataframe requires a 2 "
+                "dimensional signal. Use ~.to_xarray instead."
+            )
         return pd.DataFrame(
             {
                 col: [frame[col] for frame in self.signals]
