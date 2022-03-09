@@ -127,12 +127,14 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
     int
         The predicted index for the elbow.
     """
-    kwargs.setdefault("S", 1.0)
-    kwargs.setdefault("interp_method", "interp1d")
-    x = range(0, len(costs))
-    detector = kd.KneeLocator(
-        x=x, y=costs, curve="convex", direction="decreasing", **kwargs
-    )
+    kwargs = {
+        "S": 1.0,
+        "interp_method": "interp1d",
+        "curve": "convex",
+        "direction": "decreasing",
+        **kwargs,
+    }
+    detector = kd.KneeLocator(x=range(0, len(costs)), y=costs, **kwargs)
     return detector.elbow
 
 
