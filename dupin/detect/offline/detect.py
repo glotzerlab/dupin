@@ -1,5 +1,6 @@
 """Implements offline methods for detecting events in molecular simulations."""
 
+import functools
 import logging
 from typing import Callable, List, Optional, Tuple, Union
 
@@ -199,35 +200,41 @@ def two_pass_elbow_detection(
 class _RupturesWrapper:
     def __init__(self, detector: rpt.base.BaseEstimator):
         self.detector = detector
-        self._cost_fit = False
+        self.data = None
 
     def __call__(self, data: np.ndarray, n_change_points: int):
+        if self.data is None or self.data is not data:
+            self.fit(data)
+        return self.memonized_detect(n_change_points)
+
+    def fit(self, data: np.ndarray):
+        self.data = data
+        self.detector.fit(data)
+        self.memonized_detect.cache_clear()
+
+    @functools.lru_cache
+    def memonized_detect(self, n_change_points: int) -> Tuple[List[int], float]:
         if n_change_points == 0:
-            if not self._cost_fit:
-                self.detector.cost.fit(data)
-                self._cost_fit = True
-            return [], self.detector.cost.error(0, len(data))
+            return [], self.detector.cost.error(0, len(self.data))
         # An AssertionError is raised if no suitable change point can be found
         # by a decector. We return (None, 0) to indicate the failure.
         try:
-            change_points = self.detector.fit_predict(data, n_change_points)
+            change_points = self.detector.predict(n_change_points)
         except rpt.exceptions.BadSegmentationParameters as err:
             _logger.error(
                 f"Error detecting {n_change_points} change points. "
                 f"Original error: {type(err).__name__}({str(err)})."
             )
             return None, 0
-        # If we reach here, then cost has been fit on the data.
-        self._cost_fit = True
-
         # Return None if the correct number of change points were not detected
-        # which can happen when no change point addition sigificantly reduces
-        # cost.
+        # which can happen when no change point addition reduces cost. This
+        # should not happen on a well defined cost function but numerical errors
+        # happen.
         if len(change_points) != n_change_points + 1:
             None, 0
         # The selection of change points was successful, compute costs and
         # return
         cost = self.detector.cost.sum_of_costs(change_points)
-        # Remove the last index from the sequence of change points
+        # Remove the last index of the signal from the sequence of change points
         change_points.pop()
         return change_points, cost
