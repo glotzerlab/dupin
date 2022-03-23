@@ -1,13 +1,21 @@
 """Spatial averaging DataMap classes."""
 
-import numba
 import numpy as np
 import numpy.typing as npt
 
 from . import base
 
 
-@numba.njit
+def _njit(*args, **kwargs):
+    """Allow for JIT when numba is found."""
+    try:
+        import numba
+    except ImportError:
+        return lambda x: x
+    return numba.njit(*args, **kwargs)
+
+
+@_njit
 def _freud_neighbor_summing(
     arr: np.ndarray,
     particle_index: np.ndarray,
