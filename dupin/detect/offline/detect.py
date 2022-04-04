@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import warnings
 from typing import Callable, List, Optional, Tuple, Union
 
 import kneed as kd
@@ -135,7 +136,11 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
         "direction": "decreasing",
         **kwargs,
     }
-    detector = kd.KneeLocator(x=range(0, len(costs)), y=costs, **kwargs)
+    with warnings.catch_warnings(record=True) as record:
+        warnings.filterwarnings("ignore", module=".*kneed.*")
+        detector = kd.KneeLocator(x=range(0, len(costs)), y=costs, **kwargs)
+        if len(record) > 0:
+            _logger.info("No knee/elbow found.")
     return detector.elbow
 
 
