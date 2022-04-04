@@ -226,7 +226,7 @@ class _RupturesWrapper:
         try:
             change_points = self.detector.predict(n_change_points)
         except rpt.exceptions.BadSegmentationParameters as err:
-            _logger.error(
+            _logger.info(
                 f"Error detecting {n_change_points} change points. "
                 f"Original error: {type(err).__name__}({str(err)})."
             )
