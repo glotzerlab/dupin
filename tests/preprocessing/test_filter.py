@@ -56,7 +56,7 @@ class TestMeanShift:
                 2,
                 1,
                 1,
-                delta=self.get_shift_range(1.2, 1.25),
+                delta=self.get_shift_range(1.3, 1.35),
                 seed=seeds(),
             )
             return 2, signal
@@ -76,7 +76,7 @@ class TestMeanShift:
                 1,
                 1,
                 1,
-                delta=self.get_shift_range(-1.25, -1.2),
+                delta=self.get_shift_range(-1.35, -1.3),
                 seed=seeds(),
             )
             no_signal, _ = rpt.pw_constant(100, 1, 0, 1, seed=seeds())

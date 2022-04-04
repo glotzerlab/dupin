@@ -96,7 +96,7 @@ class TestSweepDetector:
 
     def test_fit(self):
         detector = detect.SweepDetector(
-            detector=rpt.Dynp("l1"), max_change_points=7
+            detector=rpt.Dynp("l1"), max_change_points=8
         )
         signal, bkps = rpt.pw_constant(noise_std=0.1)
         bkps.pop()
