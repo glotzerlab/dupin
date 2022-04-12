@@ -198,4 +198,43 @@ class SignalAggregator:
             pass
 
 
-__all__ = ["SignalAggregator"]
+class XarrayGenerator(base.Generator):
+    """Generator that converts a frame from xarray to a dupin compatible form.
+
+    This class is useful to use with `SignalAggregator.to_xarray` to separate
+    the data generation from the mapping and reducing steps.
+    """
+
+    def __init__(self, feature_dim: str = "feature"):
+        """Create a XarrayGenerator object.
+
+        Parameters
+        ----------
+        feature_dim : str, optional
+            The name of the feature dimension in the xarray frames, defaults to
+            "feature" (the default of `SignalAggregator.to_xarray`).
+        """
+        self._feature_dim = feature_dim
+
+    def __call__(self, xarray_frame: "xa.DataArray"):
+        """Convert the xarray object to a dupin pipeline representation.
+
+        Parameters
+        ----------
+        xarray_frame : xarray.DataArray
+            The data array for the current frame of the signal.
+
+        Returns
+        -------
+        frame : dict [str, numpy.ndarray]
+            The data represented as a dictionary of arrays.
+        """
+        return {
+            feature: xarray_frame.sel({self._feature_dim: feature}).to_numpy()
+            for feature in map(
+                str, xarray_frame.coords[self._feature_dim].to_numpy()
+            )
+        }
+
+
+__all__ = ["SignalAggregator", "XarrayGenerator"]
