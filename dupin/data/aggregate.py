@@ -16,7 +16,7 @@ except ImportError:
 try:
     import xarray as xa
 except ImportError:
-    xa = errors._RaiseModuleError("pandas")
+    xa = errors._RaiseModuleError("xarray")
 
 
 class SignalAggregator:
