@@ -1,7 +1,13 @@
 """Functions and classes for allowing logging extra data from pipelines."""
 
 import numpy as np
-import pandas as pd
+
+from dupin import errors
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = errors._RaiseModuleError("pandas")
 
 
 class Logger:

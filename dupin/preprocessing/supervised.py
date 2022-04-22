@@ -3,7 +3,6 @@
 from typing import Callable, Optional, Sequence
 
 import numpy as np
-import pandas as pd
 
 import dupin.errors as errors
 
@@ -11,6 +10,14 @@ try:
     import sklearn as sk
 except ImportError:
     sk = errors._RaiseModuleError("sklearn")
+
+
+def _str_isinstance(obj, classes):
+    name = obj.__class__.__module__ + "." + obj.__class__.__name__
+    for cls in classes:
+        if name.endswith(cls):
+            return True
+    return False
 
 
 def window_iter(seq: Sequence, window_size: int) -> Sequence:
@@ -205,7 +212,7 @@ class Window:
         if self.store_intermediate_classifiers:
             self.classifiers_ = []
         y = np.repeat([0, 1], np.ceil(self.window_size / 2))[: self.window_size]
-        if isinstance(X, pd.DataFrame):
+        if isinstance(X, "pandas.core.frame.DataFrame"):
             X = X.to_numpy()
         shuffle_splits = sk.model_selection.StratifiedShuffleSplit(
             n_splits=self.n_classifiers, test_size=self.test_size
