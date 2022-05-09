@@ -15,10 +15,16 @@ requirements = [
     "ruptures",
     "kneed",
     "freud-analysis",
-    "numba",
     "scikit-learn",
     "bottleneck",
 ]
+
+optional_features = {
+    # Speed up dupin through optional JIT from numba.
+    "jit": ["numba"],
+    # Provide APIs for accessing data in easy to query and manipulate formats.
+    "data": ["pandas", "xarray"],
+}
 
 setup(
     author="Brandon Butler",
@@ -36,6 +42,7 @@ setup(
     description="Python package for detecting rare events in molecular "
     "simulations.",
     install_requires=requirements,
+    extras_require=optional_features,
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="event detection",
