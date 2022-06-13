@@ -80,7 +80,10 @@ class SweepDetector:
         self.costs_ = penalties
         self.change_points_ = change_points
 
-        elbow_index = self._elbow_detector(penalties)
+        if len(self.costs_) > 1:
+            elbow_index = self._elbow_detector(penalties)
+        else:
+            elbow_index = None
         if elbow_index is None:
             self.opt_n_change_points_ = 0
             self.opt_change_points_ = []
