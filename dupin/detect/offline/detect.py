@@ -239,7 +239,7 @@ class _RupturesWrapper:
         # should not happen on a well defined cost function but numerical errors
         # happen.
         if len(change_points) != n_change_points + 1:
-            None, 0
+            return None, 0
         # The selection of change points was successful, compute costs and
         # return
         cost = self.detector.cost.sum_of_costs(change_points)
