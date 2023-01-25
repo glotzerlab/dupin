@@ -1,3 +1,41 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 64.0.0"]
+
+[project]
+name = "dupin"
+version = "0.1"
+description = "Offline and online event detection scheme for rare events in molecular simulations."
+readme = "README.rst"
+requires-python = ">=3.8"
+maintainers = [{name = "Brandon Butler", email = "butlerbr@umich.edu"}]
+authors = [{name = "Brandon Butler et al.", email = "butlerbr@umich.edu"}]
+keywords = ["event detection", "molecular simulations"]
+classifiers = [
+        "Development Status :: 2 - Pre-Alpha",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+    ]
+dependencies = [
+    "bottleneck",  # perform moving window array computations
+    "freud-analysis",  # generate features
+    "kneed",  # knee/elbow detection
+    "numpy",  # basic numerical Python
+    "ruptures",  # event detection
+    "scikit-learn",  # For ML window dimensionality reduction
+]
+
+[project.urls]
+Source = "https://github.com/b-butler/dupin"
+Issues = "https://github.com/glotzerlab/dupin/issues"
+
+[tool.setuptools]
+packages = { find = { namespaces = false, exclude = ["tests*", "notebooks*"] } }
+
 [tool.black]
 line-length = 80
 include = '\.pyi?$'
