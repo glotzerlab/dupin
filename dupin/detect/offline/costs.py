@@ -101,7 +101,7 @@ class CostLinearFit(BaseLinearCost):
         """Store signal and compute base errors for later cost checking."""
         super().fit(signal)
         self._x_cumsum = self._compute_cumsum(self._x)
-        self._x_sq_cumsum = self._compute_cumsum(self._x ** 2)
+        self._x_sq_cumsum = self._compute_cumsum(self._x**2)
         self._xy_cumsum = self._compute_cumsum(self._x[None, :] * self._y)
         self._y_cumsum = self._compute_cumsum(self._y)
 

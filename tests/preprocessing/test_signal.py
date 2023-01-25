@@ -41,7 +41,7 @@ def test_fft_smoothing(random_array):
     assert smoothed_array.std() < random_array.std()
     assert np.all(
         (complex_sq(np.fft.rfft(smoothed_array))[11:])
-        < complex_sq(np.fft.rfft(random_array ** 2)[11:])
+        < complex_sq(np.fft.rfft(random_array**2)[11:])
     )
 
 

@@ -142,6 +142,7 @@ class PreparedPipeComponent:
 def _join_filter_none(
     string: str, sequence: typing.Sequence[Optional[str]]
 ) -> str:
+    """Perform `str.join` except None's get skipped."""
     return string.join(s for s in sequence if s is not None)
 
 
