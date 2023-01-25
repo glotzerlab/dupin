@@ -46,7 +46,6 @@ class NeighborAveraging(base.DataMap):
 
     def __init__(
         self,
-        generator: base.GeneratorLike,
         expected_kwarg: str = "spatial_neighbors",
         remove_kwarg: bool = True,
         exclude_ii: bool = True,
@@ -55,8 +54,6 @@ class NeighborAveraging(base.DataMap):
 
         Parameters
         ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce.
         expected_kwarg: `str`, optional
             The expected key word argument passed to
             `dupin.data.base.DataModifier.__call__` to use as neighbors.
@@ -72,7 +69,7 @@ class NeighborAveraging(base.DataMap):
         self._expected_kwarg = expected_kwarg
         self._remove_kwarg = remove_kwarg
         self._exclude_ii = exclude_ii
-        super().__init__(generator)
+        super().__init__()
 
     def update(self, args, kwargs):
         """Call the underlying generator performing the spatial averaging.

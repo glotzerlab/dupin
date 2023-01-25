@@ -1,6 +1,6 @@
 """Classes for transforming array quantities into scalar features."""
 
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -11,18 +11,11 @@ from . import base
 class Percentile(base.DataReducer):
     """Reduce a distribution into percentile values."""
 
-    def __init__(
-        self,
-        generator: base.GeneratorLike,
-        percentiles: Optional[Tuple[int]] = None,
-    ) -> None:
+    def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
         """Create a `Percentile` object.
 
         Parameters
         ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce to percentiles.
-
         percentiles : `tuple` [ `int` ], optional
             The percentiles in integer form (i.e. 100% equals 100). By defualt,
             every 10% increment from 0% to 100% (inclusive) is taken.
@@ -30,7 +23,7 @@ class Percentile(base.DataReducer):
         if percentiles is None:
             percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
         self._percentiles = percentiles
-        super().__init__(generator)
+        super().__init__()
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with dd% keys."""
@@ -63,15 +56,11 @@ class NthGreatest(base.DataReducer):
     index ordinal number and whether it is greatest or least.
     """
 
-    def __init__(
-        self, generator: base.GeneratorLike, indices: Tuple[int]
-    ) -> None:
+    def __init__(self, indices: Tuple[int]) -> None:
         """Create a `NthGreatest` object.
 
         Parameters
         ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce to specified indices.
         indices : `list` [ `int` ], optional
             The values to query. 1 is the greatest value in the distribution; 10
             the tenth, and so on. Negative number consitute the smallest values
@@ -80,7 +69,7 @@ class NthGreatest(base.DataReducer):
         """
         self._indices = self._fix_indices(indices)
         self._names = [self._index_name(index) for index in self._indices]
-        super().__init__(generator)
+        super().__init__()
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with modified keys."""
@@ -128,23 +117,17 @@ class Tee(base.DataReducer):
 
     def __init__(
         self,
-        generator: base.GeneratorLike,
-        reducers: List[Callable[[base.GeneratorLike], base.DataReducer]],
+        reducers: List[base.DataReducer],
     ):
         """Create a data.reduce.Tee object.
 
         Parameters
         ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce.
-        reducers: `list` [``callable`` [\
-                :py:obj`dupin.data.base.GeneratorLike`, `base.DataReducer`]]
-            A sequence of callables that take a generator like object and
-            returns a data reducer. Using the ``wraps`` class method with a
-            `DataReducer` subclass is a useful combination.
+        reducers: `list` [`dupin.base.DataReducer`]
+            A sequence of a data reducers.
         """
-        self._reducers = [reduce(generator) for reduce in reducers]
-        super().__init__(generator)
+        self._reducers = reducers
+        super().__init__()
 
     def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
         """Run all composed reducer computes."""
@@ -182,6 +165,11 @@ class Tee(base.DataReducer):
             except AttributeError:
                 pass
 
+    def _decorate(self, generator: base.GeneratorLike):
+        self._generator = generator
+        for reducer in self._reducers:
+            reducer(generator)
+
 
 CustomReducer = base.CustomReducer
 
@@ -197,4 +185,4 @@ def reduce_(func):
     func : callable
         The function to use for reducing.
     """
-    return CustomReducer.wraps(func)
+    return CustomReducer(func)

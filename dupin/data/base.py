@@ -32,21 +32,19 @@ class PipeComponent:
     def pipe(self, next_):
         """Add a step after current one in the data pipeline.
 
-        Expects the output of `dupin.data.base.DataModifier.wraps`.
+        Expects a `dupin.data.base.DataModifier` instance.
 
         Parameters
         ----------
-        next_: dupin.data.base.PreparedPipeComponent
-            The next step in the data pipeline. To get such an object use
-            `DataModifier.wraps`.
-
+        next_: dupin.data.base.DataModifier
+            The next step in the data pipeline.
         Returns
         -------
         DataMap or DataReducer:
             Returns either a `DataMap` or `DataReducer` object based on the
             input to the method.
         """
-        if isinstance(next_, PreparedPipeComponent):
+        if isinstance(next_, DataModifier):
             return next_(self)
         elif callable(next_):
             raise ValueError(
@@ -54,20 +52,20 @@ class PipeComponent:
                 "or wrap in appropriate custom class."
             )
         else:
-            raise ValueError("Expected the output of DataModifier.wraps.")
+            raise ValueError("Expected a DataModifier instance.")
 
     def map(self, map_):
         """Add a mapping step after the current step in the data pipeline.
 
-        Expects a custom callable or the output of a `DataMap.wraps` call.
+        Expects a custom callable or a `DataMap` instance.
 
         Parameters
         ----------
-            map_: dupin.data.base.PreparedPipeComponent \
+            map_: dupin.data.base.DataMap \
                     or callable[numpy.ndarray, dict[str, numpy.ndarray]]:
                 The next step in the data pipeline. Can be a custom callable
                 mapping function or an ``dupin`` any of the built in
-                mapping operations through `DataMap.wraps`.
+                mapping operations.
 
         Returns
         -------
@@ -75,68 +73,37 @@ class PipeComponent:
                 Returns either a `DataMap` subclass based on the passed in
                 object.
         """
-        if isinstance(map_, PreparedPipeComponent):
-            if issubclass(map_._target_cls, DataMap):
-                return map_(self)
-            else:
-                raise ValueError("Expected output of DataMap.wraps().")
+        if issubclass(map_._target_cls, DataMap):
+            return map_(self)
         elif callable(map_):
             return CustomMap(self, map_)
         else:
-            raise ValueError(
-                "Expected a callable or the output of DataMap.wraps()"
-            )
+            raise ValueError("Expected a callable or a DataMap instance.")
 
     def reduce(self, reduce_):
         """Add a reducing step after the current step in the data pipeline.
 
-        Expects a custom callable or the output of a `DataReducer.wraps` call.
+        Expects a custom callable or a `DataReducer` instance.
 
         Parameters
         ----------
-            reduce_: dupin.data.base.PreparedPipeComponent \
+            reduce_: dupin.data.base.DataReducer \
                     or callable[numpy.ndarray, dict[str, float]]
                 The next step in the data pipeline. Can be a custom callable
                 reducing function or an ``dupin`` any of the built in
-                reducing operations through `DataReducer.wraps`.
+                reducing operations.
 
         Returns
         -------
         DataReducer:
             Returns a `DataReducer` subclass based on the passed in object.
         """
-        if isinstance(reduce_, PreparedPipeComponent):
-            if issubclass(reduce_._target_cls, DataReducer):
-                return reduce_(self)
-            else:
-                raise ValueError("Expected output of DataReduce.wraps().")
+        if issubclass(reduce_._target_cls, DataReducer):
+            return reduce_(self)
         elif callable(reduce_):
             return CustomReducer(self, reduce_)
         else:
-            raise ValueError(
-                "Expected a callable or the output of DataReduce.wraps()"
-            )
-
-
-class PreparedPipeComponent:
-    """An intermediate class allowing for piping and decorating data pipelines.
-
-    This class is the output of `DataModifier.wraps` and allows for both the
-    pipeline and decorator syntax for creating data pipelines.
-
-    Warning:
-        The class should not be instantiated directly.
-    """
-
-    def __init__(self, cls, *args, **kwargs):
-        """Create a PreparedPipeComponent object."""
-        self._target_cls = cls
-        self._args = args
-        self._kwargs = kwargs
-
-    def __call__(self, generator):
-        """Create internal pipeline component."""
-        return self._target_cls(generator, *self._args, **self._kwargs)
+            raise ValueError("Expected a callable or a DataReduce instance.")
 
 
 def _join_filter_none(
@@ -149,7 +116,7 @@ def _join_filter_none(
 class DataModifier(Callable):
     """Generalized modifier of data in a pipeline."""
 
-    def __init__(self, generator: GeneratorLike):
+    def __init__(self):
         """Create a DataModifier object.
 
         This is an abstract base class and cannot be instantiated directlty.
@@ -159,11 +126,14 @@ class DataModifier(Callable):
         generator: :py:obj:`~.GeneratorLike`
             A generator like object to modify.
         """
-        self._generator = generator
+        self._generator = None
         self._logger = None
 
     def __call__(self, *args: Any, **kwargs: Any):
         """Call the underlying generator performing the new modifications."""
+        if self._generator is None:
+            self._decorate(*args, **kwargs)
+            return self
         args, kwargs = self.update(args, kwargs)
         data = self._generator(*args, **kwargs)
         processed_data = {}
@@ -184,12 +154,6 @@ class DataModifier(Callable):
             else:
                 processed_data[base_name] = datum
         return processed_data
-
-    @classmethod
-    def wraps(cls, *args, **kwargs):
-        """Create the class wrapping around the composed callable."""
-        # Expects that generator is the first argument
-        return PreparedPipeComponent(cls, *args, **kwargs)
 
     def update(cls, args, kwargs):
         """Update data modifier before compute if necessary.
@@ -231,6 +195,9 @@ class DataModifier(Callable):
         # (e.g. custom generator function).
         except AttributeError:
             pass
+
+    def _decorate(self, generator: GeneratorLike):
+        self._generator = generator
 
 
 class DataReducer(DataModifier):
