@@ -438,3 +438,17 @@ class CustomGenerator(Generator):
     def __call__(self, *args, **kwargs):
         """Call the internal function."""
         return self.function(*args, **kwargs)
+
+
+def make_generator(func):
+    """Decorate an function to mark as a data generator.
+
+    Note:
+        This uses `CustomGenerator`.
+
+    Parameters
+    ----------
+    func : callable
+        The function to use for generating initial data.
+    """
+    return CustomGenerator(func)

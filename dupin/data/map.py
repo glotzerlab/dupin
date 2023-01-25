@@ -1,4 +1,10 @@
-"""`data.base.DataMap` subclasses to transform distributional data."""
+"""`data.base.DataMap` subclasses to transform distributional data.
+
+Mapping in ``dupin`` is the idea of taking one distribution and transforming it
+into another. This is distinct from the mathematical view of functions as maps
+and is more general than Python's map builtin. A distribution/array can be
+mapped to a new array of any size.
+"""
 
 from typing import Callable, Dict, List, Union
 
@@ -9,12 +15,22 @@ from . import base
 
 
 class Identity(base.DataMap):
-    """A identity mapping for use in a data pipeline."""
+    """A identity mapping for use in a data pipeline.
+
+    This class maps a distribution to itself. This is useful when using with
+    `Tee`.
+
+    Example:
+        generator.pipe(
+            du.data.map.Tee(
+                du.data.map.Identity.wraps(),
+                du.data.map.CustomMap.wraps(lambda x: {"new_dist": x + 2})
+            )
+        )
+    """
 
     def __init__(self, generator: base.GeneratorLike):
         """Create a Identity object.
-
-        This DataMap does nothing to the data passed.
 
         Parameters
         ----------
@@ -24,7 +40,7 @@ class Identity(base.DataMap):
         super().__init__(generator)
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
-        """Do nothing to the base distribution.
+        """Return the same distribution.
 
         Parameters
         ----------
@@ -34,21 +50,30 @@ class Identity(base.DataMap):
         Return
         -------
         signals : dict[str, float]
-            Returns a dictionary a ``None`` key and the passed in data as a
-            value.
+            Returns a dictionary with the key ``None`` and the passed in data as
+            a value.
         """
         return {None: data}
 
 
 class Tee(base.DataMap):
-    """Enable mutliple maps to act on the same generator like object."""
+    """Combine mutliple maps into one acting on the same generator object.
+
+    Example:
+        generator.pipe(
+            du.data.map.Tee(
+                du.data.map.Identity.wraps(),
+                du.data.map.CustomMap.wraps(lambda x: {"new_dist": x + 2})
+            )
+        )
+    """
 
     def __init__(
         self,
         generator: base.GeneratorLike,
         maps: List[Callable[[base.GeneratorLike], base.DataMap]],
     ):
-        """Create a data.reduce.Tee object.
+        """Create a `Tee` object.
 
         Parameters
         ----------
@@ -61,8 +86,7 @@ class Tee(base.DataMap):
             returns a data map. Using the ``wraps`` class method with a
             `DataMap` subclass is a useful combination.
         logger: dupin.data.logging.Logger
-            A logger object to store data from the data pipeline for individual
-            elements of the composed maps.
+            A logger object to store data from the individual composed maps.
         """
         self._maps = [map_(generator) for map_ in maps]
         super().__init__(generator)
@@ -113,3 +137,17 @@ class Tee(base.DataMap):
 
 
 CustomMap = base.CustomMap
+
+
+def map_(func):
+    """Decorate an additional map step to the current pipeline.
+
+    Note:
+        This uses `CustomMap`.
+
+    Parameters
+    ----------
+    func : callable
+        The function to use for mapping.
+    """
+    return CustomMap.wraps(func)

@@ -184,3 +184,17 @@ class Tee(base.DataReducer):
 
 
 CustomReducer = base.CustomReducer
+
+
+def reduce_(func):
+    """Add the reduce step to the current pipeline.
+
+    Note:
+        This uses `CustomReducer`.
+
+    Parameters
+    ----------
+    func : callable
+        The function to use for reducing.
+    """
+    return CustomReducer.wraps(func)
