@@ -1,4 +1,8 @@
-"""Helper module for getting features accross an entire trajectory."""
+"""Helper module for generating/storing features accross an entire trajectory.
+
+This class provides the `SignalAggregator` class which takes a pipeline and
+provides methods for storing the output across a trajectory.
+"""
 
 
 from typing import Any, Dict, Iterator, Optional, Tuple
@@ -23,9 +27,19 @@ class SignalAggregator:
     """Using generators computes signals across a trajectory.
 
     This class can be used to create appropriate data structures for use in
-    analysising a whole trajectory with offline methods or iteratively
-    analysising for online use. See the `compute` and `accumulate` methods for
+    analyzing a whole trajectory with offline methods or iteratively
+    analyzing for online use. See the `compute` and `accumulate` methods for
     usage.
+
+    Attributes
+    ----------
+    generator: dupin.data.base.GeneratorLike
+        The generator which generates data given a trajectory frame.
+    signals: list[dict]
+        The current list of analyzed frames.
+    logger: dupin.data.logging.Logger
+        Either ``None`` when not logging or the logger which stores the metadata
+        from the generator.
     """
 
     def __init__(
@@ -53,9 +67,9 @@ class SignalAggregator:
     ):
         """Compute signals from generator across the iterator.
 
-        These signals are stored internally until asked for by `to_dataframe`.
-        This can be called multiple times, and the stored signals values will be
-        appended.
+        These signals are stored internally in ``signals`` until asked for by
+        `to_dataframe` or `to_xarray`. This can be called multiple times, and
+        the stored signals values will be appended.
 
         Parameters
         ----------
@@ -75,7 +89,7 @@ class SignalAggregator:
 
         Allows the addition of individual snapshots to aggregator. This can be
         useful for online detection or any case where computing the entire
-        trajectory is not possible or not desired.
+        trajectory is not possible or not desired or for use in a for loop.
 
         Parameters
         ----------
@@ -125,6 +139,11 @@ class SignalAggregator:
     def to_xarray(self, third_dim_name="third_dim") -> "xa.DataArray":
         """Return the aggregated signal as a `xarray.DataArray`.
 
+        This method is designed to be used primarily with non-reduced data (e.g.
+        per-particle features). This enables with `XarrayGenerator` to do the
+        mapping/reduction later, attempt multiple reductions, or use the data
+        for purposes outside detection such as visualization or plotting.
+
         Note:
             This method requires `xarray` to be available.
 
@@ -161,22 +180,28 @@ class SignalAggregator:
         The default behavior is to treat the items of the iterator as a single
         positional argument. Read the argument list for alternative options.
 
+        No
+
         Parameters
         ----------
         iterator: Iterator[Any]
             The iterator to convert.
         is_args: `bool`, optional
-            Whether to treat the iterator objects as positional arguments.
-            Defaults to False.
+            Whether to treat the iterator objects as positional arguments (i.e.
+            yields tuples). Defaults to False.
         is_kwargs: `bool`, optional
-            Whether to treat the iterator objects as keyword arguments. Defaults
-            to False.
+            Whether to treat the iterator objects as keyword arguments (i.e.
+            yields dicts). Defaults to False.
 
         Returns
         -------
         new_iterator: Iterator[Tuple[Tuple[Any,...], Dict[str, Any]]]
             The modified iterator.
         """
+        if is_args:
+            return ((arg, {}) for arg in iterator)
+        if is_kwargs:
+            return (((), arg) for arg in iterator)
         return (((arg,), {}) for arg in iterator)
 
     @property
@@ -202,7 +227,7 @@ class XarrayGenerator(base.Generator):
     """Generator that converts a frame from xarray to a dupin compatible form.
 
     This class is useful to use with `SignalAggregator.to_xarray` to separate
-    the data generation from the mapping and reducing steps.
+    the data generation and optionally the mapping step from the reduction step.
     """
 
     def __init__(self, feature_dim: str = "feature"):

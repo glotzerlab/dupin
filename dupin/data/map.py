@@ -3,7 +3,9 @@
 Mapping in ``dupin`` is the idea of taking one distribution and transforming it
 into another. This is distinct from the mathematical view of functions as maps
 and is more general than Python's map builtin. A distribution/array can be
-mapped to a new array of any size.
+mapped to a new array of any size. A common example in molecular simulations is
+spatial averaging which reduces local fluctuations of features. This particular
+map can be found in `dupin.data.spatial.NeighborAveraging`.
 """
 
 from typing import Dict, List, Union
@@ -22,10 +24,10 @@ class Identity(base.DataMap):
 
     Example:
         generator.pipe(
-            du.data.map.Tee(
+            du.data.map.Tee([
                 du.data.map.Identity()
                 du.data.map.CustomMap(lambda x: {"new_dist": x + 2})
-            )
+            ])
         )
     """
 
@@ -55,10 +57,10 @@ class Tee(base.DataMap):
 
     Example:
         generator.pipe(
-            du.data.map.Tee(
+            du.data.map.Tee([
                 du.data.map.Identity(),
                 du.data.map.CustomMap(lambda x: {"new_dist": x + 2})
-            )
+            ])
         )
 
     """
@@ -132,6 +134,9 @@ CustomMap = base.CustomMap
 
 def map_(func):
     """Decorate an additional map step to the current pipeline.
+
+    Note:
+        This is for the decorator syntax for creating pipelines.
 
     Note:
         This uses `CustomMap`.

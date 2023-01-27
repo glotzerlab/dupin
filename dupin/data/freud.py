@@ -1,4 +1,14 @@
-"""Interface from freud to dupin."""
+"""Interface from `freud` to dupin.
+
+freud is a Python package for analyzing molecular trajectory data.
+
+The interface consist of a means of creating generators from freud computes.
+This implementation is not privledged and one could implement a generator from
+freud computes independent of this module.
+
+Note:
+    Requires the `freud` package.
+"""
 
 from collections.abc import Sequence
 from typing import Any, Dict, List, Union
@@ -17,14 +27,29 @@ except ImportError:
 
 
 class FreudDescriptor(base.Generator):
-    """Defines the interface between freud and dupin."""
+    """Provides an interface for using freud computes in dupin.
+
+    The generator produces a dictionary of compute attributes selected by the
+    user. The feature identifiers (i.e. keys) are provided by the ``attrs``
+    constructor argument, and are the attribute names unless explicitly
+    specified otherwise. See the constructor documentation for more information.
+
+    The generator wraps the compute method of the freud compute and takes the
+    same signature for ``FreudDescriptor()``.
+
+    Note:
+        freud in some cases lumps multiple features into a two dimensional array
+        where the rows are individual particles and columns are features.
+        `FreudDescriptor` supports these features by using a list of string
+        feature names in the constructor argument ``attrs``.
+    """
 
     _prepend_compute_docstring = "The composed docstring is below."
 
     def __init__(
         self,
         compute: "freud.util._Compute",
-        attrs: Union[str, List[str]],
+        attrs: Union[str, List[str], Dict[str, str]],
         compute_method: str = "compute",
     ) -> None:
         """Create a `FreudDescriptor` object.
@@ -34,10 +59,15 @@ class FreudDescriptor(base.Generator):
         compute:
             A freud object for computation.
         attrs: str or Sequence[str] or dict[str, str]
-            A mapping of attribute names to desired signal names. If the value
-            in a entry is ``None`` the key value is used. A single string or
-            sequence of strings can be passed and will be converted to the
-            appropriate dict instance.
+            If a string, the name of the attribute to use. This will also be the
+            key name. If a sequence (list, tuple, etc) of string, all strings
+            are considered attributes to use, and the string is used as the
+            feature key as well. If a dictionary, the keys are the names of the
+            attributes in the freud compute, and the values are the identifiers
+            to use in dupin (``None`` can be used as a proxy for the same as the
+            attribute name). For two dimensional arrays, a list of strings is
+            expected in place of a single string where each column is an
+            independent feature.
         compute_method: `str`, optional
             The method name to use for computing the attrs specified. Defaults
             to "compute".

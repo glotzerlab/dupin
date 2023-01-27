@@ -1,4 +1,11 @@
-"""Classes for transforming array quantities into scalar features."""
+"""Classes for transforming array quantities into scalar features.
+
+Reduction in ``dupin`` takes an array and _reduces_ it to a set number of scalar
+values. A computer science reduction goes from an array to a single value. Our
+usage of the term is similar; we just allow for multiple reductions to happen
+within the same reducer. Examples of common reducers in the ``dupin`` sense are
+the max, min, mean, mode, and standard deviation functions.
+"""
 
 from typing import Dict, List, Optional, Tuple
 
@@ -9,7 +16,12 @@ from . import base
 
 
 class Percentile(base.DataReducer):
-    """Reduce a distribution into percentile values."""
+    """Reduce a distribution into percentile values.
+
+    The reducers sorts the input array to get the provided percentiles. The
+    reducers then uses the key format f"{percentile}%" to identify it
+    reductions.
+    """
 
     def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
         """Create a `Percentile` object.
@@ -26,7 +38,7 @@ class Percentile(base.DataReducer):
         super().__init__()
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
-        """Return the signals with dd% keys."""
+        """Return the reduced distribution."""
         indices = self._get_indices(len(distribution))
         sorted_indices = np.argsort(distribution)
         if self._logger is not None:
@@ -52,8 +64,9 @@ class NthGreatest(base.DataReducer):
 
     This reducer returns the greatest and least values from a distribution as
     specified by the provided indices. Greatest values are specified by positive
-    integers and least by negative. The features keys are modified with the
-    index ordinal number and whether it is greatest or least.
+    integers and least by negative, e.g. -1 is the minimum value in the array.
+    The features keys are modified with the index ordinal number and whether it
+    is greatest or least. -1 becomes "1st_least" and 10 becomes "10th_greatest".
     """
 
     def __init__(self, indices: Tuple[int]) -> None:
@@ -113,7 +126,12 @@ class NthGreatest(base.DataReducer):
 
 
 class Tee(base.DataReducer):
-    """Enable mutliple reducers to act on the same generator like object."""
+    """Enable mutliple reducers to act on the same generator like object.
+
+    Each reducer is run on the original distribution and their reductions are
+    concatenated. This reducer does not create its own reductions or
+    corresponding keys.
+    """
 
     def __init__(
         self,
@@ -176,6 +194,9 @@ CustomReducer = base.CustomReducer
 
 def reduce_(func):
     """Add the reduce step to the current pipeline.
+
+    Note:
+        This is for the decorator syntax for creating pipelines.
 
     Note:
         This uses `CustomReducer`.
