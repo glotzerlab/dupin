@@ -1,14 +1,15 @@
-dupin.detect.offline
-------------------------------
+dupin.detect
+------------
 
 .. rubric:: Overview
 
-.. py:currentmodule:: dupin.detect.offline
+.. py:currentmodule:: dupin.detect
 
 .. autosummary::
     :nosignatures:
 
     kneedle_elbow_detection
+    CostLinearBiasedFit
     CostLinearFit
     SweepDetector
     two_pass_elbow_detection
@@ -16,9 +17,10 @@ dupin.detect.offline
 
 .. rubric:: Details
 
-.. automodule:: dupin.detect.offline
-    :synopsis: Methods and classes for offline change point detection.
+.. automodule:: dupin.detect
+    :synopsis: Methods and classes for change point detection.
     :members: kneedle_elbow_detection,
         CostLinearFit,
+        CostLinearBiasedFit,
         SweepDetector,
         two_pass_elbow_detection

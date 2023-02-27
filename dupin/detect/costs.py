@@ -60,12 +60,12 @@ class BaseLinearCost(rpt.base.BaseCost, ABC):
 class CostLinearFit(BaseLinearCost):
     r"""Compute the L1 cumulative error of piecewise linear fits in time.
 
-    Used to compute the relative cumulative L1 deviation from a linear piecewise
-    fit of a signal.
+    Works with `ruptures`_. Used to compute the relative cumulative L1 deviation
+    from a linear piecewise fit of a signal.
 
     .. math::
 
-        C(s, e) = \\min\\limits_{m, b} \sum_i |y_i - (m x_i + b)|
+        C(s, e) = \min\limits_{m, b} \sum_i |y_i - (m x_i + b)|
 
     :math:`m` and :math:`b` can be vectors in the case of a multidimensional
     signal (the summation also goes across dimensions.
@@ -77,7 +77,7 @@ class CostLinearFit(BaseLinearCost):
         are ``"l1"`` and ``"l2"``.
 
     Note:
-        For use in ``ruptures`` search algorithms. To use properly `fit` must be
+        For use in `ruptures`_ search algorithms. To use properly `fit` must be
         called first with the signal.
     """
 
@@ -123,8 +123,12 @@ class CostLinearFit(BaseLinearCost):
         return m, b
 
 
+# TODO: Fill out documentation.
 class CostLinearBiasedFit(CostLinearFit):
-    """Compute a start to end linear fit and pentalize error and bias."""
+    """Compute a start to end linear fit and pentalize error and bias.
+
+    Works with `ruptures`_.
+    """
 
     model = "biased_linear_regression"
 

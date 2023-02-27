@@ -21,6 +21,33 @@ class SweepDetector:
     number of change points and an elbow detection algorithm, this class detects
     the optimal change points as defined by the change points detected at the
     elbow of the cost versus number of change points plot.
+
+    Parameters
+    ----------
+    detector: Union[``ruptures.base.BaseEstimator``, \
+                    ``callable`` [[`numpy.ndarray`, `int`], \
+                            `tuple` [`list` [`int` ], `float` ]]:
+        The detector to use for each round of change point detection. Can be any
+        callable which takes in a NumPy array signal of shape
+        :math:`(N_{frames}, N_{features})` and the number of change points and
+        returns a tuple containing the list of change points and the total cost
+        for the change points. The argument can also be any of `ruptures`_
+        estimators.
+    max_change_points: int
+        The maximum number of change points to attempt to detect.
+    elbow_detector: ``callable`` [[ `list` [ `float` ]], `int`], optional
+        A callable that takes in a list of costs and outputs the elbow of the
+        data. The callable should return ``None`` if no elbow can be detected.
+        Defaults to the KNEEDLE algorithm provided by the kneedle package (see
+        `kneedle_elbow_detection` for dupin defaults).
+    tolerance: `float`, optional
+        The percentile change in cost below which to stop detecting higher
+        numbers of change points. Since detecting :math:`n+1` change points is
+        by definition going to decrease the cost less than the last iteration,
+        this is a reliable way to prevent wasted computation. For instance, a
+        value of 0.01 means that if adding a change point decreases the cost by
+        less than one percent of the previous value the detector stops
+        immediately regardless of ``max_change_points``.
     """
 
     def __init__(
@@ -33,27 +60,6 @@ class SweepDetector:
         elbow_detector: Optional[ElbowDetector] = None,
         tolerance: float = 1e-3,
     ) -> None:
-        """Create a SweepDetector object.
-
-        Parameters
-        ----------
-        detector: Union[``ruptures.base.BaseEstimator``, \
-                        ``callable`` [[`numpy.ndarray`, `int`], \
-                                `tuple` [`list` [`int` ], `float` ]]:
-            The detector to use for each round of change point detection.
-        max_change_points: int
-            The maximum number of change points to attempt to detect.
-        elbow_detector: ``callable`` [[ `list` [ `float` ]], `int`], optional
-            A callable that takes in a list of costs and outputs the elbow of
-            the data. The callable should return ``None`` if no elbow can be
-            detected. Defaults to the KNEEDLE algorithm provided by the kneedle
-            package.
-        tolerance: `float`, optional
-            The percentile change in cost below which to stop detecting higher
-            numbers of change points. Since detecting :math:`n+1` change points
-            is by definition going to decrease the cost less than the last
-            iteration, this is a reliable way to prevent wasted computation.
-        """
         if isinstance(detector, rpt.base.BaseEstimator):
             self._detector = _RupturesWrapper(detector)
         else:
@@ -75,6 +81,12 @@ class SweepDetector:
         ----------
         data: numpy.ndarray
             The data to detect change points for.
+
+        Returns
+        -------
+        list[int]
+            The change points if any. An empty list means no change points were
+            detected.
         """
         change_points, penalties = self._get_change_points(data)
         self.costs_ = penalties
@@ -117,31 +129,58 @@ class SweepDetector:
         return change_points, penalties
 
 
-def kneedle_elbow_detection(costs: List[float], **kwargs):
-    r"""Run the KNEEDLE algorithm for elbow detection.
+def kneedle_elbow_detection(
+    costs: List[float],
+    S: int = 1,
+    interp_method: str = "interp1d",
+    curve: str = "convex",
+    direction: str = "decreasing",
+    **kwargs,
+):
+    r"""Run the KNEEDLE algorithm for elbow detection from the kneed package.
+
+    Note:
+        See the `kneed`_ documentation for more information on parameter
+        selection in the KNEEDLE algorithm.
 
     Parameters
     ----------
-    costs : `list` [` float` ]
+    costs : `list` [`float` ]
         The list/array of costs along some implicit x.
+    S : `int`, optional
+        A sensitivity parameter. Higher values require more obvious
+        elbows/knees, while the lowest value, 1, will detect elbows soonest.
+        Defaults to 1.
+    interp_method: `str`, optional
+        The method of interpolation for the discrete points. Options are
+        "interp1d" and "polynomial". "interp1d" uses
+        `scipy.interpolate.interp1d`, and "polynomial" uses `numpy.polyfit`.
+        Defualts to "interp1d".
+    curve: `str`, optional
+        Will detect knees if "concave" and elbows if "convex". Defaults to
+        "convex".
+    direction: `str`, optional
+        Either "increasing" or "decreasing". Whether the trend from left to
+        right is increasing or decreasing. Defaults to "decreasing".
     \*\*kwargs : dict
-        keyword arguments to pass to ``kneed.KneeLocator``.
+        Other keyword arguments to pass to ``kneed.KneeLocator``.
 
     Returns
     -------
     int
         The predicted index for the elbow.
     """
-    kwargs = {
-        "S": 1.0,
-        "interp_method": "interp1d",
-        "curve": "convex",
-        "direction": "decreasing",
-        **kwargs,
-    }
     with warnings.catch_warnings(record=True) as record:
         warnings.filterwarnings("ignore", module=".*kneed.*")
-        detector = kd.KneeLocator(x=range(0, len(costs)), y=costs, **kwargs)
+        detector = kd.KneeLocator(
+            x=range(0, len(costs)),
+            y=costs,
+            S=S,
+            interp_method=interp_method,
+            curve=curve,
+            direction=direction,
+            **kwargs,
+        )
         if len(record) > 0:
             _logger.info("No knee/elbow found.")
     return detector.elbow
@@ -150,7 +189,7 @@ def kneedle_elbow_detection(costs: List[float], **kwargs):
 def two_pass_elbow_detection(
     threshold: int, detector: Optional[ElbowDetector] = None
 ) -> ElbowDetector:
-    """Create a function that runs two passes of an elbow detection algorithm.
+    """Return a two pass function of another elbow detection algorithm.
 
     The detector runs a first pass of the elbow detector ``detector`` and
     determines if the elbow is far enough along the cost curve (determined by
@@ -177,7 +216,7 @@ def two_pass_elbow_detection(
 
     Returns
     -------
-    new_detector : ``callable`` [[`list` [`float`], `list` [`float` ]], `int`]
+    ``callable`` [[`list` [`float`], `list` [`float` ]], `int`]
         Returns a new elbow detector that uses the two steps scheme shown above.
     """
     if detector is None:
