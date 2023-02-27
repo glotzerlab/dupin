@@ -38,6 +38,8 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
+napoleon_numpy_docstring = True
+
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://docs.scipy.org/doc/numpy", None),
@@ -46,11 +48,11 @@ intersphinx_mapping = {
     "gsd": ("https://gsd.readthedocs.io/en/stable/", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/dev", None),
     "scikit-learn": (
-        "http://scikit-learn.org/stable",
+        "https://scikit-learn.org/stable",
         (None, "./_intersphinx/sklearn-objects.inv"),
     ),
+    "xarray": ("https://docs.xarray.dev/en/stable", None),
 }
-
 default_role = "any"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -92,7 +94,7 @@ release = "0.0.1.alpha"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -193,3 +195,9 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# Common link locations
+rst_epilog = """
+.. _ruptures: https://centre-borelli.github.io/ruptures-docs/code-reference/
+.. _kneed: https://kneed.readthedocs.io/en/stable/
+"""
