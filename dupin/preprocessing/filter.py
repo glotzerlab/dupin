@@ -1,4 +1,8 @@
-"""Filters to reduce the dimensions of the signal."""
+"""Feature selection schemes.
+
+This provides feature selection schemes distinct from packages like
+scikit-learn. These packages can easily be used as well for feature selection.
+"""
 
 import logging
 import warnings
@@ -23,30 +27,33 @@ class MeanShift:
     significant (judged by ``sensitivity``) compared to the other. The filter
     assumes Gaussian noise.
 
+    Parameters
+    ----------
+    sensitivity: `float`, optional
+        The minimum likelihood that one of the signal's end's mean is drawn
+        from the Gaussian approximation of the other end to require. In
+        other words, the lower the number the increased probability that the
+        difference in means is not random. Defaults to 0.01.
+
     Attributes
     ----------
-    mean_shifts_: :math:`(N_{features},) np.ndarray of float
+    sensitivity: float
+        The minimum likelihood that one of the signal's end's mean is drawn
+        from the Gaussian approximation of the other end to require. In
+        other words, the lower the number the increased probability that the
+        difference in means is not random.
+    mean_shifts_: :math:`(N_{features},)` `numpy.ndarray` of `float`
         The maximum number of standard deviations between the means of the two
         ends of the last computed signal.
-    likelihoods_: :math:`(N_{features},) np.ndarray of float
+    likelihoods_: :math:`(N_{features},)` `numpy.ndarray` of `float`
         The likelihood that such a mean shift would be observed in a Gaussian
         with the given mean and standard deviation. The likelihood discounts
         signal length.
-    filter_: :math:`(N_{features})` numpy.ndarray of bool
+    filter_: :math:`(N_{features})` `numpy.ndarray` of `bool`
         The array of features selected.
     """
 
     def __init__(self, sensitivity: float):
-        """Create a MeanShift filter.
-
-        Parameters
-        ----------
-        sensitivity: float, optional
-            The minimum likelihood that one of the signal's end's mean is drawn
-            from the Gaussian approximation of the other end to require. In
-            other words, the lower the number the increased probability that the
-            difference in means is not random. Defaults to 0.01.
-        """
         self.sensitivity = sensitivity
 
     def __call__(
@@ -59,22 +66,22 @@ class MeanShift:
 
         Parameters
         ----------
-        signal : :math:`(N_{samples}, N_{features})` numpy.ndarray of float
+        signal : :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
             The signal to filter dimensions from.
-        sample_size: float or int, optional
+        sample_size: `float` or `int`, optional
             Either the fraction of the overall signal to use to evaluate the
             statistics of each end of the signal, or the number of data points
             to use on each end of the signal for statistics. Default to 0.1. If
             this would result in less than three data points, three will be
             used.
-        return_filter: bool, optional
+        return_filter: `bool`, optional
             Whether to return the Boolean array filter rather than the filtered
             data. Defaults to ``False``.
 
         Returns
         -------
-        :math:`(N_{samples}, N_{filtered})` numpy.ndarray of float or \
-                :math:`(N_{features})` numpy.ndarray of bool
+        :math:`(N_{samples}, N_{filtered})` `numpy.ndarray` of `float` or \
+                :math:`(N_{features})` `numpy.ndarray` of `bool`
             By default returns the filtered data with features deemed
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
@@ -144,12 +151,29 @@ class MeanShift:
 class Correlated:
     """Filter out dimensions that are highly correlated with each other.
 
-    The filter computes the specified correlation matrix, and clusters the
+    The filter computes the chosen feature correlation matrix, and clusters the
     features based on the distance or similarity matrix depending on the
     specified clustering method. The number of clusters is determined by the
     minimum avaerage silhouette score for each number of clusters tested. Then a
     set number of features from each cluster is chosen through provided feature
     importance or randomly.
+
+    Parameters
+    ----------
+    method: `str`, optional
+        The method to use. Current options are "spectral". Defaults to
+        "spectral".
+    correlation: `str`, optional
+        The correlation type to use for computing similarity and distance
+        matrices. Currently supported options are "pearson". Defaults to
+        "pearson".
+    max_clusters: `int`, optional
+        The maximum number of clusters to try. Defaults to 10.
+    method_args: `tuple`, optional
+        Any positional arguments to pass to the selected method's
+        construction.
+    method_kwargs: `dict` [`str`, ``any`` ], optional
+        Any keyword arguments to pass to the selected method's construction.
 
     Attributes
     ----------
@@ -162,11 +186,11 @@ class Correlated:
         The maximum number of clusters to try. Defaults to 10.
     n_clusters_: int
         The determined optimal number of clusters.
-    labels_: :math:`(N_{features},) numpy.ndarray of int
+    labels_: :math:`(N_{features},)` `numpy.ndarray` of `int`
         The cluster labels for the best performing number of clusters.
-    scores_: :math:`(N - 2,)` numpy.ndarray of float
+    scores_: :math:`(N - 2,)` `numpy.ndarray` of `float`
         The scores for each number of clusters tried. Starts at 2.
-    filter_: :math:`(N_{features})` numpy.ndarray of bool
+    filter_: :math:`(N_{features})` `numpy.ndarray` of `bool`
         The array of features selected.
     """
 
@@ -181,25 +205,6 @@ class Correlated:
         method_args: Tuple[Any, ...] = (),
         method_kwargs: Dict[str, Any] = None,
     ) -> None:
-        """Construct a Correlated filter.
-
-        Parameters
-        ----------
-        method: str, optional
-            The method to use. Current options are "spectral". Defaults to
-            "spectral".
-        correlation: str, optional
-            The correlation type to use for computing similarity and distance
-            matrices. Currently supported options are "pearson". Defaults to
-            "pearson".
-        max_clusters: int, optional
-            The maximum number of clusters to try. Defaults to 10.
-        method_args: tuple, optional
-            Any positional arguments to pass to the selected method's
-            construction.
-        method_kwargs: dict[str, ``any``], optional
-            Any keyword arguments to pass to the selected method's construction.
-        """
         if method not in self._methods:
             raise ValueError(
                 f"Unsupported method {method}. Supported options "
@@ -229,22 +234,22 @@ class Correlated:
 
         Parameters
         ----------
-        signal : :math:`(N_{samples}, N_{features})` numpy.ndarray of float
+        signal : :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
             The signal to filter dimensions from.
-        features_per_cluster: int, optional
+        features_per_cluster: `int`, optional
             The number of features to keep per cluster. Defaults to 1.
-        return_filter: bool, optimal
+        return_filter: `bool`, optional
             Whether to return the features selected or not. Defaults to False.
-        feature_importance: :math:`(N_{features},)` numpy.ndarray of float, \
-                optional
+        feature_importance: :math:`(N_{features},)` `numpy.ndarray` of `float`\
+                , optional
             The importances of each feature. This determines which feature(s)
             from each cluster are chosen. If not provided, random importances
             are used.
 
         Returns
         -------
-        :math:`(N_{samples}, N_{filtered})` numpy.ndarray of float or \
-                :math:`(N_{features})` numpy.ndarray of bool
+        :math:`(N_{samples}, N_{filtered})` `numpy.ndarray` of `float` or \
+                :math:`(N_{features})` `numpy.ndarray` of `bool`
             By default returns the filtered data with features deemed
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
@@ -408,17 +413,17 @@ def local_smoothness_importance(
 
     Parameters
     ----------
-    signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+    signal: :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
         The potentially multidimensional signal.
-    dim: int, optional
+    dim: `int`, optional
         The dimension of spline to use, defaults to 1.
-    spacing: int, optional
+    spacing: `int`, optional
         The number of spaces beyond the dimension to space knots, defaults to
         ``None``. When ``None``, the behavior is :math:`\lceil d / 2 \rceil`.
 
     Returns
     -------
-    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+    feature_importance : :math:`(N_{features})` `numpy.ndarray` of `float`
         Feature rankings from 0 to 1 (higher is more important), for all
         features. A higher ranking indicates that the fit was better.
     """
@@ -437,13 +442,13 @@ def mean_shift_importance(likelihoods: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    likelihoods: :math:`(N_{features})` np.ndarray of float
+    likelihoods: :math:`(N_{features})` `numpy.ndarray` of `float`
         The likelihoods given from a `MeanShift` object or the likelihood that
         the given feature's signal happened by chance.
 
     Returns
     -------
-    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+    feature_importance : :math:`(N_{features})` `numpy.ndarray` of `float`
         Feature rankings from 0 to 1 (higher is more important), for all
         features. A higher ranking indicates that the likelihood was lower.
     """
@@ -457,14 +462,14 @@ def noise_importance(signal: np.ndarray, window_size: int) -> np.ndarray:
 
     Parameters
     ----------
-    signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+    signal: :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
         The potentially multidimensional signal.
     window_size: int
         The size of rolling window to use.
 
     Returns
     -------
-    feature_importance : :math:`(N_{features})` numpy.ndarray of float
+    feature_importance : :math:`(N_{features})` `numpy.ndarray` of `float`
         Feature rankings from 0 to 1 (higher is more important), for all
         features. A higher ranking indicates the standard deviation relative to
         the mean is low across the feature.
