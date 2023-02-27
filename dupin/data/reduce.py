@@ -21,17 +21,15 @@ class Percentile(base.DataReducer):
     The reducers sorts the input array to get the provided percentiles. The
     reducers then uses the key format f"{percentile}%" to identify it
     reductions.
+
+    Parameters
+    ----------
+    percentiles : `tuple` [ `int` ], optional
+        The percentiles in integer form (i.e. 100% equals 100). By defualt,
+        every 10% increment from 0% to 100% (inclusive) is taken.
     """
 
     def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
-        """Create a `Percentile` object.
-
-        Parameters
-        ----------
-        percentiles : `tuple` [ `int` ], optional
-            The percentiles in integer form (i.e. 100% equals 100). By defualt,
-            every 10% increment from 0% to 100% (inclusive) is taken.
-        """
         if percentiles is None:
             percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
         self._percentiles = percentiles
@@ -67,19 +65,17 @@ class NthGreatest(base.DataReducer):
     integers and least by negative, e.g. -1 is the minimum value in the array.
     The features keys are modified with the index ordinal number and whether it
     is greatest or least. -1 becomes "1st_least" and 10 becomes "10th_greatest".
+
+    Parameters
+    ----------
+    indices : `list` [ `int` ], optional
+        The values to query. 1 is the greatest value in the distribution; 10
+        the tenth, and so on. Negative number consitute the smallest values
+        in the distribution. -1 is the least value in the distribution. 0 is
+        treated as 1.
     """
 
     def __init__(self, indices: Tuple[int]) -> None:
-        """Create a `NthGreatest` object.
-
-        Parameters
-        ----------
-        indices : `list` [ `int` ], optional
-            The values to query. 1 is the greatest value in the distribution; 10
-            the tenth, and so on. Negative number consitute the smallest values
-            in the distribution. -1 is the least value in the distribution. 0 is
-            treated as 1.
-        """
         self._indices = self._fix_indices(indices)
         self._names = [self._index_name(index) for index in self._indices]
         super().__init__()
@@ -131,19 +127,17 @@ class Tee(base.DataReducer):
     Each reducer is run on the original distribution and their reductions are
     concatenated. This reducer does not create its own reductions or
     corresponding keys.
+
+    Parameters
+    ----------
+    reducers: `list` [`dupin.data.base.DataReducer`]
+        A sequence of a data reducers.
     """
 
     def __init__(
         self,
         reducers: List[base.DataReducer],
     ):
-        """Create a data.reduce.Tee object.
-
-        Parameters
-        ----------
-        reducers: `list` [`dupin.base.DataReducer`]
-            A sequence of a data reducers.
-        """
         self._reducers = reducers
         super().__init__()
 
@@ -203,7 +197,7 @@ def reduce_(func):
 
     Parameters
     ----------
-    func : callable
+    func : ``callable``
         The function to use for reducing.
     """
     return CustomReducer(func)

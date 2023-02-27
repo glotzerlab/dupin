@@ -16,7 +16,6 @@ dupin.data.reduce
 .. rubric:: Details
 
 .. automodule:: dupin.data.reduce
-    :synopsis: Base classes for data reduction into scalar features.
     :members: CustomReducer,
         NthGreatest,
         Percentile,

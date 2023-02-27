@@ -6,8 +6,10 @@ The interface consist of a means of creating generators from freud computes.
 This implementation is not privledged and one could implement a generator from
 freud computes independent of this module.
 
-Note:
+Note
+----
     Requires the `freud` package.
+
 """
 
 from collections.abc import Sequence
@@ -37,7 +39,26 @@ class FreudDescriptor(base.Generator):
     The generator wraps the compute method of the freud compute and takes the
     same signature for ``FreudDescriptor()``.
 
-    Note:
+    Parameters
+    ----------
+    compute:
+        A freud object for computation.
+    attrs: str or Sequence[str] or dict[str, str]
+        If a string, the name of the attribute to use. This will also be the
+        key name. If a sequence (list, tuple, etc) of string, all strings
+        are considered attributes to use, and the string is used as the
+        feature key as well. If a dictionary, the keys are the names of the
+        attributes in the freud compute, and the values are the identifiers
+        to use in dupin (``None`` can be used as a proxy for the same as the
+        attribute name). For two dimensional arrays, a list of strings is
+        expected in place of a single string where each column is an
+        independent feature.
+    compute_method: `str`, optional
+        The method name to use for computing the attrs specified. Defaults
+        to "compute".
+
+    Note
+    ----
         freud in some cases lumps multiple features into a two dimensional array
         where the rows are individual particles and columns are features.
         `FreudDescriptor` supports these features by using a list of string
@@ -52,26 +73,6 @@ class FreudDescriptor(base.Generator):
         attrs: Union[str, List[str], Dict[str, str]],
         compute_method: str = "compute",
     ) -> None:
-        """Create a `FreudDescriptor` object.
-
-        Parameters
-        ----------
-        compute:
-            A freud object for computation.
-        attrs: str or Sequence[str] or dict[str, str]
-            If a string, the name of the attribute to use. This will also be the
-            key name. If a sequence (list, tuple, etc) of string, all strings
-            are considered attributes to use, and the string is used as the
-            feature key as well. If a dictionary, the keys are the names of the
-            attributes in the freud compute, and the values are the identifiers
-            to use in dupin (``None`` can be used as a proxy for the same as the
-            attribute name). For two dimensional arrays, a list of strings is
-            expected in place of a single string where each column is an
-            independent feature.
-        compute_method: `str`, optional
-            The method name to use for computing the attrs specified. Defaults
-            to "compute".
-        """
         if not hasattr(compute, compute_method):
             raise ValueError("compute_method must exist for the compute.")
         self.compute = compute

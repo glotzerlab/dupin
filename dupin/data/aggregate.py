@@ -31,13 +31,22 @@ class SignalAggregator:
     analyzing for online use. See the `compute` and `accumulate` methods for
     usage.
 
+    Parameters
+    ----------
+    generator : :obj:`dupin.data.base.GeneratorLike`
+        A sequence of signal generators to use for generating the
+        multivariate signal of a trajectory.
+    logger : dupin.data.logging.Logger
+        A logger object to store information about the data processing of
+        the given pipeline. Defaults to ``None``.
+
     Attributes
     ----------
-    generator: dupin.data.base.GeneratorLike
+    generator : :obj:`dupin.data.base.GeneratorLike`
         The generator which generates data given a trajectory frame.
-    signals: list[dict]
+    signals : list[dict]
         The current list of analyzed frames.
-    logger: dupin.data.logging.Logger
+    logger : dupin.data.logging.Logger
         Either ``None`` when not logging or the logger which stores the metadata
         from the generator.
     """
@@ -47,17 +56,6 @@ class SignalAggregator:
         generator: base.GeneratorLike,
         logger: Optional[logging.Logger] = None,
     ):
-        """Create a `SignalAggregator` object.
-
-        Parameters
-        ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A sequence of signal generators to use for generating the
-            multivariate signal of a trajectory.
-        logger: dupin.data.logging.Logger or None
-            A logger object to store information about the data processing of
-            the given pipeline. Defaults to None
-        """
         self.generator = generator
         self.signals = []
         self.logger = logger
@@ -93,9 +91,9 @@ class SignalAggregator:
 
         Parameters
         ----------
-        \*args: Any
+        \*args:
             Positional arguments to feed to the generator like object.
-        \*\*kwargs: Any
+        \*\*kwargs:
             Keyword arguments to feed to the generator like object.
         """
         self.signals.append(self.generator(*args, **kwargs))
@@ -115,6 +113,8 @@ class SignalAggregator:
             correspond to system frames in the order passed to `accumulate` or
             `compute`.
         """
+        if len(self.signals) == 0:
+            return pd.DataFrame()
 
         def is_array(v):
             if hasattr(v, "__len__"):
@@ -184,12 +184,12 @@ class SignalAggregator:
 
         Parameters
         ----------
-        iterator: Iterator[Any]
+        iterator : Iterator[Any]
             The iterator to convert.
-        is_args: `bool`, optional
+        is_args : :obj:`bool`, optional
             Whether to treat the iterator objects as positional arguments (i.e.
             yields tuples). Defaults to False.
-        is_kwargs: `bool`, optional
+        is_kwargs : :obj:`bool`, optional
             Whether to treat the iterator objects as keyword arguments (i.e.
             yields dicts). Defaults to False.
 
@@ -228,17 +228,15 @@ class XarrayGenerator(base.Generator):
 
     This class is useful to use with `SignalAggregator.to_xarray` to separate
     the data generation and optionally the mapping step from the reduction step.
+
+    Parameters
+    ----------
+    feature_dim : :obj:`str`, optional
+        The name of the feature dimension in the xarray frames, defaults to
+        "feature" (the default of `SignalAggregator.to_xarray`).
     """
 
     def __init__(self, feature_dim: str = "feature"):
-        """Create a XarrayGenerator object.
-
-        Parameters
-        ----------
-        feature_dim : str, optional
-            The name of the feature dimension in the xarray frames, defaults to
-            "feature" (the default of `SignalAggregator.to_xarray`).
-        """
         self._feature_dim = feature_dim
 
     def __call__(self, xarray_frame: "xa.DataArray"):

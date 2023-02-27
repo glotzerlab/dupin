@@ -1,6 +1,6 @@
-"""`data.base.DataMap` subclasses to transform distributional data.
+"""`dupin.data.base.DataMap` subclasses to transform distributional data.
 
-Mapping in ``dupin`` is the idea of taking one distribution and transforming it
+Mapping in dupin is the idea of taking one distribution and transforming it
 into another. This is distinct from the mathematical view of functions as maps
 and is more general than Python's map builtin. A distribution/array can be
 mapped to a new array of any size. A common example in molecular simulations is
@@ -22,7 +22,8 @@ class Identity(base.DataMap):
     This class maps a distribution to itself. This is useful when using with
     `Tee`.
 
-    Example:
+    Example::
+
         generator.pipe(
             du.data.map.Tee([
                 du.data.map.Identity()
@@ -32,7 +33,6 @@ class Identity(base.DataMap):
     """
 
     def __init__(self):
-        """Create a Identity object."""
         super().__init__()
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
@@ -55,7 +55,8 @@ class Identity(base.DataMap):
 class Tee(base.DataMap):
     """Combine mutliple maps into one acting on the same generator object.
 
-    Example:
+    Example::
+
         generator.pipe(
             du.data.map.Tee([
                 du.data.map.Identity(),
@@ -63,19 +64,16 @@ class Tee(base.DataMap):
             ])
         )
 
+    Parameters
+    ----------
+    reducers: `list` [`dupin.data.base.DataReducer`]
+        A sequence of data modifiers.
     """
 
     def __init__(
         self,
         maps: List[base.DataMap],
     ):
-        """Create a `Tee` object.
-
-        Parameters
-        ----------
-        reducers: `list` [`dupin.data.base.DataReducer`]
-            A sequence of data modifiers.
-        """
         self._maps = maps
         super().__init__()
 
@@ -143,7 +141,7 @@ def map_(func):
 
     Parameters
     ----------
-    func : callable
+    func : ``callable``
         The function to use for mapping.
     """
     return CustomMap(func)

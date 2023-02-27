@@ -33,6 +33,22 @@ class NeighborAveraging(base.DataMap):
     passed in manually in an array of :math:`(i, j)` pairs, through a tuple of
     arrays, or through a `freud` neighbor list.
 
+    Parameters
+    ----------
+    expected_kwarg: `str`, optional
+        The expected key word argument passed to
+        `dupin.data.base.DataModifier.__call__` to use as neighbors.
+        Defaults to "spatial_neighbors".
+    remove_kwargs: `bool`, optional
+        Whether the specified ``expected_kwarg`` should be removed before
+        passing through to the composed generators. Defaults to ``True``.
+    excluded_self: `bool`, optional
+        Whether the passed neighbor lists will exclude self neighbors.
+        ``True`` means self neighbors will be added by the instance, and
+        ``False`` means the neighbor list provides self neighbors. Defaults
+        to ``True``. If set incorrectly this will cause erroneous
+        results (double or no counting).
+
     Warning:
         A particle should be listed as its own neighbor for purposes of the
         averaging. So if the passed neighbor list does not include self
@@ -53,24 +69,6 @@ class NeighborAveraging(base.DataMap):
         remove_kwarg: bool = True,
         excluded_self: bool = True,
     ):
-        """Create a `NeighborAveraging` object.
-
-        Parameters
-        ----------
-        expected_kwarg: `str`, optional
-            The expected key word argument passed to
-            `dupin.data.base.DataModifier.__call__` to use as neighbors.
-            Defaults to "spatial_neighbors".
-        remove_kwargs: `bool`, optional
-            Whether the specified ``expected_kwarg`` should be removed before
-            passing through to the composed generators. Defaults to ``True``.
-        excluded_self: `bool`, optional
-            Whether the passed neighbor lists will exclude self neighbors.
-            ``True`` means self neighbors will be added by the instance, and
-            ``False`` means the neighbor list provides self neighbors. Defaults
-            to ``True``. If set incorrectly this will cause erroneous
-            results (double or no counting).
-        """
         self._expected_kwarg = expected_kwarg
         self._remove_kwarg = remove_kwarg
         self._excluded_self = excluded_self

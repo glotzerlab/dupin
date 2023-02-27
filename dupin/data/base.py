@@ -1,61 +1,4 @@
-"""Base classes for the data module.
-
-Data Model
-==========
-
-Steps
------
-Data creation and modification occurs in three steps:
-    1. Generation - create initial features from trajectory data.
-    2. Mapping - transform initial features into new distributions (e.g. spatial
-       averaging).
-    3. Reduction - reduce distributions (arrays) into (multiple) single
-       features.
-
-Data Format
------------
-``dupin`` uses a pipeline approach to generate and modify data from raw
-trajectory data. Throughout this pipeline data is stored in dictionaries where
-the keys denote the feature stored and the value is the actual feature or array
-(distribution). At each step in the pipeline past generation, a pipeline
-component is expected to not only return the modified data but also string keys
-referring to the modification. For example, for a reducer that takes the maximum
-a propery return value of `DataModifier.compute`would be
-``{"max": np.max(distribuition)}``. These keys get concatenated with the
-previous key so that if the key for the distribution in the previous examples
-was ``"density"`` the new dictionary key would be ``"max_density"``.
-
-Pipeline Creation
------------------
-``dupin`` supports two distinct methods for creating pipelines: the builder
-style and decorator style. While functionally equivalent the two styles read
-quite different.
-
-Builder Method
-++++++++++++++
-The builder approach uses the `PipeComponent.pipe`, `PipeComponent.map`,
-and `PipeComponent.reduce` methods to create a pipeline. The pipeline reads
-left to right.
-
-Example:
-    generator.map(lambda x: {"mag": np.floor(np.log10(x))}
-    ).map(lambda x: {"clipped": np.clip(x, 2)}
-    ).reduce(lambda x: {"min": np.min(x)})
-
-Decorator Method
-++++++++++++++++
-The decorator syntax uses Python's decorator syntax and explicit function
-composition to construct the pipeline. Consequently, the pipeline reads right to
-left and bottom to top.
-
-Example:
-    @du.data.reduce_(lambda x: {"min": np.min(x)})
-    @du.data.map_(lambda x: {"clipped": np.clip(x, 2)})
-    @du.data.map_(lambda x: {"mag": np.floor(np.log10(x))})
-    @du.data.make_generator
-    def generator():
-        pass
-"""
+"""Base classes for the data module."""
 
 import typing
 from abc import abstractmethod
@@ -95,6 +38,7 @@ class PipeComponent:
         ----------
         next_: dupin.data.base.DataModifier
             The next step in the data pipeline.
+
         Returns
         -------
         DataMap or DataReducer:
@@ -119,9 +63,9 @@ class PipeComponent:
         Parameters
         ----------
             map_: dupin.data.base.DataMap \
-                    or callable[numpy.ndarray, dict[str, numpy.ndarray]]:
+                    or ``callable`` [numpy.ndarray, dict[str, numpy.ndarray]]:
                 The next step in the data pipeline. Can be a custom callable
-                mapping function or an ``dupin`` any of the built in
+                mapping function or an dupin any of the built in
                 mapping operations.
 
         Returns
@@ -145,9 +89,9 @@ class PipeComponent:
         Parameters
         ----------
             reduce_: dupin.data.base.DataReducer \
-                    or callable[numpy.ndarray, dict[str, float]]
+                    or ``callable`` [numpy.ndarray, dict[str, float]]
                 The next step in the data pipeline. Can be a custom callable
-                reducing function or an ``dupin`` any of the built in
+                reducing function or an dupin any of the built in
                 reducing operations.
 
         Returns
@@ -171,18 +115,17 @@ def _join_filter_none(
 
 
 class DataModifier(Callable):
-    """Generalized modifier of data in a pipeline."""
+    """Generalized modifier of data in a pipeline.
+
+    This is an abstract base class and cannot be instantiated directlty.
+
+    Parameters
+    ----------
+    generator: :py:obj:`~.GeneratorLike`
+        A generator like object to modify.
+    """
 
     def __init__(self):
-        """Create a DataModifier object.
-
-        This is an abstract base class and cannot be instantiated directlty.
-
-        Parameters
-        ----------
-        generator: :py:obj:`~.GeneratorLike`
-            A generator like object to modify.
-        """
         self._generator = None
         self._logger = None
 
@@ -263,7 +206,8 @@ class DataReducer(DataModifier):
     The class automatically skips over scalar features in its reduction.
     Subclasses requires the implemnation of `compute`.
 
-    Note:
+    Note
+    ----
         This is an abstract base class and cannot be instantiated.
     """
 
@@ -276,7 +220,7 @@ class DataReducer(DataModifier):
         distribution : :math:`(N,)` np.ndarray of float
             The array representing a distribution to reduce.
 
-        Return
+        Returns
         -------
         reduced_distribution : dict[str, float]
             Returns a dictionary with string keys representing the type of
@@ -298,11 +242,13 @@ class DataMap(DataModifier, PipeComponent):
 
     This class requires the implemnation of `compute` in subclasses.
 
-    Note:
+    Note
+    ----
         While this is named after the map operation, the array returned need not
         be identical in size.
 
-    Note:
+    Note
+    ----
         This is an abstract base class and cannot be instantiated.
     """
 
@@ -315,7 +261,7 @@ class DataMap(DataModifier, PipeComponent):
         distribution : :math:`(N,)` np.ndarray of float
             The array representing a distribution to map.
 
-        Return
+        Returns
         -------
         signals : dict[str, float]
             Returns a dictionary with string keys representing the type of
@@ -369,9 +315,18 @@ class Generator(Callable, PipeComponent):
 class CustomMap(DataMap):
     """Wrap a custom mapping callable.
 
+    Parameters
+    ----------
+    generator : :py:obj:`~.GeneratorLike`
+        A generator like object to transform.
+    custom_function : ``callable`` [`numpy.ndarray`, `dict` ]
+        A custom callable that takes in a NumPy array and returns a dictionary
+        with keys indicating the tranformation and values the transformed
+        distribution (array).
+
     Attributes
     ----------
-    function: ``callable`` [[`numpy.ndarray`], `dict` [`str`, `numpy.ndarray`]]
+    function : ``callable`` [[`numpy.ndarray`], `dict` ]
         The provided callable.
     """
 
@@ -382,18 +337,6 @@ class CustomMap(DataMap):
             [npt.ArrayLike], Dict[str, np.ndarray]
         ],
     ):
-        """Create a `CustomMap` object.
-
-        Parameters
-        ----------
-        generator: :py:obj:`~.GeneratorLike`
-            A generator like object to transform.
-        custom_function: ``callable`` [`numpy.ndarray`, \
-                `dict` [`str`, `numpy.ndarray`]
-            A custom callable that takes in a NumPy array and returns a
-            dictionary with keys indicating the tranformation and values the
-            transformed distribution (array).
-        """
         super().__init__(generator)
         self.function = custom_function
 
@@ -405,9 +348,18 @@ class CustomMap(DataMap):
 class CustomReducer(DataReducer):
     """Wrap a custom reducing callable.
 
+    Parameters
+    ----------
+    generator: :py:obj:`~.GeneratorLike`
+        A generator like object to reduce.
+    custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
+        A custom callable that takes in a NumPy array and returns a
+        dictionary with keys indicating the reduction and values the reduced
+        distribution value.
+
     Attributes
     ----------
-    function: ``callable`` [[`numpy.ndarray`], `dict` [`str`, `numpy.ndarray`]]
+    function: ``callable`` [[`numpy.ndarray`], `dict` [`str`, `numpy.ndarray` ]]
         The provided callable.
     """
 
@@ -416,17 +368,6 @@ class CustomReducer(DataReducer):
         generator: GeneratorLike,
         custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
     ):
-        """Create a `CustomReducer` object.
-
-        Parameters
-        ----------
-        generator: :py:obj:`~.GeneratorLike`
-            A generator like object to reduce.
-        custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
-            A custom callable that takes in a NumPy array and returns a
-            dictionary with keys indicating the reduction and values the reduced
-            distribution value.
-        """
         super().__init__(generator)
         self.function = custom_function
 
@@ -440,23 +381,21 @@ class CustomGenerator(Generator):
 
     This class allows custom user functions to be the generator of the initial
     data from a pipeline. The call signature is arbitrary but has an expected
-    output given in the `__init__` documentation.
+    output described in the parameter section.
+
+    Parameters
+    ----------
+    custom_function: ``callable`` [[...], dict[str, numpy.ndarray or float]]
+        A custom callable that returns a dictionary with feature names for
+        keys and feature values for values (as either floats or arrays).
 
     Attributes
     ----------
-    function: callable[[...], dict[str, numpy.ndarray or float]]
+    function: ``callable`` [[...], dict[str, numpy.ndarray or float]]
         The provided callable.
     """
 
     def __init__(self, custom_function):
-        """Wrap a user callable for using a data pipeline.
-
-        Parameters
-        ----------
-        custom_function: callable[[...], dict[str, numpy.ndarray or float]]
-            A custom callable that returns a dictionary with feature names for
-            keys and feature values for values (as either floats or arrays).
-        """
         self.function = custom_function
 
     def __call__(self, *args, **kwargs):
@@ -467,15 +406,17 @@ class CustomGenerator(Generator):
 def make_generator(func):
     """Decorate an function to mark as a data generator.
 
-    Note:
+    Note
+    ----
         This is for the decorator syntax for creating pipelines.
 
-    Note:
+    Note
+    ----
         This uses `CustomGenerator`.
 
     Parameters
     ----------
-    func : callable
+    func : ``callable``
         The function to use for generating initial data.
     """
     return CustomGenerator(func)
