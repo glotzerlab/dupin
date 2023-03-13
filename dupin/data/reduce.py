@@ -204,7 +204,7 @@ class Tee(base.DataReducer):
     def _decorate(self, generator: base.GeneratorLike):
         self._generator = generator
         for reducer in self._reducers:
-            reducer(generator)
+            reducer._decorate(generator)
 
 
 CustomReducer = base.CustomReducer
