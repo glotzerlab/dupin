@@ -8,16 +8,16 @@ import dupin as du
 
 def test_frame_mechanism():
     logger = du.data.logging.Logger()
-    logger.set_context("foo")
+    logger._set_context("foo")
     logger["bar"] = 5
     logger["baz"] = 6
     assert len(logger.frames) == 0
     logger.end_frame()
     assert len(logger.frames) == 1
     assert logger.frames[0] == {"foo": {"bar": 5, "baz": 6}}
-    logger.set_context("foo")
+    logger._set_context("foo")
     logger["bar"] = 5
-    logger.set_context("bar")
+    logger._set_context("bar")
     logger["foo"] = 5
     assert len(logger.frames) == 1
     logger.end_frame()
@@ -29,10 +29,10 @@ def test_frame_mechanism():
 def test_to_dataframe(rng):
     logger = du.data.logging.Logger()
     for _ in range(10):
-        logger.set_context("foo")
+        logger._set_context("foo")
         logger["a"] = rng.random()
         logger["b"] = rng.integers(1000)
-        logger.set_context("bar")
+        logger._set_context("bar")
         logger["c"] = -rng.random()
         logger["d"] = -rng.integers(1000)
         logger.end_frame()
