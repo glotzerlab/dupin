@@ -365,10 +365,9 @@ class CustomReducer(DataReducer):
 
     def __init__(
         self,
-        generator: GeneratorLike,
         custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
     ):
-        super().__init__(generator)
+        super().__init__()
         self.function = custom_function
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
