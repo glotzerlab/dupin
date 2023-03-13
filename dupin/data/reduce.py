@@ -32,29 +32,45 @@ class Percentile(base.DataReducer):
     def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
         if percentiles is None:
             percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-        self._percentiles = percentiles
+        self._percentiles = np.unique(list(percentiles))
+        self._quantiles = self._percentiles / 100.0
         super().__init__()
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the reduced distribution."""
-        indices = self._get_indices(len(distribution))
-        sorted_indices = np.argsort(distribution)
+        if len(distribution) == 0:
+            if self._logger is not None:
+                self._logger["Percentile"] = {}
+            return {}
+
+        data = {}
+        log = {}
+        non_nan = np.flatnonzero(~np.isnan(distribution))
+        if non_nan.size == 0:
+            for p in self._percentiles:
+                key = f"{p}%"
+                log[key] = 0
+                data[key] = np.nan
+            if self._logger is not None:
+                self._logger["Percentile"] = log
+            return data
+
+        cleaned_dist = distribution[non_nan]
+        indices = self._get_indices(len(cleaned_dist))
+        sorted_indices = np.argsort(cleaned_dist)
+        for i, p in zip(indices, self._percentiles):
+            key = f"{p}%"
+            log[key] = non_nan[sorted_indices[i]]
+            data[key] = cleaned_dist[sorted_indices[i]]
         if self._logger is not None:
-            self._logger["Percentile"] = {
-                f"{percent}%": sorted_indices[index]
-                for index, percent in zip(indices, self._percentiles)
-            }
-        return {
-            f"{percent}%": distribution[sorted_indices[index]]
-            for percent, index in zip(self._percentiles, indices)
-        }
+            self._last_log = log
+            self._logger["Percentile"] = log
+        return data
 
     def _get_indices(self, distribution_size):
         """Map to percentiles to [0, len - 1]."""
-        return np.round(
-            np.array(self._percentiles) / 100 * (distribution_size - 1),
-            decimals=0,
-        ).astype(int)
+        fractional_indices = self._quantiles * (distribution_size - 1)
+        return np.rint(fractional_indices).astype(int)
 
 
 class NthGreatest(base.DataReducer):
@@ -76,22 +92,35 @@ class NthGreatest(base.DataReducer):
     """
 
     def __init__(self, indices: Tuple[int]) -> None:
-        self._indices = self._fix_indices(indices)
+        self._indices = self._fix_indices(np.asarray(list(indices)))
         self._names = [self._index_name(index) for index in self._indices]
         super().__init__()
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with modified keys."""
-        sorted_indices = np.argsort(distribution)
+        nan_mask = np.flatnonzero(~np.isnan(distribution))
+        filtered_distribution = distribution[nan_mask]
+        sorted_indices = np.argsort(filtered_distribution)
+        log = {}
+        data = {}
+        for i, name in zip(self._indices, self._names):
+            if not self._fits(distribution, i):
+                continue
+            if not self._fits(filtered_distribution, i):
+                data[name] = np.nan
+                log[name] = np.nan
+                continue
+            data[name] = filtered_distribution[sorted_indices[i]]
+            log[name] = nan_mask[sorted_indices[i]]
         if self._logger is not None:
-            self._logger["NthGreatest"] = {
-                name: sorted_indices[index]
-                for index, name in zip(self._indices, self._names)
-            }
-        return {
-            name: distribution[sorted_indices[index]]
-            for index, name in zip(self._indices, self._names)
-        }
+            self._logger["NthGreatest"] = log
+        return data
+
+    @staticmethod
+    def _fits(dist: np.array, index: int):
+        if index < 0:
+            return -index <= len(dist)
+        return index < len(dist)
 
     @staticmethod
     def _index_name(index: int) -> str:
@@ -112,13 +141,8 @@ class NthGreatest(base.DataReducer):
 
     @staticmethod
     def _fix_indices(indices: List[int]) -> List[int]:
-        array_indices = np.asarray(indices)
-        neg_array_indices = -array_indices
-        return np.unique(
-            np.where(
-                array_indices > 0, neg_array_indices, neg_array_indices - 1
-            )
-        )
+        neg_indices = -indices
+        return np.unique(np.where(indices > 0, neg_indices, neg_indices - 1))
 
 
 class Tee(base.DataReducer):
