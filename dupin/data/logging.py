@@ -16,7 +16,8 @@ stages of modification) and the second level is the class/modifier specific
 identifier, and the third and final level is the logging data for that object
 for that frame.
 
-Note:
+Note
+----
     Logging data is not accessible to other parts of the pipeline.
 """
 
@@ -40,9 +41,7 @@ class Logger:
     def __init__(self):
         """Construct a Logger instance."""
         self._data = []
-        self._current_frame = {}
-        self._current_context = None
-        self._current_key = None
+        self._reset()
 
     def _set_context(self, key):
         """Set the current distribution to store information on.
@@ -72,8 +71,14 @@ class Logger:
             self._current_frame.setdefault(
                 self._context_key, self._current_context
             )
-        self._data.append(self._current_frame)
+        if self._current_frame:
+            self._data.append(self._current_frame)
+        self._reset()
+
+    def _reset(self):
         self._current_frame = {}
+        self._current_context = None
+        self._current_key = None
 
     @property
     def frames(self):
@@ -90,10 +95,18 @@ class Logger:
         This uses `pandas.MultiIndex` to map the nested dictionaries to a
         dataframe.
 
-        Warning:
+        Warning
+        -------
             This assumes the pipeline produces homogenous data along a
             trajectory.
+
+        Warning
+        -------
+            This only works for floating point logged values.
         """
+        # TODO: Extend to other dtypes?
+        if len(self._data) == 0:
+            return pd.DataFrame()
         frame_data = self._data[0]
         column_index = pd.MultiIndex.from_tuples(
             _create_column_index(frame_data)
