@@ -1,11 +1,12 @@
-Welcome to event-detection's documentation!
-===========================================
+.. include:: ../README.rst
+
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   readme
    installation
    usage
    contributing
