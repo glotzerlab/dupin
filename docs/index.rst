@@ -12,6 +12,7 @@ Table of Contents
    contributing
    authors
    changelog
+   citing
 
 .. toctree::
     :maxdepth: 3
