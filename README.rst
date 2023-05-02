@@ -15,10 +15,10 @@ Welcome to ``dupin`` a Python package for detecting rare events in molecular sim
 Overview
 --------
 
-``dupin`` is designed to provide an unopinionated API for partitioning temporal 3D point cloud data into regions of stability and transition.
+**dupin** is designed to provide an unopinionated API for partitioning temporal 3D point cloud data into regions of stability and transition.
 Generally such data comes from molecular simulations or experimental imaging techniques.
-For example, if a researcher imaged gold nanoparticles nucleating into FCC, ``dupin`` could help to partition the system into the initial fluid, transition, and crystal regions of the point cloud trajectory.
-Though, ``dupin`` attempts to be general and _unopinionated_ we provide sensible defaults and do not sacrifice easy of use for customizability.
+For example, if a researcher imaged gold nanoparticles nucleating into FCC, **dupin** could help to partition the system into the initial fluid, transition, and crystal regions of the point cloud trajectory.
+Though, **dupin** attempts to be general and *unopinionated* we provide sensible defaults and do not sacrifice easy of use for customizability.
 
 Resources
 ---------
@@ -38,7 +38,7 @@ Related Tools
 Basic Pipeline
 --------------
 
-``dupin`` is based around a five step model going from a raw simulation in the form of a trajectory into a set of change points defining the boundaries of events in a molecular simulation.
+**dupin** is based around a five step model going from a raw simulation in the form of a trajectory into a set of change points defining the boundaries of events in a molecular simulation.
 The steps are
 
 1. Data Collection - A variety of features need to be calculated in order to feed into the change point detection algorithms.
