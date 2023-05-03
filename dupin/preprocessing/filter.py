@@ -474,6 +474,33 @@ def mean_shift_importance(likelihoods: np.ndarray) -> np.ndarray:
     return _to_unit_len(-likelihoods)
 
 
+def jump_size_importance(signal: np.ndarray, n_end: int = 3) -> np.ndarray:
+    """Rank features based on the size of the relative difference between ends.
+
+    Parameters
+    ----------
+    signal: :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
+        The potentially multidimensional signal.
+    n_end: The number of indices to take on either end to compute the mean to
+        determine the jump from one end to the other.
+
+    Returns
+    -------
+    feature_importance : :math:`(N_{features})` `numpy.ndarray` of `float`
+        Feature rankings from 0 to 1 (higher is more important), for all
+        features. A higher ranking indicates the standard deviation relative to
+        the mean is low across the feature.
+    """
+    if isinstance(signal, pd.DataFrame):
+        return jump_size_importance(signal.to_numpy(), n_end)
+    left = signal[:n_end].mean(axis=0)
+    right = signal[-n_end:].mean(axis=0)
+    jump = (np.maximum(left, right) - np.minimum(left, right)) / np.minimum(
+        left, right
+    )
+    return _to_unit_len(-jump)
+
+
 def noise_importance(signal: np.ndarray, window_size: int) -> np.ndarray:
     """Rank features based on how standard deviation compares to the mean.
 
