@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import bottleneck as bn
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 import scipy as sp
 import sklearn as sk
 import sklearn.cluster
@@ -86,6 +87,10 @@ class MeanShift:
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
         """
+        if isinstance(signal, pd.DataFrame) and not return_filter:
+            filter_ = self(signal.to_numpy(), sample_size, True)
+            return signal.iloc[:, filter_]
+
         n_frames = self._get_sample_size(len(signal), sample_size)
         start, end = signal[:n_frames], signal[-n_frames:]
 
@@ -254,6 +259,17 @@ class Correlated:
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
         """
+        if isinstance(signal, pd.DataFrame):
+            filter_ = self(
+                signal.to_numpy(),
+                features_per_cluster,
+                True,
+                feature_importance,
+            )
+            if not return_filter:
+                return signal.iloc[:, filter_]
+            return filter_
+
         _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
         if features_per_cluster < 1:
             raise ValueError("features_per_cluster must be 1 or greater.")
@@ -328,7 +344,6 @@ class Correlated:
     def _choose_features(
         self, feature_importance: np.ndarray, features_per_cluster: int
     ) -> np.ndarray:
-
         if feature_importance is None:
             rng = np.random.default_rng()
             feature_importance = rng.random(len(self.labels_))
@@ -427,6 +442,8 @@ def local_smoothness_importance(
         Feature rankings from 0 to 1 (higher is more important), for all
         features. A higher ranking indicates that the fit was better.
     """
+    if isinstance(signal, pd.DataFrame):
+        return local_smoothness_importance(signal.to_numpy(), dim, spacing)
     x = np.arange(signal.shape[0])
     spacing = dim + int(np.ceil(dim / 2)) if spacing is None else dim + spacing
     beg = dim + 2
@@ -452,6 +469,8 @@ def mean_shift_importance(likelihoods: np.ndarray) -> np.ndarray:
         Feature rankings from 0 to 1 (higher is more important), for all
         features. A higher ranking indicates that the likelihood was lower.
     """
+    if isinstance(likelihoods, pd.DataFrame):
+        return mean_shift_importance(likelihoods.to_numpy)
     return _to_unit_len(-likelihoods)
 
 
@@ -474,6 +493,8 @@ def noise_importance(signal: np.ndarray, window_size: int) -> np.ndarray:
         features. A higher ranking indicates the standard deviation relative to
         the mean is low across the feature.
     """
+    if isinstance(signal, pd.DataFrame):
+        return noise_importance(signal.to_numpy(), window_size)
     noise = np.nanmean(
         bn.move_std(signal, window_size, axis=0)
         / bn.move_mean(signal, window_size, axis=0),

@@ -25,6 +25,7 @@ dependencies = [
     "freud-analysis",  # generate features
     "kneed",  # knee/elbow detection
     "numpy",  # basic numerical Python
+    "pandas", # Handling DataFrames in functions and signal aggregation.
     "ruptures",  # event detection
     "scikit-learn",  # For ML window dimensionality reduction
 ]

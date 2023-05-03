@@ -7,6 +7,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import kneed as kd
 import numpy as np
+import pandas as pd
 import ruptures as rpt
 
 _logger = logging.getLogger(__name__)
@@ -88,6 +89,8 @@ class SweepDetector:
             The change points if any. An empty list means no change points were
             detected.
         """
+        if isinstance(data, pd.DataFrame):
+            return self.fit(data.to_numpy())
         change_points, penalties = self._get_change_points(data)
         self.costs_ = penalties
         self.change_points_ = change_points
