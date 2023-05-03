@@ -74,7 +74,7 @@ class PipeComponent:
                 Returns either a `DataMap` subclass based on the passed in
                 object.
         """
-        if issubclass(map_._target_cls, DataMap):
+        if isinstance(map_, DataMap):
             return map_(self)
         elif callable(map_):
             return CustomMap(self, map_)
@@ -99,7 +99,7 @@ class PipeComponent:
         DataReducer:
             Returns a `DataReducer` subclass based on the passed in object.
         """
-        if issubclass(reduce_._target_cls, DataReducer):
+        if isinstance(reduce_, DataReducer):
             return reduce_(self)
         elif callable(reduce_):
             return CustomReducer(self, reduce_)
