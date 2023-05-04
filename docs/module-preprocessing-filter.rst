@@ -8,6 +8,7 @@ dupin.preprocessing.filter
 
     Correlated
     MeanShift
+    jump_size_importance
     local_smoothness_importance
     mean_shift_importance
     noise_importance
@@ -18,6 +19,7 @@ dupin.preprocessing.filter
     :synopsis: Methods and classes for feature selection.
     :members: Correlated,
               MeanShift,
+              jump_size_importance,
               local_smoothness_importance,
               mean_shift_importance,
               noise_importance

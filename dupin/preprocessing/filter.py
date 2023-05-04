@@ -481,15 +481,16 @@ def jump_size_importance(signal: np.ndarray, n_end: int = 3) -> np.ndarray:
     ----------
     signal: :math:`(N_{samples}, N_{features})` `numpy.ndarray` of `float`
         The potentially multidimensional signal.
-    n_end: The number of indices to take on either end to compute the mean to
+    n_end: `int`, optional
+        The number of indices to take on either end to compute the mean to
         determine the jump from one end to the other.
 
     Returns
     -------
     feature_importance : :math:`(N_{features})` `numpy.ndarray` of `float`
         Feature rankings from 0 to 1 (higher is more important), for all
-        features. A higher ranking indicates the standard deviation relative to
-        the mean is low across the feature.
+        features. A higher ranking indicates the relative magnitude of the jump
+        or drop between signal ends is larger.
     """
     if isinstance(signal, pd.DataFrame):
         return jump_size_importance(signal.to_numpy(), n_end)
