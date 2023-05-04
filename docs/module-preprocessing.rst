@@ -10,7 +10,7 @@ dupin.preprocessing
 .. rubric:: Modules
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    module-preprocessing-filter
    module-preprocessing-signal

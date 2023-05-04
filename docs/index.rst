@@ -4,7 +4,7 @@ Table of Contents
 =================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    installation
@@ -15,7 +15,7 @@ Table of Contents
    citing
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 1
     :caption: API:
 
     module-data
