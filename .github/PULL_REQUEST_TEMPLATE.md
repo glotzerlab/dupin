@@ -4,8 +4,10 @@
 ## Motivation
 <!-- Why did you write this PR? Why this approach? -->
 
-## Types of Changes
-- [ ] Documentation
-- [ ] New feature
-- [ ] Bug fix
-- [ ] Other (explain below)
+## Do Changes Introduce Breaking Changes
+
+## Have you (if appropriate)
+- [ ] Updated changelog
+- [ ] Updated Documentation
+- [ ] Add tests
+- [ ] Added name to contributors
