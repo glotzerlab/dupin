@@ -6,5 +6,11 @@ Please acknowledge the use of this software within the body of your publication 
 
 *Event detection for this publication used the dupin library[1].*
 
+.. note::
+
+    This will soon be updated with citation information.
+    Please return soon for more information.
+
 .. todo::
+
    Add actual citation/pre-print.
