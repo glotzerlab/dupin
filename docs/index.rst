@@ -8,7 +8,7 @@ Table of Contents
    :caption: Contents:
 
    installation
-   usage
+   tutorials
    contributing
    authors
    changelog

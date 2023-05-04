@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
+    "nbsphinx",
 ]
 
 napoleon_numpy_docstring = True
