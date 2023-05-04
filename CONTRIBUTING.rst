@@ -2,7 +2,7 @@
 Contributing
 ============
 
-Contributions are welcomed via [pull requests on GitHub](https://github.com/glotzerlab/b-butler/event-detection).
+Contributions are welcomed via [pull requests on GitHub](https://github.com/glotzerlab/glotzerlab/dupin).
 Create an issue first to ensure that the proposed changes are in line with the direction of the
 package.
 

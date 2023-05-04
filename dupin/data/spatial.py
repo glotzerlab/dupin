@@ -30,49 +30,49 @@ class NeighborAveraging(base.DataMap):
     r"""Average distribution about neighboring data points.
 
     Uses neighbors for spatial averaging across a system. Neighbors can be
-    passed in manually in :math:`(i, j)` pairs through a tuple of arrays or
-    through a freud neighbor list.
+    passed in manually in an array of :math:`(i, j)` pairs, through a tuple of
+    arrays, or through a `freud` neighbor list.
+
+    Parameters
+    ----------
+    expected_kwarg: `str`, optional
+        The expected key word argument passed to
+        `dupin.data.base.DataModifier.__call__` to use as neighbors.
+        Defaults to "spatial_neighbors".
+    remove_kwargs: `bool`, optional
+        Whether the specified ``expected_kwarg`` should be removed before
+        passing through to the composed generators. Defaults to ``True``.
+    excluded_self: `bool`, optional
+        Whether the passed neighbor lists will exclude self neighbors.
+        ``True`` means self neighbors will be added by the instance, and
+        ``False`` means the neighbor list provides self neighbors. Defaults
+        to ``True``. If set incorrectly this will cause erroneous
+        results (double or no counting).
 
     Warning:
-        The correct setting of ``exclude_ii`` is important for correct results.
-        The original particle's data should be included once in the averaging.
-        Incorrect setting can lead to the original data not being included at
-        all or twice.
+        A particle should be listed as its own neighbor for purposes of the
+        averaging. So if the passed neighbor list does not include self
+        neighbors ``excluded_self`` should be true.
 
     Note:
-        This class does not support wrapping the call signature of the composed
-        generator like objet, since it modifies the call signature.
+        This class can remove neighbors from the call signature for generators
+        or maps that don't require it through the ``remove_kwarg`` argument.
+
+    Note:
+        The neighbors must be passed as a keyword argument for
+        `NeighborAveraging` to recognize it.
     """
 
     def __init__(
         self,
-        generator: base.GeneratorLike,
         expected_kwarg: str = "spatial_neighbors",
         remove_kwarg: bool = True,
-        exclude_ii: bool = True,
+        excluded_self: bool = True,
     ):
-        """Create a `NeighborAveraging` object.
-
-        Parameters
-        ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce.
-        expected_kwarg: `str`, optional
-            The expected key word argument passed to
-            `dupin.data.base.DataModifier.__call__` to use as neighbors.
-            Defaults to "spatial_neighbors".
-        remove_kwargs: `bool`, optional
-            Whether the specified ``expected_kwarg`` should be removed before
-            passing through to the composed generators.
-        exclude_ii: `bool`, optional
-            Whether the passed neighbor list will excludes ``ii`` interactions.
-            Defaults to ``True``. If set incorrectly this will cause erroneous
-            results.
-        """
         self._expected_kwarg = expected_kwarg
         self._remove_kwarg = remove_kwarg
-        self._exclude_ii = exclude_ii
-        super().__init__(generator)
+        self._excluded_self = excluded_self
+        super().__init__()
 
     def update(self, args, kwargs):
         """Call the underlying generator performing the spatial averaging.
@@ -90,7 +90,7 @@ class NeighborAveraging(base.DataMap):
             j_index = nlist.query_point_indices
             counts = np.copy(nlist.neighbor_counts)
 
-        if self._exclude_ii:
+        if self._excluded_self:
             counts += 1
         self._i_index = i_index
         self._j_index = j_index
@@ -113,7 +113,7 @@ class NeighborAveraging(base.DataMap):
             A dictionary with the key "spatially_averaged" and spatially
             averaged distribution as a value.
         """
-        if self._exclude_ii:
+        if self._excluded_self:
             averaged_data = np.copy(data)
         else:
             averaged_data = np.zeros(data.shape)

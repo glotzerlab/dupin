@@ -45,10 +45,21 @@ class Window:
     """Computes the error of a classifier discerning between halves of a window.
 
     The class implements a generic way of discerning the similiarity between
-    nearby sections in a sequence through the use of a rolling window. If the
-    sequence is changing across its length then the classifier should do a very
-    good job of distinguishing between window halves. If the sequence is static,
-    then the classifier should approach some error up to an error rate of 0.5.
+    nearby sections in a sequence through the use of a rolling window and
+    machine learning classifiers. The class then outputs this similarity as a
+    single dimension regardless of input size.
+
+    The procedure is take a sliding window of a set size across the traectory.
+    For each window, the left half is labeled as class 0 and the right as class
+    one. The class then trains one or more weak classifiers for each window on a
+    subset of points. The test loss on the remaining points is then
+    aggregated across the classifiers and recorded. This testing loss is the
+    single dimension representation of local signal similarity with higher
+    values indicating dissimiliarity.
+
+    Note:
+        The returned signal will be smaller by ``window_size - 1`` than the
+        original signal.
 
     Warning:
         For this to be useful, a *weak* classifier must be chosen. A weak
@@ -56,6 +67,35 @@ class Window:
         training on noise between window halves. For small and intermediate
         window sizes, most classifiers will find noise that can (nearly)
         perfectly discriminate the halves of the window.
+
+    Parameters
+    ----------
+    classifier : sklearn.base.ClassifierMixin
+        A sklearn compatible classifier that is ready to fit to data.
+    window_size : int
+        The size of windows to learn on, should be a even number for best
+        results.
+    test_size : float
+        Fraction of samples to use for computing the error through the loss
+        function. This fraction is not fitted on.
+    loss_function : ``callable`` [[`sklearn.base.ClassifierMixin`, \
+                                `numpy.ndarray`, `numpy.ndarray`], \
+                                `float`], optional
+        A callable that takes in the fitted classifier, the test x and test y
+        values and returns a loss (lower is better). By default this computes
+        the zero-one loss if sklearn is available, otherwise this errors.
+    store_intermediate_classifiers : `bool`, optional
+        Whether to store the fitted classifier for each window in the sequence
+        passed to `compute`. Defaults to False. **Warning**: If the classifier
+        stores some or all of the sequence in fitting as is the case for
+        kernelized classifiers, this optional will lead a much use of memory.
+    n_classifiers : `int`, optional
+        The number of classifiers and test train splits to use per window,
+        defaults to 1. Higher numbers naturally smooth the error across a
+        trajectory.
+    combine_errors : `str`, optional
+        What function to reduce the errors of ``n_classifiers`` with, defauts to
+        "mean". Available values are "mean" and "median".
     """
 
     def __init__(
@@ -70,39 +110,6 @@ class Window:
         n_classifiers: int = 1,
         combine_errors: str = "mean",
     ) -> None:
-        """Create a `Window` object.
-
-        Parameters
-        ----------
-        classifier : sklearn.base.ClassifierMixin
-            A sklearn compatible classifier that is ready to fit to data.
-        window_size : int
-            The size of windows to learn on, should be a even number for best
-            results.
-        test_size : float
-            Fraction of samples to use for computing the error through the loss
-            function. This fraction is not fitted on.
-        loss_function : ``callable`` [[`sklearn.base.ClassifierMixin`, \
-                                  `numpy.ndarray`, `numpy.ndarray`], \
-                                  `float`], optional
-            A callable that takes in the fitted classifier, the test x and test
-            y values and returns a loss (lower is better). By default this
-            computes the zero-one loss if sklearn is available, otherwise this
-            errors.
-        store_intermediate_classifiers : `bool`, optional
-            Whether to store the fitted classifier for each window in the
-            sequence passed to `compute`. Defaults to False. **Warning**: If the
-            classifier stores some or all of the sequence in fitting as is the
-            case for kernelized classifiers, this optional will lead a much use
-            of memory.
-        n_classifiers : `int`, optional
-            The number of classifiers and test train splits to use per window,
-            defaults to 1. Higher numbers naturally smooth the error across a
-            trajectory.
-        combine_errors : `str`, optional
-            What function to reduce the errors of ``n_classifiers`` with,
-            defauts to "mean". Available values are "mean" and "median".
-        """
         self.classifier = classifier
         self.window_size = window_size
         self.test_size = test_size

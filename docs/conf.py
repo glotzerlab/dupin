@@ -36,7 +36,11 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "nbsphinx",
 ]
+
+napoleon_numpy_docstring = True
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
@@ -46,11 +50,11 @@ intersphinx_mapping = {
     "gsd": ("https://gsd.readthedocs.io/en/stable/", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/dev", None),
     "scikit-learn": (
-        "http://scikit-learn.org/stable",
+        "https://scikit-learn.org/stable",
         (None, "./_intersphinx/sklearn-objects.inv"),
     ),
+    "xarray": ("https://docs.xarray.dev/en/stable", None),
 }
-
 default_role = "any"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -74,7 +78,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "dupin"
-copyright = "2021, Brandon Butler"
+copyright = "The Regents of the University of Michigan"
 author = "Brandon Butler"
 
 # The version info for the project you're documenting, acts as replacement
@@ -92,12 +96,12 @@ release = "0.0.1.alpha"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "_templates", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -111,7 +115,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
@@ -122,7 +126,7 @@ html_theme = "alabaster"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
+html_static_path = ["_static"]
 
 
 # -- Options for HTMLHelp output ---------------------------------------
@@ -193,3 +197,9 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# Common link locations
+rst_epilog = """
+.. _ruptures: https://centre-borelli.github.io/ruptures-docs/code-reference/
+.. _kneed: https://kneed.readthedocs.io/en/stable/
+"""

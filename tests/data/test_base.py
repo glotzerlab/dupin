@@ -54,6 +54,16 @@ class TestCustomGenerator:
             assert np.allclose(through_func[k], v)
 
     def test_piping(self, generator):
-        pipeline = generator.pipe(du.data.reduce.Percentile.wraps())
+        pipeline = generator.pipe(du.data.reduce.Percentile())
+        assert isinstance(pipeline, du.data.reduce.Percentile)
+        assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
+
+    def test_map(self, generator):
+        pipeline = generator.map(du.data.map_(lambda: None))
+        assert isinstance(pipeline, du.data.map.CustomMap)
+        assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
+
+    def test_reduce(self, generator):
+        pipeline = generator.reduce(du.data.reduce.Percentile())
         assert isinstance(pipeline, du.data.reduce.Percentile)
         assert isinstance(pipeline._generator, du.data.base.CustomGenerator)

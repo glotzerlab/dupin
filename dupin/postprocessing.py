@@ -1,4 +1,8 @@
-"""General functions for analyzing change points once detected."""
+"""General functions for analyzing change points once detected.
+
+This module is designed to primarly work with logger data and the original
+trajectory.
+"""
 
 import itertools
 import warnings
@@ -19,30 +23,28 @@ class EventFeatures:
     """Finds features out of a signal that constitute changes.
 
     The class provides multiple methods for detecting features that explain a
-    particular partitioning of space.
+    particular partitioning of space. The class requires change points to work.
+    In other words, this is a post detection method for interpretting change
+    point detection results.
+
+    Parameters
+    ----------
+    signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
+        The signal to find features from.
+    change_points: list[int]
+        The change points associated with the signal.
     """
 
     def __init__(self, signal, change_points):
-        """Create a `EventFeatures` object.
-
-        Parameters
-        ----------
-        signal: :math:`(N_{samples}, N_{features})` np.ndarray of float
-            The signal to find features from.
-        change_points: list[int]
-            The change points associated with the signal.
-        """
         self._signal = signal
         self._change_points = [0] + change_points + [len(self._signal)]
 
     def linear(self, sample_size, sensitivity, extend_small_regions=True):
-        """Find features that change between a pair of change points.
+        """Find features that change linearly between a pair of change points.
 
         Warning:
             This function is designed to events that involve changes within
             pairs of change points. This will not detect mean shift events.
-
-        Internally this function uses `dupin.preprocessing.filter.MeanShift`.
 
         Parameters
         ----------
@@ -188,7 +190,29 @@ class EventFeatures:
 
 
 def retrieve_positions(log_df, trajectory):
-    """Retreive positions from data pipeline logger data frame."""
+    """Retreive positions from data pipeline logger data frame.
+
+    Note:
+        This is for use with the `dupin.data.reduce.NthGreatest` and
+        `dupin.data.reduce.Percentile` and `dupin.data.logging.Logger`.
+
+    This function can find the positions of particles that reducers picked using
+    a logger's dataframe and the positions.
+
+    Parameters
+    ----------
+    log_df : pandas.Dataframe
+        A dataframe taken from a `dupin.data.logging.Logger`.
+    trajectory : :math:`(N_{frames}, N_p, 3)` numpy.ndarray of float
+        The positions of the particles along the trajectory.
+
+    Returns
+    -------
+    pandas.Dataframe
+        The positions of the particles given the indices of ``log_df``. The
+        dataframe uses an multi-index to keep the same columns as ``log_df``
+        with the addition of a index level with x,y, and z columns.
+    """
     column_mask = np.array(
         [
             any(name in {"Percentile", "NthGreatest"} for name in column)

@@ -4,3 +4,4 @@ kneed
 numpy
 ruptures
 scikit-learn
+pandas

@@ -15,7 +15,6 @@ dupin.data.map
 .. rubric:: Details
 
 .. automodule:: dupin.data.map
-    :synopsis: Classes for modifying distributions.
     :members: CustomMap,
         Identity,
         Tee

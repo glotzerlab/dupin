@@ -1,79 +1,119 @@
 import numpy as np
-import pytest
+from hypothesis import given
+from hypothesis.strategies import (
+    data,
+    fixed_dictionaries,
+    floats,
+    integers,
+    sets,
+    text,
+)
 
 import dupin as du
 
-rng = np.random.default_rng(56564)
 
-
-def rfloat():
-    """Return a random float between -/+ 1,000,000."""
-    return 2e6 * (rng.random() - 0.5)
-
-
-@pytest.fixture
-def generator():
-    """Return a simple generator function with a, b, c keys."""
-
-    def func():
-        return {"a": rfloat(), "b": rfloat(), "c": rfloat()}
-
-    return func
-
-
-def test_construction(generator):
+def test_construction():
     """Test valid construction."""
-    instance = du.data.SignalAggregator(generator)
+
+    def generator():
+        return {}
+
+    instance = du.data.aggregate.SignalAggregator(generator)
     assert instance.logger is None
     assert generator is instance.generator
     logger = du.data.logging.Logger()
-    instance = du.data.SignalAggregator(generator, logger)
+    instance = du.data.aggregate.SignalAggregator(generator, logger)
     assert instance.logger is logger
     assert generator is instance.generator
     assert instance.signals == []
 
 
-def test_accumulate(generator):
+# We set a reasonable cap for test execution
+def n_frames(maximum=100):
+    return integers(0, maximum)
+
+
+# Set a reasonable cap on number of data keys
+def keys(max_size=50):
+    return sets(text(max_size=100), max_size=max_size)
+
+
+@given(n_frames(), keys(), data())
+def test_accumulate(n_frames, keys, data):
     """Test that accumulate correctly stores data."""
-    instance = du.data.SignalAggregator(generator)
-    for _ in range(10):
+    schema = fixed_dictionaries({k: floats() for k in keys})
+
+    def generator():
+        return data.draw(schema)
+
+    instance = du.data.aggregate.SignalAggregator(generator)
+    for _ in range(n_frames):
         instance.accumulate()
-    assert len(instance.signals) == 10
-    assert all(
-        all(k in dict_ for k in ("a", "b", "c")) for dict_ in instance.signals
-    )
+    assert len(instance.signals) == n_frames
+    assert all(k in dict_ for k in keys for dict_ in instance.signals)
 
 
-def test_compute():
+@given(n_frames(), keys(), data())
+def test_compute_no_args(n_frames, keys, data):
+    """Test compute works with correct iterator."""
+    schema = fixed_dictionaries({k: floats() for k in keys})
+
+    def generator():
+        return data.draw(schema)
+
+    def yield_for_generator():
+        for _ in range(n_frames):
+            yield ((), {})
+
+    instance = du.data.aggregate.SignalAggregator(generator)
+    instance.compute(yield_for_generator())
+    assert len(instance.signals) == n_frames
+    assert all(k in dict_ for k in keys for dict_ in instance.signals)
+
+
+@given(n_frames(), keys(), data())
+def test_compute_with_args(n_frames, keys, data):
     """Test compute works with correct iterator."""
 
-    def generator(foo, bar):
-        return {"foo": foo, "bar": bar}
+    def generator(**kwargs):
+        return {k: kwargs[k] for k in keys}
 
-    instance = du.data.SignalAggregator(generator)
+    instance = du.data.aggregate.SignalAggregator(generator)
 
     def yield_foobar():
-        for _ in range(10):
-            yield ((), {"foo": rfloat(), "bar": rfloat()})
+        gen_floats = floats()
+        for _ in range(n_frames):
+            yield ((), {k: data.draw(gen_floats) for k in keys})
 
     instance.compute(yield_foobar())
-    assert len(instance.signals) == 10
-    assert all(
-        all(k in dict_ for k in ("foo", "bar")) for dict_ in instance.signals
-    )
+    assert len(instance.signals) == n_frames
+    assert all(k in dict_ for k in keys for dict_ in instance.signals)
 
 
-def test_to_dataframe(generator):
+@given(n_frames(), keys(), data())
+def test_to_dataframe(n_frames, keys, data):
     """Test correct construction of dataframe."""
-    instance = du.data.SignalAggregator(generator)
-    for _ in range(10):
+    schema = fixed_dictionaries({k: floats() for k in keys})
+
+    def generator():
+        return data.draw(schema)
+
+    instance = du.data.aggregate.SignalAggregator(generator)
+    for _ in range(n_frames):
         instance.accumulate()
     df = instance.to_dataframe()
-    assert df.shape == (10, 3)
-    assert np.allclose(
-        df.to_numpy(), [list(v.values()) for v in instance.signals]
-    )
-    assert all(df.columns == ["a", "b", "c"])
+    if n_frames > 0 and len(keys) > 0:
+        assert df.shape == (n_frames, len(keys))
+        assert np.allclose(
+            df.to_numpy(),
+            [list(v.values()) for v in instance.signals],
+            equal_nan=True,
+        )
+        assert all(k == c for k, c in zip(df.columns, keys))
+        return
+    if n_frames > 0:
+        assert len(df) == n_frames
+    assert len(df.columns) == 0
 
 
 def test_logger():
@@ -88,8 +128,10 @@ def test_logger():
             self._logger["test"] = True
             return {"": value}
 
-    pipeline = DummyGenerator().pipe(FakeReducer.wraps())
-    instance = du.data.SignalAggregator(pipeline, du.data.logging.Logger())
+    pipeline = DummyGenerator().pipe(FakeReducer())
+    instance = du.data.aggregate.SignalAggregator(
+        pipeline, du.data.logging.Logger()
+    )
     for _ in range(10):
         instance.accumulate()
     assert len(instance.logger._data) == 10

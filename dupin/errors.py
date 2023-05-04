@@ -19,6 +19,6 @@ class _RaiseModuleError:
 
 
 class ModuleNotAvailableError(ImportError):
-    """Raise when a feature requires an unavailable feature."""
+    """Denotes when a module requires an unavailable package."""
 
     pass

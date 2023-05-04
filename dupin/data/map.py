@@ -1,6 +1,14 @@
-"""`data.base.DataMap` subclasses to transform distributional data."""
+"""`dupin.data.base.DataMap` subclasses to transform distributional data.
 
-from typing import Callable, Dict, List, Union
+Mapping in dupin is the idea of taking one distribution and transforming it
+into another. This is distinct from the mathematical view of functions as maps
+and is more general than Python's map builtin. A distribution/array can be
+mapped to a new array of any size. A common example in molecular simulations is
+spatial averaging which reduces local fluctuations of features. This particular
+map can be found in `dupin.data.spatial.NeighborAveraging`.
+"""
+
+from typing import Dict, List, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -9,22 +17,26 @@ from . import base
 
 
 class Identity(base.DataMap):
-    """A identity mapping for use in a data pipeline."""
+    """A identity mapping for use in a data pipeline.
 
-    def __init__(self, generator: base.GeneratorLike):
-        """Create a Identity object.
+    This class maps a distribution to itself. This is useful when using with
+    `Tee`.
 
-        This DataMap does nothing to the data passed.
+    Example::
 
-        Parameters
-        ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to reduce.
-        """
-        super().__init__(generator)
+        generator.pipe(
+            du.data.map.Tee([
+                du.data.map.Identity()
+                du.data.map.CustomMap(lambda x: {"new_dist": x + 2})
+            ])
+        )
+    """
+
+    def __init__(self):
+        super().__init__()
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
-        """Do nothing to the base distribution.
+        """Return the same distribution.
 
         Parameters
         ----------
@@ -34,38 +46,36 @@ class Identity(base.DataMap):
         Return
         -------
         signals : dict[str, float]
-            Returns a dictionary a ``None`` key and the passed in data as a
-            value.
+            Returns a dictionary with the key ``None`` and the passed in data as
+            a value.
         """
         return {None: data}
 
 
 class Tee(base.DataMap):
-    """Enable mutliple maps to act on the same generator like object."""
+    """Combine mutliple maps into one acting on the same generator object.
+
+    Example::
+
+        generator.pipe(
+            du.data.map.Tee([
+                du.data.map.Identity(),
+                du.data.map.CustomMap(lambda x: {"new_dist": x + 2})
+            ])
+        )
+
+    Parameters
+    ----------
+    reducers: `list` [`dupin.data.base.DataReducer`]
+        A sequence of data modifiers.
+    """
 
     def __init__(
         self,
-        generator: base.GeneratorLike,
-        maps: List[Callable[[base.GeneratorLike], base.DataMap]],
+        maps: List[base.DataMap],
     ):
-        """Create a data.reduce.Tee object.
-
-        Parameters
-        ----------
-        generator: :py:obj:`dupin.data.base.GeneratorLike`
-            A generator like object to map to another distribution.
-        reducers: `list` [``callable`` `
-                [:py:obj:`dupin.data.base.GeneratorLike`, \
-                 `dupin.data.base.DataReducer`]]
-            A sequence of callables that take a generator like object and
-            returns a data map. Using the ``wraps`` class method with a
-            `DataMap` subclass is a useful combination.
-        logger: dupin.data.logging.Logger
-            A logger object to store data from the data pipeline for individual
-            elements of the composed maps.
-        """
-        self._maps = [map_(generator) for map_ in maps]
-        super().__init__(generator)
+        self._maps = maps
+        super().__init__()
 
     def compute(
         self, distribution: npt.ArrayLike
@@ -111,5 +121,27 @@ class Tee(base.DataMap):
             except AttributeError:
                 pass
 
+    def _decorate(self, generator: base.GeneratorLike):
+        self._generator = generator
+        for map_ in self._maps:
+            map_(generator)
+
 
 CustomMap = base.CustomMap
+
+
+def map_(func):
+    """Decorate an additional map step to the current pipeline.
+
+    Note:
+        This is for the decorator syntax for creating pipelines.
+
+    Note:
+        This uses `CustomMap`.
+
+    Parameters
+    ----------
+    func : ``callable``
+        The function to use for mapping.
+    """
+    return CustomMap(func)

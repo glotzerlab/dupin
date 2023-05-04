@@ -1,6 +1,6 @@
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.2.0
+      rev: v4.4.0
       hooks:
         - id: trailing-whitespace
         - id: end-of-file-fixer
@@ -8,22 +8,48 @@ repos:
         - id: check-added-large-files
         - id: check-ast
         - id: check-merge-conflict
+    - repo: https://github.com/asottile/pyupgrade
+      rev: 'v2.38.2'
+      hooks:
+        - id: pyupgrade
+          args:
+          - --py37-plus
     - repo: https://github.com/pycqa/isort
-      rev: '5.10.1'
+      rev: '5.12.0'
       hooks:
         - id: isort
           args: ["--filter-files"]
     - repo: https://github.com/psf/black
-      rev: '22.3.0'
+      rev: '23.3.0'
       hooks:
          - id: black
            language_version: python3
-    - repo: https://gitlab.com/pycqa/flake8
-      rev: '3.9.2'
+    - repo: https://github.com/pycqa/flake8
+      rev: '6.0.0'
       hooks:
         - id: flake8
     - repo: https://github.com/pycqa/pydocstyle
-      rev: 6.1.1
+      rev: 6.3.0
       hooks:
         - id: pydocstyle
           files: ^((?!docs|tests).)*$
+    - repo: https://github.com/nbQA-dev/nbQA
+      rev: 1.5.2
+      hooks:
+      - id: nbqa-pyupgrade
+        args:
+        - --py37-plus
+      - id: nbqa-isort
+      - id: nbqa-black
+    - repo: https://github.com/kynan/nbstripout
+      rev: 0.6.1
+      hooks:
+      - id: nbstripout
+        args:
+        # Strip metadata but keep counts and outputs
+        - --keep-count
+        - --keep-output
+    - repo: https://github.com/bdice/nb-strip-paths
+      rev: v0.1.0
+      hooks:
+      - id: nb-strip-paths
