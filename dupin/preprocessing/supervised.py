@@ -3,6 +3,7 @@
 from typing import Callable, Optional, Sequence
 
 import numpy as np
+import pandas
 
 import dupin.errors as errors
 
@@ -215,12 +216,13 @@ class Window:
         errors : list
             Returns the list of loss function values for each window in ``X``.
         """
+        if isinstance(X, pandas.core.frame.DataFrame):
+            return self.compute(X.to_numpy())
+
         errors = []
         if self.store_intermediate_classifiers:
             self.classifiers_ = []
         y = np.repeat([0, 1], np.ceil(self.window_size / 2))[: self.window_size]
-        if isinstance(X, "pandas.core.frame.DataFrame"):
-            X = X.to_numpy()
         shuffle_splits = sk.model_selection.StratifiedShuffleSplit(
             n_splits=self.n_classifiers, test_size=self.test_size
         )

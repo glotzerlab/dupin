@@ -5,9 +5,9 @@ Credits
 Development Lead
 ----------------
 
-* Brandon Butler <butlerbr@umich.edu>
+* Brandon Butler (GitHub: b-butler)
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Domagoj Fijan (GitHub: DomFijan)
