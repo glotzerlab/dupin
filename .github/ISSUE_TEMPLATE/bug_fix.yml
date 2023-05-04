@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a problem with **dupin**.
+labels: ['bug']
+body:
+  - type: textarea
+    attributes:
+      label: Description
+      description: Describe the problem.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Script
+      description: |
+        The *minimal* script that demonstrates the problem.
+        The script should depend only on **dupin** and its dependencies.
+      placeholder: |
+        import dupin as du
+        ...
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Output
+      description: |
+        What output did you get?
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected output
+      description: What output do you expect?
+  - type: dropdown
+    attributes:
+      label: Platform
+      description: What platform are you using? Select all that apply.
+      multiple: false
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (explain)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: dupin version
+      description: What version of **dupin** are you using?
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Run `python3 -c "import dupin; print(dupin.version.version)"` to find the version.
+  - type: input
+    attributes:
+      label: Python version
+      description: What version of Python are you using?
+      placeholder: 3.11.x
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Run `python3 --version` to find your Python version.
