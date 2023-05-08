@@ -1,4 +1,11 @@
 .. include:: ../README.rst
+   :start-line: 0
+   :end-line: 13
+
+.. image:: _static/detect.gif
+
+.. include:: ../README.rst
+   :start-line: 17
 
 Table of Contents
 =================

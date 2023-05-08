@@ -12,6 +12,8 @@ dupin
 
 Welcome to ``dupin`` a Python package for detecting rare events in molecular simulations.
 
+.. image:: docs/_static/detect.gif
+
 Overview
 --------
 
