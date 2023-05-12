@@ -45,7 +45,17 @@ Basic Pipeline
 Example
 -------
 
-.. literalinclude:: docs/example.py
+.. code-block:: python
+
+    import dupin as du
+    import numpy as np
+    import ruptures as rpt
+
+    signal = np.load("signal.npy")
+    dynp = rpt.Dynp(custom_cost=du.detect.CostLinearFit())
+    detector = du.detect.SweepDetector(dynp, 8)
+
+    chps = detector.fit(signal)
 
 .. image:: docs/_static/detect.gif
 

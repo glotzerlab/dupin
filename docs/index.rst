@@ -6,14 +6,12 @@
 
 .. include:: ../README.rst
    :start-line: 44
-   :end-line: 47
-
-.. literalinclude:: example.py
+   :end-line: 59
 
 .. image:: _static/detect.gif
 
 .. include:: ../README.rst
-   :start-line: 51
+   :start-line: 61
 
 Table of Contents
 =================
