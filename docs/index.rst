@@ -1,11 +1,19 @@
 .. include:: ../README.rst
    :start-line: 0
-   :end-line: 13
+   :end-line: 42
+
+.. image:: _static/scheme.png
+
+.. include:: ../README.rst
+   :start-line: 44
+   :end-line: 47
+
+.. literalinclude:: example.py
 
 .. image:: _static/detect.gif
 
 .. include:: ../README.rst
-   :start-line: 17
+   :start-line: 51
 
 Table of Contents
 =================
