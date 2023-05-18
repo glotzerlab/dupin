@@ -31,9 +31,9 @@ Table of Contents
     :maxdepth: 1
     :caption: API:
 
+    module-preprocessing
     module-data
     module-detect
-    module-preprocessing
 
 Indices and tables
 ==================
