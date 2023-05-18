@@ -88,7 +88,8 @@ class Window:
         Whether to store the fitted classifier for each window in the sequence
         passed to `compute`. Defaults to False. **Warning**: If the classifier
         stores some or all of the sequence in fitting as is the case for
-        kernelized classifiers, this optional will lead a much use of memory.
+        kernelized classifiers, this optional will lead to significant
+        increase in use of memory.
     n_classifiers : `int`, optional
         The number of classifiers and test train splits to use per window,
         defaults to 1. Higher numbers naturally smooth the error across a
