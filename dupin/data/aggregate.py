@@ -75,7 +75,8 @@ class SignalAggregator:
             An object when iterated over, yields args and kwargs compatible with
             the ``generator_like`` object's call signature.
 
-        Note:
+        Note
+        ----
             Use the `from_base_iterator` staticmethod to convert a standard
             iterator into one compatible with this method.
         """
