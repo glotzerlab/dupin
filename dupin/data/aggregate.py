@@ -181,8 +181,6 @@ class SignalAggregator:
         The default behavior is to treat the items of the iterator as a single
         positional argument. Read the argument list for alternative options.
 
-        No
-
         Parameters
         ----------
         iterator : Iterator[Any]
