@@ -1,12 +1,6 @@
 .. include:: ../README.rst
    :start-line: 0
-   :end-line: 42
-
-.. image:: _static/scheme.png
-
-.. include:: ../README.rst
-   :start-line: 44
-   :end-line: 59
+   :end-line: 52
 
 .. image:: _static/detect.gif
 
@@ -21,6 +15,7 @@ Table of Contents
    :caption: Contents:
 
    installation
+   pipeline
    tutorials
    contributing
    authors
