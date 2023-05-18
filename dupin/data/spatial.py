@@ -54,11 +54,13 @@ class NeighborAveraging(base.DataMap):
         averaging. So if the passed neighbor list does not include self
         neighbors ``excluded_self`` should be true.
 
-    Note:
+    Note
+    ----
         This class can remove neighbors from the call signature for generators
         or maps that don't require it through the ``remove_kwarg`` argument.
 
-    Note:
+    Note
+    ----
         The neighbors must be passed as a keyword argument for
         `NeighborAveraging` to recognize it.
     """
