@@ -11,16 +11,13 @@ boundaries of events in a molecular simulation.
 The steps are:
 
 1. Generate - Generates descriptors for which change points are to be detected.
-2. Map - Transform the generated data into different quantities using
-   i.e. neighbor point averaging.
+2. Map - Transform the generated data into different quantities using various functions  e.g. neighbor point averaging.
 3. Reduce - Take the non-scalar features and create scalar features from them.
-4. Aggregate - Perform the first three steps across the time dimension
-   of on starting data to obtain a signal on which detection will be performed.
-5. Transform - Transform the signal to reduce redundant elements and
-   reduce dimensionality of the signal for faster detection.
+4. Aggregate - Perform the steps 1-3 across the time dimension on trajectory to obtain a signal on which detection will be performed.
+5. Transform - Transform the signal to reduce redundant dimensions and reduce dimensionality of the signal for faster detection.
 6. Detect: Given the final signal detect events if any in the data.
 
-All steps besides Generate (1.) and Detect (6.) are optional depending
+All steps besides Generate (1.), Aggregate (4.), and Detect (6.) are optional depending
 on the circumstances. For instance, if using the Nematic order parameter
 to detect a nematic transition, there would be no need for step for
 reduction (3.).
@@ -77,12 +74,12 @@ involve feature selection or dimensionality reduction. The goal is to
 reduce the dimensionality of the signal while retaining the information
 necessary to detect a change point. This step is optional, but can
 improve the performance of the change point detection algorithms. In
-this step, parts of signal with high correlation are filtered out.
+this step, parts of signal with high correlation and/or uninformative dimensions are filtered out.
 
 Detection
 ---------
 Detect change points in the signal. This step is the most important and
-is the focus of the project. The goal is to detect change points in the
+is the ultimate purpose of this package. The goal is to detect change points in the
 signal that correspond to events in the analyzed trajectory. The change
 points are detected using a variety of algorithms. Often times, number
 of events is not known beforehand. Dupin also has capabilities for
