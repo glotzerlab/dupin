@@ -1,11 +1,11 @@
 .. include:: ../README.rst
    :start-line: 0
-   :end-line: 13
+   :end-line: 52
 
 .. image:: _static/detect.gif
 
 .. include:: ../README.rst
-   :start-line: 17
+   :start-line: 61
 
 Table of Contents
 =================
@@ -15,6 +15,7 @@ Table of Contents
    :caption: Contents:
 
    installation
+   pipeline
    tutorials
    contributing
    authors
@@ -25,9 +26,9 @@ Table of Contents
     :maxdepth: 1
     :caption: API:
 
+    module-preprocessing
     module-data
     module-detect
-    module-preprocessing
 
 Indices and tables
 ==================

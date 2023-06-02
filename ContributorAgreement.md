@@ -1,6 +1,6 @@
 # dupin Contributor Agreement
 
-These terms apply to your contribution to the HOOMD-blue Open Source Project ("Project") owned or managed by the Regents of the University of Michigan ("Michigan"), and set out the intellectual property rights you grant to Michigan in the contributed materials.
+These terms apply to your contribution to the **dupin** Open Source Project ("Project") owned or managed by the Regents of the University of Michigan ("Michigan"), and set out the intellectual property rights you grant to Michigan in the contributed materials.
 If this contribution is on behalf of a company, the term "you" will also mean the company you identify below.
 If you agree to be bound by these terms, fill in the information requested below and provide your signature.
 
@@ -23,7 +23,7 @@ If you agree to be bound by these terms, fill in the information requested below
     * it does not to the best of your knowledge violate any third party's copyrights, trademarks, patents, or other intellectual property rights; and you are authorized to sign this contract on behalf of your company (if identified below).
 6. The terms will be governed by the laws of the State of Michigan and applicable U.S. Federal Law. Any choice of law rules will not apply.
 
-**By making contribution, you electronically sign and agree to the terms of the HOOMD-blue Contributor Agreement.**
+**By making contribution, you electronically sign and agree to the terms of the **dupin** Contributor Agreement.**
 
 ![by-sa.png](https://licensebuttons.net/l/by-sa/3.0/88x31.png)
 
