@@ -6,5 +6,5 @@ python:
     - method: setuptools
 
 sphinx:
-  configuration: sphinx-doc/conf.py
+  configuration: docs/conf.py
   fail_on_warning: true
