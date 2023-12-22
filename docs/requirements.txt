@@ -1,2 +1,4 @@
 furo
 nbsphinx
+ipython
+ipywidgets
