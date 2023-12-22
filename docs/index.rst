@@ -17,6 +17,7 @@ Table of Contents
    installation
    pipeline
    tutorials
+   examples
    contributing
    authors
    changelog
