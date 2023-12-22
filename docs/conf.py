@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
+    "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
 ]
 
