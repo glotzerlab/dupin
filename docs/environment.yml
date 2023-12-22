@@ -1,0 +1,19 @@
+name: dupin-rtd
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pip
+  - bottleneck
+  - freud
+  - kneed
+  - numpy
+  - ruptures
+  - scikit-learn
+  - pandas
+  - sphinx
+  - furo
+  - nbsphinx
+  - jupyter_sphinx
+  - pandoc
