@@ -82,10 +82,10 @@ class Logger:
 
     @property
     def frames(self):
-        """`list` [`dict`]: Assess a particular frame of data.
+        r"""`list` [`dict`]: Assess a particular frame of data.
 
         The data is a `list` of `dict` where keys are features and values are
-        `dict`s with the metadata gathered from the pipeline components.
+        `dict`\ s with the metadata gathered from the pipeline components.
         """
         return self._data
 
