@@ -18,7 +18,7 @@ Overview
 **dupin** is designed to provide an unopinionated Python API for partitioning temporal point cloud data into regions of stability and transition.
 Generally such data comes from molecular simulations or experimental imaging techniques.
 For example, if a researcher imaged gold nanoparticles nucleating into FCC crystal, **dupin** could help to partition the system into the initial fluid, transition, and crystal regions of the point cloud trajectory.
-Though, **dupin** attempts to be general and *unopinionated* we provide sensible defaults and do not sacrifice easy of use for customizability.
+Though, **dupin** attempts to be general and *unopinionated* we provide sensible defaults and do not sacrifice ease of use for customizability.
 
 Resources
 ---------
