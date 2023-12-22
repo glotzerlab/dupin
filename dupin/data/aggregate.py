@@ -46,9 +46,6 @@ class SignalAggregator:
         The generator which generates data given a trajectory frame.
     signals : list[dict]
         The current list of analyzed frames.
-    logger : dupin.data.logging.Logger
-        Either ``None`` when not logging or the logger which stores the metadata
-        from the generator.
     """
 
     def __init__(
