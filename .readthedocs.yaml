@@ -8,6 +8,7 @@ python:
     install:
     - requirements: docs/requirements.text
     - method: setuptools
+    - path: .
 sphinx:
   configuration: docs/conf.py
   fail_on_warning: true
