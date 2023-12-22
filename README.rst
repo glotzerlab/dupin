@@ -22,8 +22,8 @@ Though, **dupin** attempts to be general and *unopinionated* we provide sensible
 
 Resources
 ---------
-- `Documentation <https://dupin.readthedocs.io/en/stable/index.html>`__: Read our API documentation.
-- `Installation Guide <https://dupin.readthedocs.io/en/stable/installation.html>`__: Look at our installation guide.
+- `Documentation <https://dupin.readthedocs.io/en/latest/index.html>`__: Read our API documentation.
+- `Installation Guide <https://dupin.readthedocs.io/en/latest/installation.html>`__: Look at our installation guide.
 - `GitHub Repository <https://github.com/glotzerlab/dupin>`__: Check out the source code.
 - `Issue Tracker <https://github.com/glotzerlab/dupin/issues>`__: File a bug report or pull request.
 
