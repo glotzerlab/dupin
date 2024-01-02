@@ -25,7 +25,6 @@ DynamicProgramming::DynamicProgramming(int num_bkps_, int num_parameters_, int n
 
 }
 
-
 void DynamicProgramming::scale_datum() {
     VectorXd min_val = datum.colwise().minCoeff();
     VectorXd max_val = datum.colwise().maxCoeff();

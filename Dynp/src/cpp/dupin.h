@@ -86,10 +86,7 @@ public:
 
     // Scales the dataset using min-max normalization.
     void scale_datum();
-
-    // Reads input data from standard input - mainly for testing purposes.
-    void read_input();
-
+    
     // Prepares data for linear regression.
     void regression_setup(linear_fit_struct& lfit);
 
