@@ -25,17 +25,6 @@ DynamicProgramming::DynamicProgramming(int num_bkps_, int num_parameters_, int n
 
 }
 
-void DynamicProgramming::read_input() {
-    cin >> jump >> min_size >> num_bkps >> num_parameters >> num_timesteps;
-    datum.resize(num_timesteps, num_parameters);
-    
-    for (int i = 0; i < num_timesteps; ++i) {
-        for (int j = 0; j < num_parameters; ++j) {
-            cin >> datum(i, j);
-        }
-    }
-}
-
 
 void DynamicProgramming::scale_datum() {
     VectorXd min_val = datum.colwise().minCoeff();
