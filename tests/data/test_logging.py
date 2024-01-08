@@ -83,10 +83,8 @@ def orderly_log_content(
     return draw(st.lists(contexts, max_size=20))
 
 
-@given(orderly_log_content())
-def test_to_dataframe(log_contents):
+def populate_log(logger, log_contents):
     num_empty = 0
-    logger = du.data.logging.Logger()
     for frame in log_contents:
         if not frame:
             num_empty += 1
@@ -97,25 +95,43 @@ def test_to_dataframe(log_contents):
             for k, v in data.items():
                 logger[k] = v
         logger.end_frame()
-    df = logger.to_dataframe()
-    if len(log_contents) == num_empty:
-        assert df.shape == (0, 0)
-        return
-    width = sum(len(v) for v in log_contents[0].values())
-    assert df.shape == (len(log_contents), width)
+    return num_empty
+
+
+def check_logger_columns(df, log_contents):
     for frame in log_contents:
         for context, data in frame.items():
-            for k, v in data.items():
+            for k in data:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", "indexing past lexsort")
                     expected_col = pd.MultiIndex.from_tuples([(context, k)])[0]
                     assert expected_col in df.columns
-    for i, frame in enumerate(logger.frames):
+
+
+def check_logger_values(df, log_contents):
+    for i, frame in enumerate(log_contents):
         index = 0
         for inner_dict in frame.values():
             for value in inner_dict.values():
+                expected_value = df.iloc[i, index]
                 if np.isnan(df.iloc[i, index]):
                     assert np.isnan(value)
                 else:
-                    assert np.isclose(float(value), df.iloc[i, index])
+                    assert np.isclose(float(value), expected_value)
                 index += 1
+
+
+@given(orderly_log_content())
+def test_to_dataframe(log_contents):
+    logger = du.data.logging.Logger()
+    num_empty = populate_log(logger, log_contents)
+    df = logger.to_dataframe()
+    # When log contents is empty
+    if len(log_contents) == num_empty:
+        assert df.shape == (0, 0)
+        return
+    # Non-empty  log contents
+    width = sum(len(v) for v in log_contents[0].values())
+    assert df.shape == (len(log_contents), width)
+    check_logger_columns(df, log_contents)
+    check_logger_values(df, log_contents)

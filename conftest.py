@@ -16,7 +16,7 @@ def seeds(rng):
 
 
 @pytest.fixture(scope="session")
-def rng():  # noqa: D401
+def rng():
     """A random number generator for tests that have need for random numbers."""
     return np.random.default_rng(5645646)
 
@@ -25,7 +25,8 @@ def rng():  # noqa: D401
 def mock_fcc_system(rng):
     """Create 3D FCC systems.
 
-    Parameters:
+    Parameters
+    ----------
         ns: tuple[int, int, int], optional
             Number of unit cells in each dimension. Defaults to ``(2, 2, 2)``.
         a: float, optional
@@ -35,7 +36,7 @@ def mock_fcc_system(rng):
             ``1e-3``.
     """
 
-    def system_factory(ns=(2, 2, 2), a=1.0, noise=1e-3):  # noqa: E741
+    def system_factory(ns=(2, 2, 2), a=1.0, noise=1e-3):
         return freud.data.UnitCell.fcc().generate_system(
             ns, a, noise, rng.integers(1e4)
         )
@@ -47,7 +48,8 @@ def mock_fcc_system(rng):
 def mock_random_system():
     """Create 2 or 3D random position systems.
 
-    Parameters:
+    Parameters
+    ----------
         N: int, optional
             Number of particles. Defaults to 100.
         l: float, optional
@@ -58,7 +60,9 @@ def mock_random_system():
 
     def system_factory(N=50, l=10.0, dimensions=3):  # noqa: E741
         return freud.data.make_random_system(
-            box_size=l, num_points=N, is2D=dimensions == 2
+            box_size=l,
+            num_points=N,
+            is2D=dimensions == 2,  # noqa: PLR2004
         )
 
     return system_factory

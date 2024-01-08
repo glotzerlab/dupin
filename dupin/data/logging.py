@@ -123,7 +123,7 @@ def _create_column_index(log_data):
     for key, value in log_data.items():
         if isinstance(value, dict):
             for inner_index in _create_column_index(value):
-                yield (key,) + inner_index
+                yield (key, *inner_index)
         else:
             yield (key,)
 

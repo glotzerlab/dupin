@@ -47,13 +47,14 @@ class PipeComponent:
         """
         if isinstance(next_, DataModifier):
             return next_(self)
-        elif callable(next_):
-            raise ValueError(
+        if callable(next_):
+            msg = (
                 "To use custom callable use map or reduce as desired, "
                 "or wrap in appropriate custom class."
             )
-        else:
-            raise ValueError("Expected a DataModifier instance.")
+            raise ValueError(msg)
+        msg = "Expected a DataModifier instance."
+        raise ValueError(msg)
 
     def map(self, map_):
         """Add a mapping step after the current step in the data pipeline.
@@ -76,10 +77,10 @@ class PipeComponent:
         """
         if isinstance(map_, DataMap):
             return map_(self)
-        elif callable(map_):
+        if callable(map_):
             return CustomMap(self, map_)
-        else:
-            raise ValueError("Expected a callable or a DataMap instance.")
+        msg = "Expected a callable or a DataMap instance."
+        raise ValueError(msg)
 
     def reduce(self, reduce_):
         """Add a reducing step after the current step in the data pipeline.
@@ -101,10 +102,10 @@ class PipeComponent:
         """
         if isinstance(reduce_, DataReducer):
             return reduce_(self)
-        elif callable(reduce_):
+        if callable(reduce_):
             return CustomReducer(self, reduce_)
-        else:
-            raise ValueError("Expected a callable or a DataReduce instance.")
+        msg = "Expected a callable or a DataReduce instance."
+        raise ValueError(msg)
 
 
 def _join_filter_none(
@@ -155,7 +156,7 @@ class DataModifier(Callable):
                 processed_data[base_name] = datum
         return processed_data
 
-    def update(cls, args, kwargs):
+    def update(self, args, kwargs):
         """Update data modifier before compute if necessary.
 
         This is called before the internal generator is called. The method can
@@ -165,7 +166,7 @@ class DataModifier(Callable):
         return args, kwargs
 
     @abstractmethod
-    def compute(cls, distribution):
+    def compute(self, distribution):
         """Perform the data modification on the array."""
         pass
 

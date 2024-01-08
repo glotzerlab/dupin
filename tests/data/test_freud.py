@@ -96,13 +96,15 @@ def test_call(mock_random_system, spec):
         )
     else:
         output = instance(mock_random_system())
-    for attr, key in instance.attrs.items():
+    for attr, keys in instance.attrs.items():
         compute_values = getattr(instance.compute, attr)
-        if isinstance(key, list):
-            assert compute_values.ndim == 2
-            for i, k in enumerate(key):
-                assert np.allclose(compute_values[:, i], output[k])
+        if isinstance(keys, list):
+            # Expect 2 arrays when multiple names for a compute given
+            assert compute_values.ndim == 2  # noqa: PLR2004
+            assert len(keys) == compute_values.shape[1]
+            for i, key in enumerate(keys):
+                assert np.allclose(compute_values[:, i], output[key])
             continue
-        if key is None:
-            key = attr
+        # Handle single feature case
+        key = attr if key is None else keys
         assert np.allclose(output[key], compute_values)

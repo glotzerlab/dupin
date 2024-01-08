@@ -1,6 +1,5 @@
 """Implements offline methods for detecting events in molecular simulations."""
 
-import functools
 import logging
 import warnings
 from typing import Callable, List, Optional, Tuple, Union
@@ -240,8 +239,7 @@ def two_pass_elbow_detection(
                     "two_pass_elbow_detection."
                 )
                 return first_pass
-            else:
-                return second_pass + first_pass
+            return second_pass + first_pass
         return first_pass
 
     return find_elbow
@@ -251,6 +249,7 @@ class _RupturesWrapper:
     def __init__(self, detector: rpt.base.BaseEstimator):
         self.detector = detector
         self.data = None
+        self._previous_detections = {}
 
     def __call__(self, data: np.ndarray, n_change_points: int):
         if self.data is None or self.data is not data:
@@ -260,10 +259,9 @@ class _RupturesWrapper:
     def fit(self, data: np.ndarray):
         self.data = data
         self.detector.fit(data)
-        self.memonized_detect.cache_clear()
+        self._previous_detections = {}
 
-    @functools.lru_cache
-    def memonized_detect(self, n_change_points: int) -> Tuple[List[int], float]:
+    def detect(self, n_change_points: int) -> Tuple[List[int], float]:
         if n_change_points == 0:
             return [], self.detector.cost.error(0, len(self.data))
         # An AssertionError is raised if no suitable change point can be found
@@ -273,18 +271,26 @@ class _RupturesWrapper:
         except rpt.exceptions.BadSegmentationParameters as err:
             _logger.info(
                 f"Error detecting {n_change_points} change points. "
-                f"Original error: {type(err).__name__}({str(err)})."
+                f"Original error: {type(err).__name__}({err!s})."
             )
-            return None, 0
+            return (None, 0)
         # Return None if the correct number of change points were not detected
         # which can happen when no change point addition reduces cost. This
         # should not happen on a well defined cost function but numerical errors
         # happen.
         if len(change_points) != n_change_points + 1:
-            return None, 0
+            return (None, 0)
         # The selection of change points was successful, compute costs and
         # return
         cost = self.detector.cost.sum_of_costs(change_points)
         # Remove the last index of the signal from the sequence of change points
         change_points.pop()
-        return change_points, cost
+        return (change_points, cost)
+
+    def memonized_detect(self, n_change_points: int) -> Tuple[List[int], float]:
+        if n_change_points in self._previous_detections:
+            return self._previous_detections[n_change_points]
+        self._previous_detections[n_change_points] = self.detect(
+            n_change_points
+        )
+        return self._previous_detections[n_change_points]

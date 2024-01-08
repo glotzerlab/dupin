@@ -3,6 +3,3 @@
 This module provides resources for the transformation step of the event
 detection pipeline.
 """
-
-
-from . import filter, signal, supervised

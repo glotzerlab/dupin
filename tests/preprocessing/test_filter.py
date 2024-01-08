@@ -14,7 +14,7 @@ class TestMeanShift:
     def get_shift_range(self, min_, max_):
         return (min_ * self.min_mean_shift, max_ * self.min_mean_shift)
 
-    @pytest.fixture
+    @pytest.fixture()
     def mean_shift(self):
         return du.preprocessing.filter.MeanShift(self.sensitivity)
 
@@ -25,7 +25,7 @@ class TestMeanShift:
             return rpt.pw_constant(
                 100, 2, 0, 1, delta=self.get_shift_range(0.5, 0.8), seed=seeds()
             )[0]
-        elif i == 1:
+        if i == 1:
             return rpt.pw_constant(
                 100,
                 2,
@@ -44,7 +44,10 @@ class TestMeanShift:
 
     def test_error_on_small_signal(self, mean_shift):
         signal, _ = rpt.pw_constant(6, 1, 0, 2)
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match="Signal to small to perform statistical analysis on.",
+        ):
             mean_shift(signal)
 
     @pytest.fixture(params=range(4))
@@ -60,7 +63,7 @@ class TestMeanShift:
                 seed=seeds(),
             )
             return 2, signal
-        elif i == 1:
+        if i == 1:
             signal, _ = rpt.pw_constant(
                 100,
                 2,
@@ -70,7 +73,7 @@ class TestMeanShift:
                 seed=seeds(),
             )
             return 2, signal
-        elif i == 2:
+        if i == 2:  # noqa: PLR2004
             signal, _ = rpt.pw_constant(
                 100,
                 1,
@@ -105,8 +108,8 @@ class TestCorrelated:
         cov = np.zeros(shape=(N, N))
         for i in range(labels.max() + 1):
             index = np.flatnonzero(labels == i)
-            i, j = np.meshgrid(index, index)
-            cov[i, j] = rng.uniform(0.8, 1.0, size=len(i))
+            x, y = np.meshgrid(index, index)
+            cov[x, y] = rng.uniform(0.8, 1.0, size=len(i))
         diag_indices = np.diag_indices_from(cov)
         cov[diag_indices] = 1.0
         flattened_cov = cov.ravel()
@@ -152,7 +155,7 @@ class TestCorrelated:
         for i, j in map_.items():
             assert not np.any((a == i) != (b == j))
 
-    @pytest.fixture
+    @pytest.fixture()
     def correlated(self):
         return du.preprocessing.filter.Correlated(max_clusters=5)
 
@@ -167,7 +170,9 @@ class TestCorrelated:
         return rng.uniform(-10, 10, size=(10, 15))
 
     def test_zero_n_features(self, random_signal, correlated):
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="features_per_cluster must be 1 or greater."
+        ):
             correlated(random_signal, features_per_cluster=0)
 
     def expected_n_features(self, n_features_per_cluster, correlated):
@@ -211,25 +216,36 @@ class TestCorrelated:
             assert not np.any(filter_[features_in_cluster][:-2])
 
     def test_invalid_construction(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported method aggregate."):
             du.preprocessing.filter.Correlated(method="aggregate")
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Unsupported correlation option spearman."
+        ):
             du.preprocessing.filter.Correlated(correlation="spearman")
-        for i in (-1, 0, 1, "", {}):
-            with pytest.raises((ValueError, TypeError)):
-                du.preprocessing.filter.Correlated(max_clusters=i)
+        for n_clusters in (-1, 0, 1):
+            with pytest.raises(
+                ValueError, match="Max clusters must be greater than 1."
+            ):
+                du.preprocessing.filter.Correlated(max_clusters=n_clusters)
+        for n_clusters in ("", {}):
+            with pytest.raises(TypeError):
+                du.preprocessing.filter.Correlated(max_clusters=n_clusters)
 
     def test_valid_construction(self, random_signal):
-        correlated = du.preprocessing.filter.Correlated(max_clusters=5)
-        assert correlated.max_clusters == 5
+        max_clusters = 5
+        correlated = du.preprocessing.filter.Correlated(
+            max_clusters=max_clusters
+        )
+        assert correlated.max_clusters == max_clusters
         correlated(random_signal)
-        assert correlated.scores_.shape[0] == 4  # for 2, 3, 4, and 5 clusters
+        # Expect scores for 2, 3, 4, and 5 clusters
+        assert correlated.scores_.shape[0] == max_clusters - 1
         # These should error when called due to the faulty arguments passed
         # through.
         correlated = du.preprocessing.filter.Correlated(
             method_kwargs={"assign_labels": "foo"}
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="foo"):
             correlated(random_signal)
         correlated = du.preprocessing.filter.Correlated(
             method_args=(5, {}, [12, 5])

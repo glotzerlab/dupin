@@ -25,15 +25,17 @@ def test_two_pass_elbow_detection():
     detected_elbow = detect.two_pass_elbow_detection(1.5 * elbow)(y)
     assert detected_elbow - elbow > 0
 
+    manual_elbow = 4
+
     def custom_elbow(costs):
-        return 4
+        return manual_elbow
 
     detected_elbow = detect.two_pass_elbow_detection(2, custom_elbow)(y)
-    assert detected_elbow == 4
+    assert detected_elbow == manual_elbow
 
 
-@pytest.mark.parametrize("detector", (rpt.Dynp(), rpt.Binseg(), rpt.BottomUp()))
-def test_RupturesWrapper(detector):
+@pytest.mark.parametrize("detector", [rpt.Dynp(), rpt.Binseg(), rpt.BottomUp()])
+def test_ruptures_wrapper(detector):
     signal, bkps = rpt.pw_constant(50, n_bkps=1)
     wrapper = detect._RupturesWrapper(detector)
     assert wrapper.detector is detector
@@ -50,8 +52,9 @@ def test_RupturesWrapper(detector):
     assert len(points) == 1
     # For some reason the detectors are occasionally off by one. This makes the
     # cost non-zero. The error isn't ours so we test accordingly.
+    max_error = 2
     diff = abs(points[0] - bkps[0])
-    assert diff < 2
+    assert diff < max_error
     if diff == 0:
         assert np.isclose(cost, 0)
 
@@ -102,4 +105,5 @@ class TestSweepDetector:
         bkps.pop()
         change_points = detector.fit(signal)
         assert len(change_points) == len(bkps)
-        assert all(abs(c - b) <= 2 for c, b in zip(change_points, bkps))
+        max_error = 2
+        assert all(abs(c - b) <= max_error for c, b in zip(change_points, bkps))

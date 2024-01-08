@@ -13,34 +13,46 @@ def test_window_iter():
 
 
 def test_valid_construction():
-    classifier = sk.tree.DecisionTreeClassifier(max_depth=1)
-    window = du.preprocessing.supervised.Window(classifier, 10, 0.1)
-    assert window.window_size == 10
-    assert window.test_size == 0.1
-    assert window._loss_function == window._default_loss
-    assert window.n_classifiers == 1
-    assert window.store_intermediate_classifiers is False
-    assert window.combine_errors == "mean"
+    defaults = {
+        "loss_function": du.preprocessing.supervised.Window._default_loss,
+        "store_intermediate_classifiers": False,
+        "n_classifiers": 1,
+        "combine_errors": "mean",
+    }
+    initial_arguments = {
+        "classifier": sk.tree.DecisionTreeClassifier(max_depth=1),
+        "window_size": 10,
+        "test_size": 0.1,
+    }
 
-    def loss(cls, x, y):
-        return np.sum(y != cls.predict(x))
+    def check_attrs(init, default):
+        window = du.preprocessing.supervised.Window(**init)
+        for key in init.keys() | default.keys():
+            attr = getattr(window, key)
+            expected_attr = init.get(key, default.get(key))
+            if attr in (False, True, None):
+                assert attr is expected_attr
+            else:
+                assert attr == expected_attr
 
-    window = du.preprocessing.supervised.Window(
-        classifier, 15, 0.5, loss, True, 10, "median"
-    )
-    assert window.window_size == 15
-    assert window.test_size == 0.5
-    assert window._loss_function == loss
-    assert window.n_classifiers == 10
-    assert window.store_intermediate_classifiers is True
-    assert window.combine_errors == "median"
+    check_attrs(initial_arguments, defaults)
+    initial_arguments = {
+        "classifier": sk.tree.DecisionTreeClassifier(max_depth=1),
+        "window_size": 15,
+        "test_size": 0.5,
+        "loss": lambda cls, x, y: np.sum(y != cls.predict(x)),
+        "store_intermediate_classifiers": True,
+        "n_classifiers": 10,
+        "combine_errors": "median",
+    }
+    check_attrs(initial_arguments, defaults)
 
 
 def test_invalid_construction():
     classifier = sk.tree.DecisionTreeClassifier(max_depth=1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="window_size must be greater than 1."):
         du.preprocessing.supervised.Window(classifier, 1, 0.1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="test_size must be between 0 and 1."):
         du.preprocessing.supervised.Window(classifier, 2, 0.0)
     with pytest.raises(TypeError):
         du.preprocessing.supervised.Window(classifier, 2, 0.1, {})
@@ -50,11 +62,16 @@ def test_invalid_construction():
 
     with pytest.raises(TypeError):
         du.preprocessing.supervised.Window(classifier, 2, 0.1, loss, "foo")
-    with pytest.raises(ValueError):
-        du.preprocessing.supervised.Window(classifier, 2, 0.1, loss, True, 0)
-    with pytest.raises(ValueError):
-        du.preprocessing.supervised.Window(classifier, 2, 0.1, loss, True, -1)
-    with pytest.raises(ValueError):
+    for n_classifiers in (0, -1):
+        with pytest.raises(
+            ValueError, match="n_classifiers must be greater than 0."
+        ):
+            du.preprocessing.supervised.Window(
+                classifier, 2, 0.1, loss, True, n_classifiers
+            )
+    with pytest.raises(
+        ValueError, match="combine_errors must be im ('mean', 'median')."
+    ):
         du.preprocessing.supervised.Window(
             classifier, 2, 0.1, loss, True, 1, "mode"
         )
@@ -65,7 +82,7 @@ def signal_with_mean_shift(seeds):
     return rpt.pw_constant(100, 2, 1, 0.5, delta=(3, 5), seed=seeds())
 
 
-@pytest.fixture
+@pytest.fixture()
 def window():
     classifier = sk.tree.DecisionTreeClassifier(max_depth=1)
     return du.preprocessing.supervised.Window(
@@ -74,12 +91,13 @@ def window():
 
 
 def test_compute(window, signal_with_mean_shift):
-    signal, breakpoint = signal_with_mean_shift
+    signal, change_point = signal_with_mean_shift
     error = window.compute(signal)
-    assert abs(error.argmin() - breakpoint[0]) < 7
+    max_allowed_error = 6
+    assert abs(error.argmin() - change_point[0]) <= max_allowed_error
 
 
-@pytest.fixture
+@pytest.fixture()
 def random_signal(rng):
     return rng.uniform(-500_000, 500_000, size=20).reshape((-1, 1))
 

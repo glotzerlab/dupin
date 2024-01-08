@@ -37,7 +37,7 @@ class EventFeatures:
 
     def __init__(self, signal, change_points):
         self._signal = signal
-        self._change_points = [0] + change_points + [len(self._signal)]
+        self._change_points = [0, *change_points, len(self._signal)]
 
     def linear(self, sample_size, sensitivity, extend_small_regions=True):
         """Find features that change linearly between a pair of change points.
@@ -76,6 +76,7 @@ class EventFeatures:
             participating features during each interval. A value of ``None`` is
             used for all intervals that are too small to analyze.
         """
+        min_change_point_distance = 7
 
         def extend_region(beg, end):
             needed_extension = 7 - (end - beg)
@@ -87,26 +88,27 @@ class EventFeatures:
             new_extension = 7 - (end - beg)
             if end < len(self._signal):
                 end = min(len(self._signal), end + new_extension)
-            if end - beg < 7:
+            if end - beg < min_change_point_distance:
                 warnings.warn(
-                    "Subsignal could not be extended enough for analysis."
+                    "Subsignal could not be extended enough for analysis.",
+                    stacklevel=2,
                 )
             return beg, end
 
         mean_shift = dupin.preprocessing.filter.MeanShift(sensitivity)
 
         features = []
-        for beg, end in _ipairs(self._change_points):
+        for start, end in _ipairs(self._change_points):
             if extend_small_regions:
-                beg, end = extend_region(beg, end)
-            if end - beg < 7:
+                i, j = extend_region(start, end)
+            else:
+                i, j = start, end
+            if end - start < min_change_point_distance:
                 features.append(None)
                 continue
 
             features.append(
-                mean_shift(
-                    self._signal[beg:end], sample_size, return_filter=True
-                )
+                mean_shift(self._signal[i:j], sample_size, return_filter=True)
             )
         return features
 
@@ -129,8 +131,10 @@ class EventFeatures:
             used for all change_points that are too small to analyze.
         """
         features = []
+
+        min_change_point_distance = 3
         for beg, mid, end in _ipairs(self._change_points, 3):
-            if mid - beg < 3 or end - mid < 3:
+            if min(mid - beg, end - mid) < min_change_point_distance:
                 features.append(None)
                 continue
             likelihoods = dupin.preprocessing.filter.MeanShift._get_likelihood(
@@ -227,7 +231,7 @@ def retrieve_positions(log_df, trajectory):
             log_df.iloc[i, column_mask].to_numpy().astype(int)
         ].ravel()
     new_columns = pd.MultiIndex.from_tuples(
-        original_column + (coord,)
+        (*original_column, coord)
         for original_column, coord in itertools.product(
             log_df.columns, ("x", "y", "z")
         )

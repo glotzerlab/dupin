@@ -31,7 +31,8 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     smoothed_array: numpy.ndarray
     """
     if span % 2 == 0:
-        raise ValueError("The window span must be an odd number.")
+        msg = "The window span must be an odd number."
+        raise ValueError(msg)
     if span == 1:
         return np.copy(y)
 
@@ -44,13 +45,16 @@ def moving_average(y: np.ndarray, span: int = 1) -> np.ndarray:
     return average
 
 
-def fft_smoothing(
+def high_frequency_smoothing(
     y: np.ndarray,
     max_frequency: float,
     sampling_frequency: float,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> np.ndarray:
     r"""Smooth out the highest frequencies of a signal.
+
+    The code by defaults performs an 8th order Butterworth filter with a
+    passband from 0 to ``max_frequency``.
 
     Parameters
     ----------
@@ -68,8 +72,8 @@ def fft_smoothing(
     """
     ellip_kwargs = {
         "N": 8,
-        "rp": 1,
-        "rs": 100,
+        "rp": 0,
+        "rs": 0,
         "Wn": max_frequency,
         "fs": sampling_frequency,
         "btype": "lowpass",

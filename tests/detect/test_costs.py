@@ -1,17 +1,20 @@
+import typing
+
 import numpy as np
 import pytest
 
-from dupin.detect.offline import costs
+import dupin as du
+import dupin.detect.costs
 
 
 class BaseCostLinearTest:
-    cls = None
-    additional_constants = {}
-    N = 50
+    cls: typing.ClassVar[du.detect.costs.BaseLinearCost] = None
+    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {}
+    N: typing.ClassVar[int] = 50
 
     def test_constants(self):
-        assert self.cls.min_size == 3
-        assert self.cls._metrics == {"l1", "l2"}
+        for attr, value in {"min_size": 3, "_metrics": {"l1", "l2"}}.items():
+            assert getattr(self.cls, attr) == value
         for attr, value in self.additional_constants.items():
             assert getattr(self.cls, attr) == value
 
@@ -50,34 +53,42 @@ class BaseCostLinearTest:
 
 
 class TestLinearCost(BaseCostLinearTest):
-    cls = costs.CostLinearFit
-    additional_constants = {"model": "linear_regression"}
+    cls: typing.ClassVar[
+        du.detect.costs.BaseLinearCost
+    ] = du.detect.costs.CostLinearFit
+    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+        "model": "linear_regression"
+    }
 
     def test_error_noise(self, rng, perfect_signal):
-        noise = rng.normal(
-            0, 0.1, size=np.product(perfect_signal.shape)
-        ).reshape(perfect_signal.shape)
+        noise = rng.normal(0, 0.1, size=np.prod(perfect_signal.shape)).reshape(
+            perfect_signal.shape
+        )
         noisy_signal = perfect_signal + noise
-        cost_func = costs.CostLinearFit()
+        cost_func = du.detect.costs.CostLinearFit()
         cost_func.fit(noisy_signal)
         expected_max_error = np.sum(np.abs(noise))
         assert expected_max_error >= cost_func.error(0, self.N)
-        cost_func = costs.CostLinearFit("l2")
+        cost_func = du.detect.costs.CostLinearFit("l2")
         cost_func.fit(noisy_signal)
         expected_max_error = np.sqrt(np.sum(np.square(noise)))
         assert expected_max_error >= cost_func.error(0, self.N)
 
 
 class TestBiasedCost(BaseCostLinearTest):
-    cls = costs.CostLinearBiasedFit
-    additional_constants = {"model": "biased_linear_regression"}
+    cls: typing.ClassVar[
+        du.detect.costs.BaseLinearCost
+    ] = du.detect.costs.CostLinearBiasedFit
+    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+        "model": "biased_linear_regression"
+    }
 
     def test_correct_fit(self, rng, perfect_signal):
         # To make a simple test we just set the values to the last one. This
         # preserves the mapping to the unit square without which the regression
         # parameters will change.
         perfect_signal[1:-1] = perfect_signal[-1]
-        cost_func = costs.CostLinearBiasedFit()
+        cost_func = du.detect.costs.CostLinearBiasedFit()
         cost_func.fit(perfect_signal)
         m, b = cost_func._get_regression(0, self.N)
         assert np.allclose(m, self._m)

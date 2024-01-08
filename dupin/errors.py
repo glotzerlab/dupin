@@ -12,10 +12,11 @@ class _RaiseModuleError:
         self.module = module
 
     def __getattribute__(self, attr):
-        raise ModuleNotAvailableError(
+        msg = (
             f"The {attr} feature is not available as the module {self.module} "
             f"is not available."
         )
+        raise ModuleNotAvailableError(msg)
 
 
 class ModuleNotAvailableError(ImportError):

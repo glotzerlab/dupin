@@ -3,9 +3,9 @@
 from typing import Callable, Optional, Sequence
 
 import numpy as np
-import pandas
+import pandas as pd
 
-import dupin.errors as errors
+from dupin import errors
 
 try:
     import sklearn as sk
@@ -99,13 +99,14 @@ class Window:
         "mean". Available values are "mean" and "median".
     """
 
+    #
     def __init__(
         self,
         classifier: "sk.base.ClassifierMixin",
         window_size: int,
         test_size: float,
         loss_function: Optional[
-            Callable[[np.ndarray, np.ndarray], float]
+            Callable[["sk.base.ClassifierMixin", np.ndarray, np.ndarray], float]
         ] = None,
         store_intermediate_classifiers: bool = False,
         n_classifiers: int = 1,
@@ -128,8 +129,9 @@ class Window:
 
     @window_size.setter
     def window_size(self, value):
-        if value < 2:
-            raise ValueError("window_size must be greater than 1.")
+        if value < 2:  # noqa: PLR2004
+            msg = "window_size must be greater than 1."
+            raise ValueError(msg)
         self._window_size = value
 
     @property
@@ -144,20 +146,23 @@ class Window:
     @store_intermediate_classifiers.setter
     def store_intermediate_classifiers(self, value):
         if not isinstance(value, bool):
-            raise TypeError("Expected bool for store_intermediate_classifiers.")
+            msg = "Expected bool for store_intermediate_classifiers."
+            raise TypeError(msg)
         self._store_intermediate_classifiers = value
 
     @property
     def loss_function(self):
         """``callable`` [[ `sklearn.base.ClassifierMixin`, `numpy.ndarray`, \
                 `numpy.ndarray` ], `float` ]: Returns the loss for a fitted \
-                classifier given the test x and y."""
+        classifier given the test x and y.
+        """  # noqa: D205
         return self._loss_function
 
     @loss_function.setter
     def loss_function(self, value):
         if not callable(value):
-            raise TypeError("loss_function must be callable.")
+            msg = "loss_function must be callable."
+            raise TypeError(msg)
         self._loss_function = value
 
     @property
@@ -167,8 +172,9 @@ class Window:
 
     @test_size.setter
     def test_size(self, value):
-        if value <= 0.0 or value >= 1.0:
-            raise ValueError("test_size must be between 0 and 1.")
+        if value <= 0.0 or value >= 1.0:  # noqa: PLR2004
+            msg = "test_size must be between 0 and 1."
+            raise ValueError(msg)
         self._test_size = value
 
     @property
@@ -182,7 +188,8 @@ class Window:
     @n_classifiers.setter
     def n_classifiers(self, value):
         if value < 1:
-            raise ValueError("n_classifiers must be greater than 0.")
+            msg = "n_classifiers must be greater than 0."
+            raise ValueError(msg)
         self._n_classifiers = value
 
     @property
@@ -196,7 +203,8 @@ class Window:
     @combine_errors.setter
     def combine_errors(self, value):
         if value not in ("mean", "median"):
-            raise ValueError("combine_errors must be im ('mean', 'median').")
+            msg = "combine_errors must be in ('mean', 'median')."
+            raise ValueError(msg)
         self._combine_errors = value
 
     @property
@@ -217,7 +225,7 @@ class Window:
         errors : list
             Returns the list of loss function values for each window in ``X``.
         """
-        if isinstance(X, pandas.core.frame.DataFrame):
+        if isinstance(X, pd.core.frame.DataFrame):
             return self.compute(X.to_numpy())
 
         errors = []

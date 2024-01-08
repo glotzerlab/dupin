@@ -129,11 +129,12 @@ class NthGreatest(base.DataReducer):
         type_ = "least" if index > 0 else "greatest"
         abs_index = abs(index)
         unit_value = abs_index % 10
+        # add appropriate suffix
         if unit_value == 1:
             suffix = "st"
-        elif unit_value == 2:
+        elif unit_value == 2:  # noqa: PLR2004
             suffix = "nd"
-        elif unit_value == 3:
+        elif unit_value == 3:  # noqa: PLR2004
             suffix = "rd"
         else:
             suffix = "th"

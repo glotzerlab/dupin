@@ -11,13 +11,14 @@ from sklearn import preprocessing
 class BaseLinearCost(rpt.base.BaseCost, ABC):
     """Base class for costs using linear fits of features across signal."""
 
-    _metrics = {"l1", "l2"}
+    _metrics = frozenset(("l1", "l2"))
     min_size = 3
 
     def __init__(self, metric="l1"):
         """Create a CostLinearFit object."""
         if metric not in self._metrics:
-            raise ValueError(f"Available metrics are {self._metrics}.")
+            msg = f"Available metrics are {self._metrics}."
+            raise ValueError(msg)
         self._metric = getattr(self, "_" + metric)
 
     def fit(self, signal: np.ndarray):
@@ -52,8 +53,9 @@ class BaseLinearCost(rpt.base.BaseCost, ABC):
 
     @property
     def signal(self) -> np.ndarray:
-        """:math:`(N_{samples}, N_{dimensions})` numpy.ndarray of float: \
-            signal fitted on."""
+        """:math:`(N_{samples}, N_{dim})` numpy.ndarray of float: signal \
+           fitted on.
+        """  # noqa: D205
         return self._y.T
 
 

@@ -51,6 +51,33 @@ exclude = '''
 )
 '''
 
-[tool.isort]
-profile = "black"
-line_length = 80
+[tool.ruff]
+include = ["*.py", "*.ipynb"]
+line-length = 80
+select = [
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "EM",  # flake8-errmsg
+    "ICN", # flake8-import-conventions
+    "N",   # pep8-naming
+    "NPY", # NumPy-specific rules
+    "PL",  # Pylint
+    "PT",  # flake8-pytest-style
+    "RET", # flake8-return
+    "RUF", # Ruff specific rules
+    "UP",  # pyupgrade
+    "E",   # pycodestyle (errors)
+    "W",   # pycodestyle (warnings) ruff supports W but, W503 is not supported!!
+    "F",   # pyflakes
+    "D",   # pydocstyle
+    "I",   # isort
+]
+ignore = ["N803", "N806", "A003", "PLR0913"]
+
+[tool.ruff.extend-per-file-ignores]
+"tests/*" = ["D100", "D101", "D102", "D103", "B008"]
+"docs/*" = ["D100", "D101", "D102", "D103", "E501"]
+"conftest.py" = ["D401"]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"

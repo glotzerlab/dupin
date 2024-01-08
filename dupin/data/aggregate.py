@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterator, Optional, Tuple
 
 import numpy as np
 
-import dupin.errors as errors
+from dupin import errors
 
 from . import base, logging
 
@@ -123,10 +123,11 @@ class SignalAggregator:
         # broken than this check will not catch it. However, this breaks one our
         # assumptions so is outside what we should check for.
         if any(is_array(value) for value in self.signals[0].values()):
-            raise ValueError(
+            msg = (
                 "Signal is 3 dimensional. ~.to_dataframe requires a 2 "
                 "dimensional signal. Use ~.to_xarray instead."
             )
+            raise ValueError(msg)
         return pd.DataFrame(
             {
                 col: [frame[col] for frame in self.signals]

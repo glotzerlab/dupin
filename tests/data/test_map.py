@@ -8,19 +8,21 @@ import pytest
 
 import dupin as du
 
+SPH_HARM_NUMBER = [2, 3, 4]
+
 
 class BaseMapTest:
     cls = None
 
-    @pytest.fixture
+    @pytest.fixture()
     def generator(self):
         return du.data.freud.FreudDescriptor(
-            freud.order.Steinhardt(l=[2, 3, 4]),
-            {"particle_order": ["2", "3", "4"]},
+            freud.order.Steinhardt(l=SPH_HARM_NUMBER),
+            {"particle_order": [str(sph_harm) for sph_harm in SPH_HARM_NUMBER]},
         )
 
-    @pytest.fixture
-    def valid_spec(self):
+    @pytest.fixture()
+    def valid_spec(self):  # noqa: PT004
         """Return a valid spec."""
         raise NotImplementedError
 
@@ -90,7 +92,7 @@ class BaseMapTest:
 class TestIdentity(BaseMapTest):
     cls = du.data.map.Identity
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
         return {}
 
@@ -103,7 +105,7 @@ class TestIdentity(BaseMapTest):
 class TestSpatialAveraging(BaseMapTest):
     cls = du.data.spatial.NeighborAveraging
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
         return {"expected_kwarg": "neighbors", "remove_kwarg": False}
 
@@ -130,7 +132,7 @@ class TestSpatialAveraging(BaseMapTest):
 class TestTee(BaseMapTest):
     cls = du.data.map.Tee
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
         return {
             "maps": [
@@ -144,10 +146,10 @@ class TestTee(BaseMapTest):
         identity_dict = {
             k: v for k, v in output.items() if not k.startswith("spa")
         }
-        assert len(identity_dict) == 3
+        assert len(identity_dict) == len(SPH_HARM_NUMBER)
         TestIdentity.validate_output(identity_dict, compute_arr, passed_args)
         spatial_dict = {k: v for k, v in output.items() if k.startswith("spa")}
-        assert len(spatial_dict) == 3
+        assert len(spatial_dict) == len(SPH_HARM_NUMBER)
         TestSpatialAveraging.validate_output(
             spatial_dict, compute_arr, passed_args
         )
@@ -156,7 +158,7 @@ class TestTee(BaseMapTest):
 class TestCustomMap(BaseMapTest):
     cls = du.data.base.CustomMap
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
         def double(arr):
             return {"doubled": arr * 2}
