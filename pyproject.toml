@@ -72,7 +72,7 @@ select = [
     "D",   # pydocstyle
     "I",   # isort
 ]
-ignore = ["N803", "N806", "A003", "PLR0913"]
+ignore = ["N803", "N806", "A003", "PLR0913", "E741"]
 
 [tool.ruff.extend-per-file-ignores]
 "tests/*" = ["D100", "D101", "D102", "D103", "B008"]

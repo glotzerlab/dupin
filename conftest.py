@@ -58,7 +58,7 @@ def mock_random_system():
             The dimension of the system. Defaults to 3.
     """
 
-    def system_factory(N=50, l=10.0, dimensions=3):  # noqa: E741
+    def system_factory(N=50, l=10.0, dimensions=3):
         return freud.data.make_random_system(
             box_size=l,
             num_points=N,

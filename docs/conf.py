@@ -78,7 +78,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "dupin"
-copyright = "The Regents of the University of Michigan"
+copyright = "The Regents of the University of Michigan"  # noqa: A001
 author = "Brandon Butler"
 
 # The version info for the project you're documenting, acts as replacement
