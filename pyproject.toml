@@ -81,3 +81,7 @@ ignore = ["N803", "N806", "A003", "PLR0913", "E741"]
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
+
+[tool.coverage.run]
+branch = true
+source = [ "dupin" ]
