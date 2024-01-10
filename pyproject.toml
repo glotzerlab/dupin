@@ -32,6 +32,7 @@ dependencies = [
 
 [project.urls]
 Source = "https://github.com/glotzerlab/dupin"
+Documentation = "https://dupin.readthedocs.io"
 Issues = "https://github.com/glotzerlab/dupin/issues"
 
 [tool.setuptools]
