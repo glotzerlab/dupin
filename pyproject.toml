@@ -37,20 +37,6 @@ Issues = "https://github.com/glotzerlab/dupin/issues"
 [tool.setuptools]
 packages = { find = { namespaces = false, exclude = ["tests*", "notebooks*"] } }
 
-[tool.black]
-line-length = 80
-include = '\.pyi?$'
-exclude = '''
-
-(
-      \.eggs
-    | \.git
-    | build
-    | _build
-    | dist
-)
-'''
-
 [tool.ruff]
 include = ["*.py", "*.ipynb"]
 line-length = 80
