@@ -55,7 +55,7 @@ jobs:
       run: |
         pip install -r .github/workflows/ci-oldest-reqs.txt
         pip install -r requirements/requirements-data.txt
-      if: ${{ matrix.dependencies == 'newest' }}
+      if: ${{ matrix.dependencies == 'oldest' }}
     - name: Install numba (if available)
       run: |
         pip install -r requirements/requirements-jit.txt
