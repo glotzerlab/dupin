@@ -27,12 +27,11 @@ jobs:
           # Defaults to newest dependencies
           - dependencies: 'newest'
           # Other tests
-          # TODO: Add oldest supported dependencies to test
-          # - python: '3.8'
-          #   dependencies: 'oldest'
-          # - os: 'macos-latest'
-          #   python: '3.8'
-          #   dependencies: 'oldest'
+          - python: '3.8'
+            dependencies: 'oldest'
+          - os: 'macos-latest'
+            python: '3.8'
+            dependencies: 'oldest'
           - os: 'macos-latest'
             python: '3.12'
             dependencies: 'newest'
@@ -50,6 +49,11 @@ jobs:
     - name: Install newest dependencies
       run: |
         pip install -r requirements/requirements-test.txt
+        pip install -r requirements/requirements-data.txt
+      if: ${{ matrix.dependencies == 'newest' }}
+    - name: Install oldest dependencies
+      run: |
+        pip install -r .github/workflows/ci-oldest-reqs.txt
         pip install -r requirements/requirements-data.txt
       if: ${{ matrix.dependencies == 'newest' }}
     - name: Install numba (if available)
