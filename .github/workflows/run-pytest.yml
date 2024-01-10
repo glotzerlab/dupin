@@ -47,13 +47,15 @@ jobs:
     - name: Update pip/build packages
       run: |
         pip install setuptools --upgrade
-        pip install pip --upgrade
     - name: Install newest dependencies
       run: |
         pip install -r requirements/requirements-test.txt
         pip install -r requirements/requirements-data.txt
-        pip install -r requirements/requirements-jit.txt
       if: ${{ matrix.dependencies == 'newest' }}
+    - name: Install numba (if available)
+      run: |
+        pip install -r requirements/requirements-jit.txt
+      if: ${{ matrix.python != '3.12' }}
     - name: Install the package
       run: |
         pip install -e .
