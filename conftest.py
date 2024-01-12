@@ -15,6 +15,12 @@ def seeds(rng):
     return seed
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _np_seed():
+    """Set the NumPy random seed for external code."""
+    np.random.seed(3857834)  # noqa: NPY002
+
+
 @pytest.fixture(scope="session")
 def rng():
     """A random number generator for tests that have need for random numbers."""
