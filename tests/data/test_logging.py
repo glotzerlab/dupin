@@ -30,8 +30,6 @@ def context_dict(values=None):
 @given(log_contents=st.lists(context_dict()))
 def test_frame_mechanism(log_contents):
     logger = du.data.logging.Logger()
-    empty_frames = 0
-    was_empty = False
     for frame, contexts in enumerate(log_contents):
         drop_keys = []
         was_empty = len(contexts) == 0 or all(
@@ -47,15 +45,14 @@ def test_frame_mechanism(log_contents):
                 drop_keys.append(context)
             for k, v in data.items():
                 logger[k] = v
-        assert len(logger.frames) == frame - empty_frames
+        assert len(logger.frames) == frame
         logger.end_frame()
-        empty_frames += int(was_empty)
-        assert len(logger.frames) == frame + 1 - empty_frames
+        assert len(logger.frames) == frame + 1
         if was_empty:
-            continue
+            assert logger.frames[-1] == {}
         for k in drop_keys:
             contexts.pop(k)
-        assert contexts == logger.frames[frame - empty_frames]
+        assert contexts == logger.frames[frame]
 
 
 @st.composite

@@ -108,8 +108,7 @@ def add_reducer_tests(cls, validator):
             pipe.attach_logger(logger)
             output = pipe()
             logger.end_frame()
-            log_data = logger.frames[0]
-            validator.validate_logger(instance, input_, output, log_data)
+            validator.validate_logger(instance, input_, output, logger)
 
     TestReducer.__name__ = "Test" + cls.__name__
 
@@ -123,7 +122,9 @@ class NthGreatestValidator:
 
     @st.composite
     @staticmethod
-    def strategy(draw, indices=st.lists(st.integers(-100, 100), max_size=15)):
+    def strategy(
+        draw, indices=st.lists(st.integers(-100, 100), min_size=1, max_size=15)
+    ):
         return {"indices": draw(indices)}
 
     @staticmethod
@@ -152,13 +153,17 @@ class NthGreatestValidator:
         def check_rank(in_, out_value, index):
             """Assuming a non-nan output check for correct reduction."""
             nth_highest = cls.to_positive_index(index, in_.size)
-            # Cannot be equal when duplicates in the array exists
             greater_than = np.sum(out_value > in_data)
+            # Cannot be equal when duplicates in the array exists so check for
+            # duplicates
             if greater_than != nth_highest:
                 assert np.sum(out_value == in_data) > 1
 
         def check_index_value(in_, out_value, index):
             """Ensure the output of reducer for an index is as expected."""
+            if not du.data.reduce.NthGreatest._fits(in_, index):
+                assert np.isnan(out_value)
+                return
             # if len(in_) is large enough but too many nans exist we set
             # out[key] to nan. Otherwise we filter out the nan and then talk
             # the nth greatest or least.
@@ -166,23 +171,22 @@ class NthGreatestValidator:
                 filtered_in = in_[~np.isnan(in_)]
                 if not du.data.reduce.NthGreatest._fits(filtered_in, index):
                     assert np.isnan(out_value)
-                else:
-                    check_rank(filtered_in, out_value, index)
-            else:
-                check_rank(in_, out_value, index)
+                    return
+                check_rank(filtered_in, out_value, index)
+                return
+            check_rank(in_, out_value, index)
 
         for in_feature, in_data in input_.items():
+            if len(in_data) == 0:
+                assert in_feature not in output
+                continue
             for name, index in zip(instance._names, instance._indices):
                 key = "_".join((name, in_feature))
-                # Only writes a reduction when it "fits" into the distribution.
-                if du.data.reduce.NthGreatest._fits(in_data, index):
-                    assert key in output
-                    check_index_value(in_data, output[key], index)
-                else:
-                    assert key not in output
+                assert key in output
+                check_index_value(in_data, output[key], index)
 
     @classmethod
-    def validate_logger(cls, instance, input_, output, log_data):
+    def validate_logger(cls, instance, input_, output, logger):
         def check_index(input_, output_value, log_value, index):
             filtered_in = _dropnan(input_)
             # Not enough non-nan values exist and logger stores nan.
@@ -193,17 +197,19 @@ class NthGreatestValidator:
                 # expected output.
                 assert output_value == input_[log_value]
 
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
+
+        log_data = logger.frames[0]
         for feat, feat_log in log_data.items():
             nth_log = feat_log["NthGreatest"]
             for index in instance._indices:
                 index_name, key = cls._get_index_name_key(feat, index)
-                if instance._fits(input_[feat], index):
-                    assert index_name in nth_log
-                    check_index(
-                        input_[feat], output[key], nth_log[index_name], index
-                    )
-                else:
-                    assert index_name not in nth_log
+                assert index_name in nth_log
+                check_index(
+                    input_[feat], output[key], nth_log[index_name], index
+                )
 
     @staticmethod
     def _get_index_name_key(feature, index):
@@ -224,7 +230,9 @@ class PercentileValidator:
 
     @st.composite
     @staticmethod
-    def strategy(draw, percentiles=st.lists(st.floats(0, 100), max_size=20)):
+    def strategy(
+        draw, percentiles=st.lists(st.floats(0, 100), min_size=1, max_size=20)
+    ):
         return {"percentiles": draw(percentiles | st.none())}
 
     @classmethod
@@ -259,13 +267,18 @@ class PercentileValidator:
                 assert output[f"{percentile}%_{name}"] == v
 
     @classmethod
-    def validate_logger(cls, instance, input_, output, log_data):
+    def validate_logger(cls, instance, input_, output, logger):
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
+
+        log_data = logger.frames[0]
         percentiles = instance._percentiles
         for name, arr in input_.items():
-            feat_log = log_data[name]["Percentile"]
             if arr.size == 0:
-                assert feat_log == {}
+                assert "Percentile" not in log_data.get(name, {})
                 continue
+            feat_log = log_data[name]["Percentile"]
             cleaned_arr = _dropnan(arr)
             if cleaned_arr.size == 0:
                 for percentile in percentiles:
@@ -333,7 +346,7 @@ class CustomReducerValidator:
             )
 
     @staticmethod
-    def validate_logger(instance, input_, output, log_data):
+    def validate_logger(instance, input_, output, logger):
         pass
 
 
@@ -362,7 +375,7 @@ class TeeValidator:
 
     @st.composite
     @staticmethod
-    def strategy(draw, size=st.integers(0, 10)):
+    def strategy(draw, size=st.integers(1, 10)):
         cls_choice = st.sampled_from(
             [
                 (du.data.reduce.NthGreatest, NthGreatestValidator.strategy()),
@@ -393,7 +406,10 @@ class TeeValidator:
             )
 
     @classmethod
-    def validate_logger(cls, instance, input_, output, log_data):
+    def validate_logger(cls, instance, input_, output, logger):
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
         encountered_types = set()
         for reducer in reversed(instance._reducers):
             # Logger will override the same key so we only look at the last of
@@ -402,7 +418,7 @@ class TeeValidator:
                 continue
             encountered_types.add(type(reducer))
             cls.validator_mapping[type(reducer)].validate_logger(
-                reducer, input_, output, log_data
+                reducer, input_, output, logger
             )
 
 

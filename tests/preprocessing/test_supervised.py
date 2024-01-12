@@ -40,7 +40,7 @@ def test_valid_construction():
         "classifier": sk.tree.DecisionTreeClassifier(max_depth=1),
         "window_size": 15,
         "test_size": 0.5,
-        "loss": lambda cls, x, y: np.sum(y != cls.predict(x)),
+        "loss_function": lambda cls, x, y: np.sum(y != cls.predict(x)),
         "store_intermediate_classifiers": True,
         "n_classifiers": 10,
         "combine_errors": "median",
@@ -70,7 +70,7 @@ def test_invalid_construction():
                 classifier, 2, 0.1, loss, True, n_classifiers
             )
     with pytest.raises(
-        ValueError, match="combine_errors must be im ('mean', 'median')."
+        ValueError, match=r"combine_errors must be in \('mean', 'median'\)\."
     ):
         du.preprocessing.supervised.Window(
             classifier, 2, 0.1, loss, True, 1, "mode"

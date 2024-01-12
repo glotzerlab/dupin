@@ -59,7 +59,7 @@ class TestCustomGenerator:
         assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
 
     def test_map(self, generator):
-        pipeline = generator.map(du.data.map_(lambda: None))
+        pipeline = generator.map(du.data.map.map_(lambda: None))
         assert isinstance(pipeline, du.data.map.CustomMap)
         assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
 

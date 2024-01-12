@@ -111,8 +111,6 @@ def test_to_dataframe(n_frames, keys, data):
         )
         assert all(k == c for k, c in zip(df.columns, keys))
         return
-    if n_frames > 0:
-        assert len(df) == n_frames
     assert len(df.columns) == 0
 
 

@@ -109,7 +109,7 @@ class TestCorrelated:
         for i in range(labels.max() + 1):
             index = np.flatnonzero(labels == i)
             x, y = np.meshgrid(index, index)
-            cov[x, y] = rng.uniform(0.8, 1.0, size=len(i))
+            cov[x, y] = rng.uniform(0.8, 1.0, size=x.size).reshape(x.shape)
         diag_indices = np.diag_indices_from(cov)
         cov[diag_indices] = 1.0
         flattened_cov = cov.ravel()
