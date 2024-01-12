@@ -7,6 +7,7 @@ within the same reducer. Examples of common reducers in the ``dupin`` sense are
 the max, min, mean, mode, and standard deviation functions.
 """
 
+import warnings
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -101,15 +102,33 @@ class NthGreatest(base.DataReducer):
 
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the signals with modified keys."""
+        if len(distribution) == 0:
+            warnings.warn("Received empty array.", RuntimeWarning, stacklevel=2)
+            return {}
         nan_mask = np.flatnonzero(~np.isnan(distribution))
         filtered_distribution = distribution[nan_mask]
         sorted_indices = np.argsort(filtered_distribution)
         log = {}
         data = {}
         for i, name in zip(self._indices, self._names):
+            set_to_nan = False
             if not self._fits(distribution, i):
-                continue
+                set_to_nan = True
+                warnings.warn(
+                    "Not enough elements found for NthGreatest, setting to "
+                    "nan.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+
             if not self._fits(filtered_distribution, i):
+                set_to_nan = True
+                warnings.warn(
+                    "Not enough non-nan elements found for NthGreatest, "
+                    "setting to nan.",
+                    stacklevel=2,
+                )
+            if set_to_nan:
                 data[name] = np.nan
                 log[name] = np.nan
                 continue
