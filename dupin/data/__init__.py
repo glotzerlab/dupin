@@ -59,3 +59,16 @@ Example::
         pass
 
 """
+from . import aggregate, base, freud, logging, map, reduce, spatial
+from .base import make_generator
+
+__all__ = (
+    "aggregate",
+    "base",
+    "freud",
+    "logging",
+    "map",
+    "reduce",
+    "spatial",
+    "make_generator",
+)
