@@ -318,8 +318,6 @@ class CustomMap(DataMap):
 
     Parameters
     ----------
-    generator : :py:obj:`~.GeneratorLike`
-        A generator like object to transform.
     custom_function : ``callable`` [`numpy.ndarray`, `dict` ]
         A custom callable that takes in a NumPy array and returns a dictionary
         with keys indicating the tranformation and values the transformed
@@ -333,12 +331,11 @@ class CustomMap(DataMap):
 
     def __init__(
         self,
-        generator: GeneratorLike,
         custom_function: typing.Callable[
             [npt.ArrayLike], Dict[str, np.ndarray]
         ],
     ):
-        super().__init__(generator)
+        super().__init__()
         self.function = custom_function
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
@@ -351,8 +348,6 @@ class CustomReducer(DataReducer):
 
     Parameters
     ----------
-    generator: :py:obj:`~.GeneratorLike`
-        A generator like object to reduce.
     custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
         A custom callable that takes in a NumPy array and returns a
         dictionary with keys indicating the reduction and values the reduced
