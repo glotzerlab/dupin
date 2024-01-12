@@ -1,5 +1,4 @@
 import functools
-import itertools
 import typing
 import warnings
 
@@ -28,6 +27,10 @@ def generator_data(
 
 def _dropnan(arr):
     return arr[~np.isnan(arr)]
+
+
+def _pairwise(a):
+    return zip(a, a[1:])
 
 
 def add_reducer_tests(cls, validator):
@@ -286,7 +289,7 @@ class PercentileValidator:
                     assert key in feat_log
                     assert feat_log[key] == 0
                 continue
-            assert all(a <= b for a, b in itertools.pairwise(percentiles))
+            assert all(a <= b for a, b in _pairwise(percentiles))
             pvalues = cls._get_pvalues(cleaned_arr, percentiles)
             for pv, percentile in zip(pvalues, percentiles):
                 key = f"{percentile}%"
