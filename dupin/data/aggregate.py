@@ -9,8 +9,7 @@ from typing import Any, Dict, Iterator, Optional, Tuple
 
 import numpy as np
 
-from dupin import errors
-
+from .. import errors
 from . import base, logging
 
 try:

@@ -23,7 +23,7 @@ Note
 
 import numpy as np
 
-from dupin import errors
+from .. import errors
 
 try:
     import pandas as pd
