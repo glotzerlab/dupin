@@ -15,7 +15,7 @@ def _njit(*args, **kwargs):
     return numba.njit(*args, **kwargs)
 
 
-@_njit
+@_njit()
 def _freud_neighbor_summing(
     arr: np.ndarray,
     particle_index: np.ndarray,

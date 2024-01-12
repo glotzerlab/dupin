@@ -201,8 +201,8 @@ class Correlated:
         The array of features selected.
     """
 
-    _methods = frozenset("spectral")
-    _correlations = frozenset("pearson")
+    _methods = frozenset(("spectral",))
+    _correlations = frozenset(("pearson",))
 
     def __init__(
         self,
@@ -294,7 +294,7 @@ class Correlated:
 
         filter_ = np.zeros(signal.shape[1], dtype=bool)
         filter_[np.flatnonzero(connected_features)[chosen_features]] = True
-        return filter
+        return filter_
 
     def _get_similiarity_matrix(
         self, signal: npt.ArrayLike

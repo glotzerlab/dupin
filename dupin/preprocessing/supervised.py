@@ -99,7 +99,6 @@ class Window:
         "mean". Available values are "mean" and "median".
     """
 
-    #
     def __init__(
         self,
         classifier: "sk.base.ClassifierMixin",
