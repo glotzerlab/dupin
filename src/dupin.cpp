@@ -1,13 +1,13 @@
-#include "dupin.h"
-#include <Eigen/Dense>
-#include <iomanip>
 #include <iostream>
+#include <iomanip>
 #include <limits>
+#include <unordered_map>
+#include <vector>
+#include <Eigen/Dense>
 #include <tbb/blocked_range2d.h>
 #include <tbb/global_control.h>
 #include <tbb/parallel_for.h>
-#include <unordered_map>
-#include <vector>
+#include "dupin.h"
 
 using namespace std;
 using namespace Eigen;
@@ -22,9 +22,9 @@ DynamicProgramming::DynamicProgramming(int num_bkps_, int num_parameters_,
       num_timesteps(num_timesteps_), jump(jump_), min_size(min_size_) {}
 
 void DynamicProgramming::scale_datum() {
-  VectorXd min_val = datum.colwise().minCoeff();
-  VectorXd max_val = datum.colwise().maxCoeff();
-  VectorXd range = max_val - min_val;
+  Eigen::VectorXd min_val = datum.colwise().minCoeff();
+  Eigen::VectorXd max_val = datum.colwise().maxCoeff();
+  Eigen::VectorXd range = max_val - min_val;
 
   for (int j = 0; j < num_parameters; ++j) {
     if (range(j) == 0.0) {
@@ -35,22 +35,22 @@ void DynamicProgramming::scale_datum() {
   }
 }
 void DynamicProgramming::regression_setup(linear_fit_struct &lfit) {
-  lfit.x = VectorXd::LinSpaced(num_timesteps, 0, num_timesteps - 1) /
+  lfit.x = Eigen::VectorXd::LinSpaced(num_timesteps, 0, num_timesteps - 1) /
            (num_timesteps - 1);
   lfit.y = datum;
 }
 
-VectorXd DynamicProgramming::regression_line(int start, int end, int dim,
+Eigen::VectorXd DynamicProgramming::regression_line(int start, int end, int dim,
                                              linear_fit_struct &lfit) {
   int n = end - start;
-  VectorXd x = lfit.x.segment(start, n);
-  VectorXd y = lfit.y.col(dim).segment(start, n);
+  Eigen::VectorXd x = lfit.x.segment(start, n);
+  Eigen::VectorXd y = lfit.y.col(dim).segment(start, n);
 
   double x_mean = x.mean();
   double y_mean = y.mean();
 
-  VectorXd x_centered = x.array() - x_mean;
-  VectorXd y_centered = y.array() - y_mean;
+  Eigen::VectorXd x_centered = x.array() - x_mean;
+  Eigen::VectorXd y_centered = y.array() - y_mean;
 
   double slope = x_centered.dot(y_centered) / x_centered.squaredNorm();
   double intercept = y_mean - slope * x_mean;
@@ -59,15 +59,15 @@ VectorXd DynamicProgramming::regression_line(int start, int end, int dim,
       [slope, intercept](double xi) { return slope * xi + intercept; });
 }
 
-double DynamicProgramming::l2_cost(MatrixXd &predicted_y, int start, int end) {
-  MatrixXd diff = predicted_y.block(start, 0, end - start, num_parameters) -
+double DynamicProgramming::l2_cost(Eigen::MatrixXd &predicted_y, int start, int end) {
+  Eigen::MatrixXd diff = predicted_y.block(start, 0, end - start, num_parameters) -
                   datum.block(start, 0, end - start, num_parameters);
-  return sqrt(diff.array().square().sum());
+  return std::sqrt(diff.array().square().sum());
 }
 
-MatrixXd DynamicProgramming::predicted(int start, int end,
+Eigen::MatrixXd DynamicProgramming::predicted(int start, int end,
                                        linear_fit_struct &lfit) {
-  MatrixXd predicted_y(num_timesteps, num_parameters);
+  Eigen::MatrixXd predicted_y(num_timesteps, num_parameters);
   for (int i = 0; i < num_parameters; ++i) {
     predicted_y.block(start, i, end - start, 1) =
         regression_line(start, end, i, lfit);
@@ -78,7 +78,7 @@ MatrixXd DynamicProgramming::predicted(int start, int end,
 double DynamicProgramming::cost_function(int start, int end) {
   linear_fit_struct lfit;
   regression_setup(lfit);
-  MatrixXd predicted_y = predicted(start, end, lfit);
+  Eigen::MatrixXd predicted_y = predicted(start, end, lfit);
   return l2_cost(predicted_y, start, end);
 }
 
@@ -96,19 +96,18 @@ void DynamicProgramming::initialize_cost_matrix() {
                     });
 }
 
-pair<double, vector<int>> DynamicProgramming::seg(int start, int end,
+std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
                                                   int num_bkps) {
   MemoKey key = {start, end, num_bkps};
   auto it = memo.find(key);
   if (it != memo.end()) {
     return it->second;
   }
-  //            no_memo++;
   if (num_bkps == 0) {
     return {cost_matrix(start, end), {end}};
   }
 
-  pair<double, vector<int>> best = {numeric_limits<double>::infinity(), {}};
+  std::pair<double, std::vector<int>> best = {std::numeric_limits<double>::infinity(), {}};
 
   for (int bkp = start + min_size; bkp < end; bkp++) {
     if ((bkp - start) >= min_size && (end - bkp) >= min_size) {
@@ -129,11 +128,11 @@ pair<double, vector<int>> DynamicProgramming::seg(int start, int end,
   return best;
 }
 
-vector<int> DynamicProgramming::return_breakpoints() {
+std::vector<int> DynamicProgramming::return_breakpoints() {
   auto result = seg(0, num_timesteps - 1, num_bkps);
-  vector<int> breakpoints = result.second;
-  sort(breakpoints.begin(), breakpoints.end());
-  breakpoints.erase(unique(breakpoints.begin(), breakpoints.end()),
+  std::vector<int> breakpoints = result.second;
+  std::sort(breakpoints.begin(), breakpoints.end());
+  breakpoints.erase(std::unique(breakpoints.begin(), breakpoints.end()),
                     breakpoints.end());
   return breakpoints;
 }
@@ -151,7 +150,7 @@ int DynamicProgramming::get_num_bkps() { return num_bkps; }
 
 Eigen::MatrixXd &DynamicProgramming::getDatum() { return datum; }
 
-DynamicProgramming::upper_triangular_cost_matrix &
+DynamicProgramming::UpperTriangularMatrix &
 DynamicProgramming::getCostMatrix() {
   return cost_matrix;
 }
@@ -169,7 +168,7 @@ void DynamicProgramming::setDatum(const Eigen::MatrixXd &value) {
 }
 
 void DynamicProgramming::setCostMatrix(
-    const DynamicProgramming::upper_triangular_cost_matrix &value) {
+    const DynamicProgramming::UpperTriangularMatrix &value) {
   cost_matrix = value;
 }
 

@@ -1,38 +1,38 @@
 #pragma once
 
-#include <Eigen/Dense>
 #include <algorithm>
 #include <iostream>
 #include <limits>
-#include <omp.h>
 #include <unordered_map>
 #include <vector>
+#include <Eigen/Dense>
+
 
 // DynamicProgramming class for dynamic programming based segmentation.
 class DynamicProgramming { // change name to Dynamic Programming
 private:
-  class upper_triangular_cost_matrix {
+  class UpperTriangularMatrix{
   private:
     std::vector<double> matrix;
-    int size;
+    int length;
 
     int index(int i, int j) const {
-      return i * (2 * size - i + 1) / 2 + (j - i);
+      return i * (2 * length - i + 1) / 2 + (j - i);
     }
 
   public:
-    upper_triangular_cost_matrix() : size(0) {}
+    UpperTriangularMatrix() : length(0) {}
 
     void initialize(int n) {
-      size = n;
+      length = n;
       matrix.resize(n * (n + 1) / 2, 0.0);
     }
 
     double &operator()(int i, int j) { return matrix[index(i, j)]; }
 
-    int getSize() const { return size; }
+    int getSize() const { return length; }
   };
-  upper_triangular_cost_matrix cost_matrix;
+  UpperTriangularMatrix cost_matrix;
   // Struct for memoization key, combining start, end, and number of
   // breakpoints.
   struct MemoKey {
@@ -117,7 +117,7 @@ public:
   int get_num_parameters();
   int get_num_bkps();
   Eigen::MatrixXd &getDatum();
-  DynamicProgramming::upper_triangular_cost_matrix &getCostMatrix();
+  DynamicProgramming::UpperTriangularMatrix &getCostMatrix();
 
   // Setter functions for modifying private class members.
   void set_num_timesteps(int value);
@@ -125,5 +125,5 @@ public:
   void set_num_bkps(int value);
   void setDatum(const Eigen::MatrixXd &value);
   void
-  setCostMatrix(const DynamicProgramming::upper_triangular_cost_matrix &value);
+  setCostMatrix(const DynamicProgramming::UpperTriangularMatrix &value);
 };
