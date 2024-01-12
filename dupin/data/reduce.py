@@ -42,8 +42,6 @@ class Percentile(base.DataReducer):
     def compute(self, distribution: np.ndarray) -> Dict[str, float]:
         """Return the reduced distribution."""
         if len(distribution) == 0:
-            if self._logger is not None:
-                self._logger["Percentile"] = {}
             return {}
 
         data = {}
@@ -54,7 +52,7 @@ class Percentile(base.DataReducer):
                 key = f"{p}%"
                 log[key] = 0
                 data[key] = np.nan
-            if self._logger is not None:
+            if self._logger is not None and len(log) > 0:
                 self._logger["Percentile"] = log
             return data
 
@@ -65,8 +63,7 @@ class Percentile(base.DataReducer):
             key = f"{p}%"
             log[key] = non_nan[sorted_indices[i]]
             data[key] = cleaned_dist[sorted_indices[i]]
-        if self._logger is not None:
-            self._last_log = log
+        if self._logger is not None and len(log) > 0:
             self._logger["Percentile"] = log
         return data
 
@@ -118,7 +115,7 @@ class NthGreatest(base.DataReducer):
                 continue
             data[name] = filtered_distribution[sorted_indices[i]]
             log[name] = nan_mask[sorted_indices[i]]
-        if self._logger is not None:
+        if self._logger is not None and len(log) > 0:
             self._logger["NthGreatest"] = log
         return data
 
