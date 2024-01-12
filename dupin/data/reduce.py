@@ -32,6 +32,9 @@ class Percentile(base.DataReducer):
     def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
         if percentiles is None:
             percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+        if len(percentiles) == 0:
+            msg = "Cannot have an empty percentiles sequence."
+            raise ValueError(msg)
         self._percentiles = np.unique(list(percentiles))
         self._quantiles = self._percentiles / 100.0
         super().__init__()
@@ -92,6 +95,9 @@ class NthGreatest(base.DataReducer):
     """
 
     def __init__(self, indices: Tuple[int]) -> None:
+        if len(indices) == 0:
+            msg = "Cannot have an empty indices sequence."
+            raise ValueError(msg)
         self._indices = self._fix_indices(np.asarray(list(indices)))
         self._names = [self._index_name(index) for index in self._indices]
         super().__init__()
@@ -163,6 +169,9 @@ class Tee(base.DataReducer):
         self,
         reducers: List[base.DataReducer],
     ):
+        if len(reducers) == 0:
+            msg = "Cannot have empty reducers sequence."
+            raise ValueError(msg)
         self._reducers = reducers
         super().__init__()
 

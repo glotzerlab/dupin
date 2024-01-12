@@ -74,6 +74,9 @@ class Tee(base.DataMap):
         self,
         maps: List[base.DataMap],
     ):
+        if len(maps) == 0:
+            msg = "Cannot have empty maps sequence."
+            raise ValueError(msg)
         self._maps = maps
         super().__init__()
 
