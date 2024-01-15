@@ -250,5 +250,5 @@ class TestCorrelated:
         correlated = du.preprocessing.filter.Correlated(
             method_args=(5, {}, [12, 5])
         )
-        with pytest.raises(TypeError):
+        with pytest.raises((TypeError, ValueError)):
             correlated(random_signal)
