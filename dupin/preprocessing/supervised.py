@@ -1,6 +1,7 @@
 """Classes for use in utilizing supervised learning for event detection."""
 
-from typing import Callable, Optional, Sequence
+from collections.abc import Sequence
+from typing import Callable, Optional
 
 import numpy as np
 import pandas as pd

@@ -119,7 +119,7 @@ def add_reducer_tests(cls, validator):
 
 
 class NthGreatestValidator:
-    constructor_args: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "indices": [10, -5, 1]
     }
 
@@ -227,7 +227,7 @@ TestNthGreatest = add_reducer_tests(
 
 
 class PercentileValidator:
-    constructor_args: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "percentiles": [100, 50, 1]
     }
 
@@ -306,7 +306,7 @@ class CustomReducerValidator:
     cls: typing.ClassVar[
         du.data.base.DataReducer
     ] = du.data.reduce.CustomReducer
-    constructor_args: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "custom_function": lambda d: {"first": d[0]}
     }
 
@@ -361,16 +361,14 @@ TestCustomReducer = add_reducer_tests(
 class TeeValidator:
     cls: typing.ClassVar[du.data.base.DataReducer] = du.data.reduce.Tee
 
-    constructor_args: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "reducers": [
             du.data.reduce.NthGreatest([1]),
             du.data.reduce.Percentile([99]),
         ]
     }
 
-    validator_mapping: typing.ClassVar[
-        typing.Dict[du.data.base.DataReducer, type]
-    ] = {
+    validator_mapping: typing.ClassVar[dict[du.data.base.DataReducer, type]] = {
         du.data.reduce.NthGreatest: NthGreatestValidator,
         du.data.reduce.Percentile: PercentileValidator,
         du.data.reduce.CustomReducer: CustomReducerValidator,

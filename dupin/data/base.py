@@ -3,7 +3,7 @@
 import typing
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +12,7 @@ import numpy.typing as npt
 GeneratorLike = Union[
     "Generator",
     "DataMap",
-    typing.Callable[..., Dict[str, Union[float, npt.ArrayLike]]],
+    typing.Callable[..., dict[str, Union[float, npt.ArrayLike]]],
 ]
 GeneratorLike.__doc__ = """
 A type hint for objects that act like data generators for dupin.
@@ -213,7 +213,7 @@ class DataReducer(DataModifier):
     """
 
     @abstractmethod
-    def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
+    def compute(self, distribution: npt.ArrayLike) -> dict[str, float]:
         """Turn a distribution into scalar features.
 
         Parameters
@@ -284,7 +284,7 @@ class Generator(Callable, PipeComponent):
     @abstractmethod
     def __call__(
         self, *args, **kwargs
-    ) -> Dict[str, Union[float, npt.ArrayLike]]:
+    ) -> dict[str, Union[float, npt.ArrayLike]]:
         """Return the output signal(s) for given inputs.
 
         This method can have an arbitrary signature in subclasses.
@@ -332,7 +332,7 @@ class CustomMap(DataMap):
     def __init__(
         self,
         custom_function: typing.Callable[
-            [npt.ArrayLike], Dict[str, np.ndarray]
+            [npt.ArrayLike], dict[str, np.ndarray]
         ],
     ):
         super().__init__()
@@ -361,7 +361,7 @@ class CustomReducer(DataReducer):
 
     def __init__(
         self,
-        custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
+        custom_function: typing.Callable[[npt.ArrayLike], dict[str, float]],
     ):
         super().__init__()
         self.function = custom_function

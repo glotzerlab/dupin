@@ -2,7 +2,7 @@
 
 import logging
 import warnings
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import kneed as kd
 import numpy as np
@@ -11,7 +11,7 @@ import ruptures as rpt
 
 _logger = logging.getLogger(__name__)
 
-ElbowDetector = Callable[[List[float]], int]
+ElbowDetector = Callable[[list[float]], int]
 
 
 class SweepDetector:
@@ -54,7 +54,7 @@ class SweepDetector:
         self,
         detector: Union[
             rpt.base.BaseEstimator,
-            Callable[[np.ndarray, int], Tuple[List[int], float]],
+            Callable[[np.ndarray, int], tuple[list[int], float]],
         ],
         max_change_points: int,
         elbow_detector: Optional[ElbowDetector] = None,
@@ -71,7 +71,7 @@ class SweepDetector:
             self._elbow_detector = elbow_detector
         self.tolerance = tolerance
 
-    def fit(self, data: np.ndarray) -> List[int]:
+    def fit(self, data: np.ndarray) -> list[int]:
         """Fit and return change points for given data.
 
         Compute the change points for ``[0, self.max_change_points]``, and
@@ -109,7 +109,7 @@ class SweepDetector:
 
     def _get_change_points(
         self, data: np.ndarray
-    ) -> Tuple[List[int], List[float]]:
+    ) -> tuple[list[int], list[float]]:
         penalties = []
         change_points = []
         # Get the base level pentalty of the entire sequence
@@ -132,7 +132,7 @@ class SweepDetector:
 
 
 def kneedle_elbow_detection(
-    costs: List[float],
+    costs: list[float],
     S: int = 1,
     interp_method: str = "interp1d",
     curve: str = "convex",
@@ -224,7 +224,7 @@ def two_pass_elbow_detection(
     if detector is None:
         detector = kneedle_elbow_detection
 
-    def find_elbow(costs: List[float]) -> int:
+    def find_elbow(costs: list[float]) -> int:
         first_pass = detector(costs)
         if first_pass is None:
             _logger.debug(
@@ -261,7 +261,7 @@ class _RupturesWrapper:
         self.detector.fit(data)
         self._previous_detections = {}
 
-    def detect(self, n_change_points: int) -> Tuple[List[int], float]:
+    def detect(self, n_change_points: int) -> tuple[list[int], float]:
         if n_change_points == 0:
             return [], self.detector.cost.error(0, len(self.data))
         # An AssertionError is raised if no suitable change point can be found
@@ -287,7 +287,7 @@ class _RupturesWrapper:
         change_points.pop()
         return (change_points, cost)
 
-    def memonized_detect(self, n_change_points: int) -> Tuple[List[int], float]:
+    def memonized_detect(self, n_change_points: int) -> tuple[list[int], float]:
         if n_change_points in self._previous_detections:
             return self._previous_detections[n_change_points]
         self._previous_detections[n_change_points] = self.detect(

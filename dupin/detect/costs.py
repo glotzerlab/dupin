@@ -1,7 +1,6 @@
 """Implements cost functions for use in event detection."""
 
 from abc import ABC, abstractmethod
-from typing import Tuple
 
 import numpy as np
 import ruptures as rpt
@@ -136,7 +135,7 @@ class CostLinearBiasedFit(CostLinearFit):
 
     def _get_regression(
         self, start: int, end: int
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         m = (self._y[:, end - 1] - self._y[:, start]) / (
             self._x[None, end - 1] - self._x[None, start]
         )
