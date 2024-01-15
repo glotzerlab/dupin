@@ -72,3 +72,9 @@ convention = "numpy"
 [tool.coverage.run]
 branch = true
 source = [ "dupin" ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+filterwarnings = [
+    "ignore::UserWarning:dupin.*"
+]
