@@ -88,16 +88,7 @@ private:
     Eigen::MatrixXd y; // Dependent variable (labels).
     Eigen::VectorXd x; // z Independent variable (time steps).
   };
-
-public:
-  // Default constructor.
-  DynamicProgramming();
-
-  // Parameterized constructor.
-  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_, 
-                     int min_size_);
-
-  // Scales the dataset using min-max normalization.
+ // Scales the dataset using min-max normalization.
   void scale_data();
 
   // Prepares data for linear regression.
@@ -116,17 +107,30 @@ public:
   // Computes the cost of a specific data segment using linear regression.
   double cost_function(int start, int end);
 
+    // Recursive function for dynamic programming segmentation.
+  std::pair<double, std::vector<int>> seg(int start, int end, int num_bkps);
+
+
+public:
+  // Default constructor.
+  DynamicProgramming();
+
+  // Parameterized constructor.
+  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_, 
+                     int min_size_);
+
   // Initializes and fills the cost matrix for all data segments.
   void initialize_cost_matrix();
 
-  // Recursive function for dynamic programming segmentation.
-  std::pair<double, std::vector<int>> seg(int start, int end, int num_bkps);
 
   //sets number of threads for parallelization
   void set_parallelization(int num_threads);
 
   // Returns the optimal set of breakpoints after segmentation.
-  std::vector<int> return_breakpoints();
+  std::vector<int> compute_breakpoints();
+
+  // Calculates the cost matrix and return the breakpoints
+  std::vector<int> fit(); 
 
   // Getter functions for accessing private class members.
   int get_num_timesteps();
@@ -136,9 +140,7 @@ public:
   DynamicProgramming::UpperTriangularMatrix &getCostMatrix();
 
   // Setter functions for modifying private class members.
-  void set_num_timesteps(int value);
-  void set_num_parameters(int value);
+  
   void setDatum(const Eigen::MatrixXd &value);
-  void
-  setCostMatrix(const DynamicProgramming::UpperTriangularMatrix &value);
+  void setCostMatrix(const DynamicProgramming::UpperTriangularMatrix &value);
 };

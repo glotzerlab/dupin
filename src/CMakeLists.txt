@@ -1,5 +1,5 @@
 pybind11_add_module(_dupin dupininterface.cpp
-    dupin.h dupin.cpp
+    dupin.h dupin.cpp 
 )
 
 set_target_properties(_dupin PROPERTIES

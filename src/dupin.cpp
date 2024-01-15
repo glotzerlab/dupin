@@ -87,7 +87,6 @@ double DynamicProgramming::cost_function(int start, int end) {
 void DynamicProgramming::initialize_cost_matrix() {
   scale_data();
   cost_matrix.initialize(num_timesteps);
-
   tbb::parallel_for(tbb::blocked_range<int>(0, num_timesteps),
                     [&](const tbb::blocked_range<int> &r) {
                       for (int i = r.begin(); i < r.end(); ++i) {
@@ -130,13 +129,18 @@ std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
   return best;
 }
 
-std::vector<int> DynamicProgramming::return_breakpoints() {
+std::vector<int> DynamicProgramming::compute_breakpoints() {
   auto result = seg(0, num_timesteps - 1, num_bkps);
   std::vector<int> breakpoints = result.second;
   std::sort(breakpoints.begin(), breakpoints.end());
   breakpoints.erase(std::unique(breakpoints.begin(), breakpoints.end()),
                     breakpoints.end());
   return breakpoints;
+}
+
+std::vector<int> DynamicProgramming::fit(){
+  initialize_cost_matrix();
+  return compute_breakpoints(); 
 }
 
 void set_parallelization(int num_threads) {
@@ -155,12 +159,6 @@ Eigen::MatrixXd &DynamicProgramming::getDatum() { return data; }
 DynamicProgramming::UpperTriangularMatrix &
 DynamicProgramming::getCostMatrix() {
   return cost_matrix;
-}
-
-void DynamicProgramming::set_num_timesteps(int value) { num_timesteps = value; }
-
-void DynamicProgramming::set_num_parameters(int value) {
-  num_parameters = value;
 }
 
 void DynamicProgramming::setDatum(const Eigen::MatrixXd &value) {
