@@ -9,30 +9,44 @@
 
 
 // DynamicProgramming class for dynamic programming based segmentation.
-class DynamicProgramming { // change name to Dynamic Programming
+class DynamicProgramming { 
 private:
-  class UpperTriangularMatrix{
+  class UpperTriangularMatrix {
   private:
     std::vector<double> matrix;
+    std::vector<int> row_indices;
     int length;
 
-    int index(int i, int j) const {
-      return i * (2 * length - i + 1) / 2 + (j - i);
+    int index(int row, int col) const {
+        return row_indices[row] + col - row;
     }
 
   public:
     UpperTriangularMatrix() : length(0) {}
 
-    void initialize(int n) {
-      length = n;
-      matrix.resize(n * (n + 1) / 2, 0.0);
+    UpperTriangularMatrix(int n) : length(n), matrix(n * (n + 1) / 2, 0.0), 
+                                   row_indices(n) {
+        for (int row = 0; row < n; ++row) {
+            row_indices[row] = row * (2 * length - row + 1) / 2;
+        }
     }
 
-    double &operator()(int i, int j) { return matrix[index(i, j)]; }
+    void initialize(int n) {
+        length = n;
+        matrix.resize(n * (n + 1) / 2, 0.0);
+        row_indices.resize(n);
+        for (int row = 0; row < n; ++row) {
+            row_indices[row] = row * (2 * length - row + 1) / 2;
+        }
+    }
 
+    double &operator()(int row, int col) {
+        return matrix[index(row, col)];
+    }
     int getSize() const { return length; }
-  };
+};
   UpperTriangularMatrix cost_matrix;
+
   // Struct for memoization key, combining start, end, and number of
   // breakpoints.
   struct MemoKey {
@@ -49,7 +63,7 @@ private:
 
   // Custom XOR-bit hash function for MemoKey, avoids clustering of data in
   // unordered map to improve efficiency.
-  struct MemoKeyHash { // test without hash function
+  struct MemoKeyHash { 
     std::size_t operator()(const MemoKey &key) const {
       return ((std::hash<int>()(key.start) ^
                (std::hash<int>()(key.end) << 1)) >>
@@ -67,7 +81,7 @@ private:
   int num_timesteps;     // Number of data points (time steps).
   int jump;              // Interval for checking potential breakpoints.
   int min_size;          // Minimum size of a segment.
-  Eigen::MatrixXd datum; // Matrix storing the dataset.
+  Eigen::MatrixXd data; // Matrix storing the dataset.
 
   // Structure for storing linear regression parameters.
   struct linear_fit_struct {
@@ -80,11 +94,11 @@ public:
   DynamicProgramming();
 
   // Parameterized constructor.
-  DynamicProgramming(int num_bkps_, int num_parameters_, int num_timesteps_,
-                     int jump_, int min_size_);
+  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_, 
+                     int min_size_);
 
   // Scales the dataset using min-max normalization.
-  void scale_datum();
+  void scale_data();
 
   // Prepares data for linear regression.
   void regression_setup(linear_fit_struct &lfit);
@@ -108,7 +122,9 @@ public:
   // Recursive function for dynamic programming segmentation.
   std::pair<double, std::vector<int>> seg(int start, int end, int num_bkps);
 
+  //sets number of threads for parallelization
   void set_parallelization(int num_threads);
+
   // Returns the optimal set of breakpoints after segmentation.
   std::vector<int> return_breakpoints();
 
@@ -122,7 +138,6 @@ public:
   // Setter functions for modifying private class members.
   void set_num_timesteps(int value);
   void set_num_parameters(int value);
-  void set_num_bkps(int value);
   void setDatum(const Eigen::MatrixXd &value);
   void
   setCostMatrix(const DynamicProgramming::UpperTriangularMatrix &value);
