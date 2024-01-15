@@ -86,7 +86,7 @@ class TestMeanShift:
             return 1, np.concatenate((signal, no_signal), axis=1)
 
         signal, _ = rpt.pw_constant(
-            100, 2, 1, 1, delta=self.get_shift_range(1.22, 1.25), seed=seeds()
+            100, 2, 1, 0.5, delta=self.get_shift_range(1.22, 1.25), seed=seeds()
         )
         no_signal, _ = rpt.pw_constant(100, 2, 0, 1, seed=seeds())
         return 2, np.concatenate((signal, no_signal), axis=1)
