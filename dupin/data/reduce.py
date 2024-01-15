@@ -8,7 +8,7 @@ the max, min, mean, mode, and standard deviation functions.
 """
 
 import warnings
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -30,7 +30,7 @@ class Percentile(base.DataReducer):
         every 10% increment from 0% to 100% (inclusive) is taken.
     """
 
-    def __init__(self, percentiles: Optional[Tuple[int]] = None) -> None:
+    def __init__(self, percentiles: Optional[tuple[int]] = None) -> None:
         if percentiles is None:
             percentiles = (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
         if len(percentiles) == 0:
@@ -40,7 +40,7 @@ class Percentile(base.DataReducer):
         self._quantiles = self._percentiles / 100.0
         super().__init__()
 
-    def compute(self, distribution: np.ndarray) -> Dict[str, float]:
+    def compute(self, distribution: np.ndarray) -> dict[str, float]:
         """Return the reduced distribution."""
         if len(distribution) == 0:
             return {}
@@ -92,7 +92,7 @@ class NthGreatest(base.DataReducer):
         treated as 1.
     """
 
-    def __init__(self, indices: Tuple[int]) -> None:
+    def __init__(self, indices: tuple[int]) -> None:
         if len(indices) == 0:
             msg = "Cannot have an empty indices sequence."
             raise ValueError(msg)
@@ -100,10 +100,10 @@ class NthGreatest(base.DataReducer):
         self._names = [self._index_name(index) for index in self._indices]
         super().__init__()
 
-    def compute(self, distribution: np.ndarray) -> Dict[str, float]:
+    def compute(self, distribution: np.ndarray) -> dict[str, float]:
         """Return the signals with modified keys."""
         if len(distribution) == 0:
-            warnings.warn("Received empty array.", RuntimeWarning, stacklevel=2)
+            warnings.warn("Received empty array.", stacklevel=2)
             return {}
         nan_mask = np.flatnonzero(~np.isnan(distribution))
         filtered_distribution = distribution[nan_mask]
@@ -117,7 +117,6 @@ class NthGreatest(base.DataReducer):
                 warnings.warn(
                     "Not enough elements found for NthGreatest, setting to "
                     "nan.",
-                    RuntimeWarning,
                     stacklevel=2,
                 )
 
@@ -163,7 +162,7 @@ class NthGreatest(base.DataReducer):
         return f"{abs_index}{suffix}_{type_}"
 
     @staticmethod
-    def _fix_indices(indices: List[int]) -> List[int]:
+    def _fix_indices(indices: list[int]) -> list[int]:
         neg_indices = -indices
         return np.unique(np.where(indices > 0, neg_indices, neg_indices - 1))
 
@@ -183,7 +182,7 @@ class Tee(base.DataReducer):
 
     def __init__(
         self,
-        reducers: List[base.DataReducer],
+        reducers: list[base.DataReducer],
     ):
         if len(reducers) == 0:
             msg = "Cannot have empty reducers sequence."
@@ -191,7 +190,7 @@ class Tee(base.DataReducer):
         self._reducers = reducers
         super().__init__()
 
-    def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
+    def compute(self, distribution: npt.ArrayLike) -> dict[str, float]:
         """Run all composed reducer computes."""
         processed_data = {}
         for reducer in self._reducers:

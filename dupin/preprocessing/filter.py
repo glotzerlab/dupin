@@ -6,7 +6,7 @@ scikit-learn. These packages can easily be used as well for feature selection.
 
 import logging
 import warnings
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import bottleneck as bn
 import numpy as np
@@ -140,7 +140,6 @@ class MeanShift:
                 shift[mask & diff_zeros] = 0
                 warnings.warn(
                     "MeanShift: Zero standard deviation found.",
-                    RuntimeWarning,
                     stacklevel=2,
                 )
             return shift
@@ -209,8 +208,8 @@ class Correlated:
         method: str = "spectral",
         correlation: str = "pearson",
         max_clusters: int = 10,
-        method_args: Tuple[Any, ...] = (),
-        method_kwargs: Optional[Dict[str, Any]] = None,
+        method_args: tuple[Any, ...] = (),
+        method_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         if method not in self._methods:
             msg = (
@@ -298,7 +297,7 @@ class Correlated:
 
     def _get_similiarity_matrix(
         self, signal: npt.ArrayLike
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         if self.correlation == "pearson":
             sim_matrix = np.abs(np.corrcoef(signal, rowvar=False))
             sim_matrix[np.isnan(sim_matrix)] = 0
@@ -317,7 +316,7 @@ class Correlated:
         sim_matrix: np.ndarray,
         dist_matrix: np.ndarray,
         connected: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         return (
             sim_matrix[:, connected][connected, :],
             dist_matrix[:, connected][connected, :],
@@ -358,7 +357,7 @@ class Correlated:
         n_clusters: int,
         sim_matrix: np.ndarray,
         dist_matrix: np.ndarray,
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         clusterer = self._get_method_instance(n_clusters)
         clusterer.fit(sim_matrix)
         score = sk.metrics.silhouette_score(
@@ -374,7 +373,7 @@ class Correlated:
         dist_matrix: np.ndarray,
         isolated: np.ndarray,
         connected: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         n_isolated = np.sum(isolated)
         if n_isolated >= 1:
             warnings.warn(
