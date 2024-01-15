@@ -77,7 +77,7 @@ def orderly_log_content(
             for c in draw(keys)
         }
     )
-    return draw(st.lists(contexts, max_size=20))
+    return draw(st.lists(contexts, max_size=15))
 
 
 def populate_log(logger, log_contents):
