@@ -103,7 +103,7 @@ class TestSweepDetector:
         detector = detect.SweepDetector(
             detector=rpt.Dynp("l1"), max_change_points=8
         )
-        signal, bkps = rpt.pw_constant(noise_std=0.1)
+        signal, bkps = rpt.pw_constant(noise_std=0.1, delta=(2, 4))
         bkps.pop()
         change_points = detector.fit(signal)
         assert len(change_points) == len(bkps)
