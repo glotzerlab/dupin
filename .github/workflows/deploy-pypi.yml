@@ -11,9 +11,6 @@ concurrency:
 
 jobs:
   build-test-publish-to-pypi:
-    environment: release
-    permissions:
-      id-token: write
     uses: ./.github/workflows/publish-packages.yml
     with:
       upload_to_test: false

@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
     - name: Check out repo
       uses: actions/checkout@v3
@@ -44,7 +47,7 @@ jobs:
       if: ${{ inputs.upload_to_test }}
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        repository_url: https://test.pypi.org/legacy/
+        repository-url: https://test.pypi.org/legacy/
 
     - name: Publish package to PyPI
       if: ${{ !inputs.upload_to_test }}
