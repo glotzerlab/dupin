@@ -8,7 +8,7 @@ spatial averaging which reduces local fluctuations of features. This particular
 map can be found in `dupin.data.spatial.NeighborAveraging`.
 """
 
-from typing import Dict, List, Union
+from typing import Union
 
 import numpy as np
 import numpy.typing as npt
@@ -72,14 +72,17 @@ class Tee(base.DataMap):
 
     def __init__(
         self,
-        maps: List[base.DataMap],
+        maps: list[base.DataMap],
     ):
+        if len(maps) == 0:
+            msg = "Cannot have empty maps sequence."
+            raise ValueError(msg)
         self._maps = maps
         super().__init__()
 
     def compute(
         self, distribution: npt.ArrayLike
-    ) -> Dict[str, Union[float, np.ndarray]]:
+    ) -> dict[str, Union[float, np.ndarray]]:
         """Run all composed map computes."""
         processed_data = {}
         for map_ in self._maps:

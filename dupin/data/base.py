@@ -3,7 +3,7 @@
 import typing
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +12,7 @@ import numpy.typing as npt
 GeneratorLike = Union[
     "Generator",
     "DataMap",
-    typing.Callable[..., Dict[str, Union[float, npt.ArrayLike]]],
+    typing.Callable[..., dict[str, Union[float, npt.ArrayLike]]],
 ]
 GeneratorLike.__doc__ = """
 A type hint for objects that act like data generators for dupin.
@@ -213,7 +213,7 @@ class DataReducer(DataModifier):
     """
 
     @abstractmethod
-    def compute(self, distribution: npt.ArrayLike) -> Dict[str, float]:
+    def compute(self, distribution: npt.ArrayLike) -> dict[str, float]:
         """Turn a distribution into scalar features.
 
         Parameters
@@ -284,7 +284,7 @@ class Generator(Callable, PipeComponent):
     @abstractmethod
     def __call__(
         self, *args, **kwargs
-    ) -> Dict[str, Union[float, npt.ArrayLike]]:
+    ) -> dict[str, Union[float, npt.ArrayLike]]:
         """Return the output signal(s) for given inputs.
 
         This method can have an arbitrary signature in subclasses.
@@ -318,8 +318,6 @@ class CustomMap(DataMap):
 
     Parameters
     ----------
-    generator : :py:obj:`~.GeneratorLike`
-        A generator like object to transform.
     custom_function : ``callable`` [`numpy.ndarray`, `dict` ]
         A custom callable that takes in a NumPy array and returns a dictionary
         with keys indicating the tranformation and values the transformed
@@ -333,12 +331,11 @@ class CustomMap(DataMap):
 
     def __init__(
         self,
-        generator: GeneratorLike,
         custom_function: typing.Callable[
-            [npt.ArrayLike], Dict[str, np.ndarray]
+            [npt.ArrayLike], dict[str, np.ndarray]
         ],
     ):
-        super().__init__(generator)
+        super().__init__()
         self.function = custom_function
 
     def compute(self, data: npt.ArrayLike) -> npt.ArrayLike:
@@ -351,8 +348,6 @@ class CustomReducer(DataReducer):
 
     Parameters
     ----------
-    generator: :py:obj:`~.GeneratorLike`
-        A generator like object to reduce.
     custom_function: ``callable`` [`numpy.ndarray`, `dict` [`str`, `float` ]
         A custom callable that takes in a NumPy array and returns a
         dictionary with keys indicating the reduction and values the reduced
@@ -366,7 +361,7 @@ class CustomReducer(DataReducer):
 
     def __init__(
         self,
-        custom_function: typing.Callable[[npt.ArrayLike], Dict[str, float]],
+        custom_function: typing.Callable[[npt.ArrayLike], dict[str, float]],
     ):
         super().__init__()
         self.function = custom_function

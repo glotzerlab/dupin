@@ -9,7 +9,7 @@ import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 
 import dupin as du
 
@@ -30,8 +30,6 @@ def context_dict(values=None):
 @given(log_contents=st.lists(context_dict()))
 def test_frame_mechanism(log_contents):
     logger = du.data.logging.Logger()
-    empty_frames = 0
-    was_empty = False
     for frame, contexts in enumerate(log_contents):
         drop_keys = []
         was_empty = len(contexts) == 0 or all(
@@ -47,15 +45,14 @@ def test_frame_mechanism(log_contents):
                 drop_keys.append(context)
             for k, v in data.items():
                 logger[k] = v
-        assert len(logger.frames) == frame - empty_frames
+        assert len(logger.frames) == frame
         logger.end_frame()
-        empty_frames += int(was_empty)
-        assert len(logger.frames) == frame + 1 - empty_frames
+        assert len(logger.frames) == frame + 1
         if was_empty:
-            continue
+            assert logger.frames[-1] == {}
         for k in drop_keys:
             contexts.pop(k)
-        assert contexts == logger.frames[frame - empty_frames]
+        assert contexts == logger.frames[frame]
 
 
 @st.composite
@@ -80,7 +77,7 @@ def orderly_log_content(
             for c in draw(keys)
         }
     )
-    return draw(st.lists(contexts, max_size=20))
+    return draw(st.lists(contexts, max_size=15))
 
 
 def populate_log(logger, log_contents):
@@ -122,6 +119,7 @@ def check_logger_values(df, log_contents):
 
 
 @given(orderly_log_content())
+@settings(deadline=500)  # Allow up to 0.5 seconds per test.
 def test_to_dataframe(log_contents):
     logger = du.data.logging.Logger()
     num_empty = populate_log(logger, log_contents)

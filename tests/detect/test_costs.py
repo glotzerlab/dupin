@@ -9,7 +9,7 @@ import dupin.detect.costs
 
 class BaseCostLinearTest:
     cls: typing.ClassVar[du.detect.costs.BaseLinearCost] = None
-    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {}
+    additional_constants: typing.ClassVar[dict[str, typing.Any]] = {}
     N: typing.ClassVar[int] = 50
 
     def test_constants(self):
@@ -56,7 +56,7 @@ class TestLinearCost(BaseCostLinearTest):
     cls: typing.ClassVar[
         du.detect.costs.BaseLinearCost
     ] = du.detect.costs.CostLinearFit
-    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    additional_constants: typing.ClassVar[dict[str, typing.Any]] = {
         "model": "linear_regression"
     }
 
@@ -79,7 +79,7 @@ class TestBiasedCost(BaseCostLinearTest):
     cls: typing.ClassVar[
         du.detect.costs.BaseLinearCost
     ] = du.detect.costs.CostLinearBiasedFit
-    additional_constants: typing.ClassVar[typing.Dict[str, typing.Any]] = {
+    additional_constants: typing.ClassVar[dict[str, typing.Any]] = {
         "model": "biased_linear_regression"
     }
 

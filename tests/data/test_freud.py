@@ -106,5 +106,5 @@ def test_call(mock_random_system, spec):
                 assert np.allclose(compute_values[:, i], output[key])
             continue
         # Handle single feature case
-        key = attr if key is None else keys
+        key = attr if keys is None else keys
         assert np.allclose(output[key], compute_values)

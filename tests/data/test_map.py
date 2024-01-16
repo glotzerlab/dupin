@@ -27,38 +27,38 @@ class BaseMapTest:
         raise NotImplementedError
 
     def test_decorator(self, valid_spec):
-        @du.data.reduce.NthGreatest.wraps([1])
-        @self.cls.wraps(**valid_spec)
+        @du.data.reduce.NthGreatest([1])
+        @self.cls(**valid_spec())
         def generate():
             pass
 
         assert inspect.isfunction(generate._generator._generator)
 
-        @du.data.reduce.NthGreatest.wraps([1])
-        @self.cls.wraps(**valid_spec)
-        @du.data.map.Identity.wraps()
+        @du.data.reduce.NthGreatest([1])
+        @self.cls(**valid_spec())
+        @du.data.map.Identity()
         def generate():
             pass
 
         assert isinstance(generate._generator._generator, du.data.map.Identity)
 
     def test_pipeline(self, generator, valid_spec):
-        pipeline = generator.pipe(self.cls.wraps(**valid_spec)).pipe(
-            du.data.reduce.NthGreatest.wraps([1])
+        pipeline = generator.pipe(self.cls(**valid_spec())).pipe(
+            du.data.reduce.NthGreatest([1])
         )
         assert isinstance(
             pipeline._generator._generator, du.data.freud.FreudDescriptor
         )
         pipeline = (
-            generator.pipe(du.data.map.Identity.wraps())
-            .pipe(self.cls.wraps(**valid_spec))
-            .pipe(du.data.reduce.NthGreatest.wraps([1]))
+            generator.pipe(du.data.map.Identity())
+            .pipe(self.cls(**valid_spec()))
+            .pipe(du.data.reduce.NthGreatest([1]))
         )
         assert isinstance(pipeline._generator._generator, du.data.map.Identity)
 
     def test_setting_logger(self, generator, valid_spec):
-        pipeline = generator.pipe(du.data.map.Identity.wraps()).pipe(
-            self.cls.wraps(**valid_spec)
+        pipeline = generator.pipe(du.data.map.Identity()).pipe(
+            self.cls(**valid_spec())
         )
         logger = du.data.logging.Logger()
         pipeline.attach_logger(logger)
@@ -70,7 +70,7 @@ class BaseMapTest:
 
     def test_output(self, generator, valid_spec, mock_fcc_system):
         """Test the map outputs the expected values."""
-        instance = generator.pipe(self.cls.wraps(**valid_spec))
+        instance = generator.pipe(self.cls(**valid_spec()))
         box, positions = mock_fcc_system(noise=1e-2)
         nlist = (
             freud.locality.AABBQuery(box, positions)
@@ -94,7 +94,7 @@ class TestIdentity(BaseMapTest):
 
     @pytest.fixture()
     def valid_spec(self):
-        return {}
+        return lambda: {}
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):
@@ -107,7 +107,7 @@ class TestSpatialAveraging(BaseMapTest):
 
     @pytest.fixture()
     def valid_spec(self):
-        return {"expected_kwarg": "neighbors", "remove_kwarg": False}
+        return lambda: {"expected_kwarg": "neighbors", "remove_kwarg": False}
 
     @staticmethod
     def compute_average(arr, neighbors):
@@ -124,8 +124,7 @@ class TestSpatialAveraging(BaseMapTest):
         averaged_arr = TestSpatialAveraging.compute_average(
             compute_arr, passed_args["neighbors"]
         )
-        for i, (k, arr) in enumerate(output.items()):
-            print(k, arr.dtype, averaged_arr.dtype, arr - averaged_arr[:, i])
+        for i, arr in enumerate(output.values()):
             assert np.allclose(arr, averaged_arr[:, i])
 
 
@@ -134,12 +133,15 @@ class TestTee(BaseMapTest):
 
     @pytest.fixture()
     def valid_spec(self):
-        return {
-            "maps": [
-                du.data.map.Identity.wraps(),
-                du.data.spatial.NeighborAveraging.wraps("neighbors", False),
-            ]
-        }
+        def spec():
+            return {
+                "maps": [
+                    du.data.map.Identity(),
+                    du.data.spatial.NeighborAveraging("neighbors", False),
+                ]
+            }
+
+        return spec
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):
@@ -163,7 +165,10 @@ class TestCustomMap(BaseMapTest):
         def double(arr):
             return {"doubled": arr * 2}
 
-        return {"custom_function": double}
+        def spec():
+            return {"custom_function": double}
+
+        return spec
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):

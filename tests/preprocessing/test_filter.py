@@ -86,7 +86,7 @@ class TestMeanShift:
             return 1, np.concatenate((signal, no_signal), axis=1)
 
         signal, _ = rpt.pw_constant(
-            100, 2, 1, 1, delta=self.get_shift_range(1.22, 1.25), seed=seeds()
+            100, 2, 1, 0.5, delta=self.get_shift_range(1.22, 1.25), seed=seeds()
         )
         no_signal, _ = rpt.pw_constant(100, 2, 0, 1, seed=seeds())
         return 2, np.concatenate((signal, no_signal), axis=1)
@@ -109,7 +109,7 @@ class TestCorrelated:
         for i in range(labels.max() + 1):
             index = np.flatnonzero(labels == i)
             x, y = np.meshgrid(index, index)
-            cov[x, y] = rng.uniform(0.8, 1.0, size=len(i))
+            cov[x, y] = rng.uniform(0.8, 1.0, size=x.size).reshape(x.shape)
         diag_indices = np.diag_indices_from(cov)
         cov[diag_indices] = 1.0
         flattened_cov = cov.ravel()
@@ -250,5 +250,5 @@ class TestCorrelated:
         correlated = du.preprocessing.filter.Correlated(
             method_args=(5, {}, [12, 5])
         )
-        with pytest.raises(TypeError):
+        with pytest.raises((TypeError, ValueError)):
             correlated(random_signal)

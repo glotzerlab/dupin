@@ -5,12 +5,12 @@ provides methods for storing the output across a trajectory.
 """
 
 
-from typing import Any, Dict, Iterator, Optional, Tuple
+from collections.abc import Iterator
+from typing import Any, Optional
 
 import numpy as np
 
-from dupin import errors
-
+from .. import errors
 from . import base, logging
 
 try:
@@ -58,7 +58,7 @@ class SignalAggregator:
         self.logger = logger
 
     def compute(
-        self, iterator: Iterator[Tuple[Tuple[Any, ...], Dict[str, Any]]]
+        self, iterator: Iterator[tuple[tuple[Any, ...], dict[str, Any]]]
     ):
         """Compute signals from generator across the iterator.
 

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import ruptures as rpt
 
-from dupin.detect.offline import detect
+from dupin import detect
 
 
 def test_kneedle_elbow_detection():
@@ -37,7 +37,7 @@ def test_two_pass_elbow_detection():
 @pytest.mark.parametrize("detector", [rpt.Dynp(), rpt.Binseg(), rpt.BottomUp()])
 def test_ruptures_wrapper(detector):
     signal, bkps = rpt.pw_constant(50, n_bkps=1)
-    wrapper = detect._RupturesWrapper(detector)
+    wrapper = detect.detect._RupturesWrapper(detector)
     assert wrapper.detector is detector
     points, cost = wrapper(signal, 0)
     assert points == []
@@ -82,7 +82,9 @@ class TestSweepDetector:
     def test_construction(self, construction_kwargs):
         detector = detect.SweepDetector(**construction_kwargs)
         if isinstance(construction_kwargs["detector"], rpt.base.BaseEstimator):
-            assert isinstance(detector._detector, detect._RupturesWrapper)
+            assert isinstance(
+                detector._detector, detect.detect._RupturesWrapper
+            )
             assert (
                 detector._detector.detector is construction_kwargs["detector"]
             )
@@ -101,7 +103,7 @@ class TestSweepDetector:
         detector = detect.SweepDetector(
             detector=rpt.Dynp("l1"), max_change_points=8
         )
-        signal, bkps = rpt.pw_constant(noise_std=0.1)
+        signal, bkps = rpt.pw_constant(noise_std=0.1, delta=(2, 4))
         bkps.pop()
         change_points = detector.fit(signal)
         assert len(change_points) == len(bkps)

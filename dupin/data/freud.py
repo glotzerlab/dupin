@@ -13,7 +13,7 @@ Note
 """
 
 from collections.abc import Sequence
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 import numpy.typing as npt
 
@@ -70,7 +70,7 @@ class FreudDescriptor(base.Generator):
     def __init__(
         self,
         compute: "freud.util._Compute",
-        attrs: Union[str, List[str], Dict[str, str]],
+        attrs: Union[str, list[str], dict[str, str]],
         compute_method: str = "compute",
     ) -> None:
         if not hasattr(compute, compute_method):
@@ -86,7 +86,7 @@ class FreudDescriptor(base.Generator):
 
     def __call__(
         self, *args: Any, **kwargs: Any
-    ) -> Dict[str, Union[float, npt.ArrayLike]]:
+    ) -> dict[str, Union[float, npt.ArrayLike]]:
         """Return computed attributes specified in a dictionary.
 
         The keys of the dictionary are the attributes specified, unless a `dict`
