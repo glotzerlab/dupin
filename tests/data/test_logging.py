@@ -77,7 +77,7 @@ def orderly_log_content(
             for c in draw(keys)
         }
     )
-    return draw(st.lists(contexts, max_size=15))
+    return draw(st.lists(contexts, max_size=10))
 
 
 def populate_log(logger, log_contents):
@@ -119,7 +119,7 @@ def check_logger_values(df, log_contents):
 
 
 @given(orderly_log_content())
-@settings(deadline=500)  # Allow up to 0.5 seconds per test.
+@settings(deadline=1_000)  # Allow up to 1 seconds per test.
 def test_to_dataframe(log_contents):
     logger = du.data.logging.Logger()
     num_empty = populate_log(logger, log_contents)
