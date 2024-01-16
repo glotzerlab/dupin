@@ -1,0 +1,51 @@
+name: Publish packages
+
+on:
+  workflow_call:
+    inputs:
+      upload_to_test:
+        required: true
+        type: boolean
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      run: |
+        # We must explicitly install the requirements so that we can force
+        # installation of the local wheel below in case the version conflicts
+        # with published wheels (typically only possible during testing).
+        python -m pip install \
+        -r requirements.txt \
+        -r requirements/requirements-test.txt \
+        -r requirements/requirements-jit.txt \
+        -r requirements/requirements-data.txt
+
+    - name: Install pypa/build
+      run:
+        python -m pip install build
+    - name: Build a binary wheel and a source tarball
+      run:
+        python -m build --outdir dist/ .
+    - name: Install wheel
+      run:
+        python -m pip install dupin --progress-bar off --no-index -f dist/
+    - name: Test with pytest
+      run:
+        python -m pytest -v tests/
+
+    - name: Publish package to TestPyPI
+      if: ${{ inputs.upload_to_test }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository_url: https://test.pypi.org/legacy/
+
+    - name: Publish package to PyPI
+      if: ${{ !inputs.upload_to_test }}
+      uses: pypa/gh-action-pypi-publish@release/v1
