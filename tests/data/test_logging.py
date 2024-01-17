@@ -15,7 +15,7 @@ import dupin as du
 
 
 def not_null(s):
-    return not s.startswith("\x00")
+    return "\x00" not in s
 
 
 def context_dict(values=None):
