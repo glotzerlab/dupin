@@ -16,3 +16,4 @@ jobs:
     uses: ./.github/workflows/publish-packages.yml
     with:
       upload_to_test: true
+      branch: ${{ github.event.workflow_run.head_branch }}
