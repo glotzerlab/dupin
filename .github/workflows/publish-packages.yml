@@ -6,6 +6,9 @@ on:
       upload_to_test:
         required: true
         type: boolean
+      branch:
+        required: true
+        type: str
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,6 +18,8 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.branch }}
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
