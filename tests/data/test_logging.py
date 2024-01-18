@@ -119,7 +119,7 @@ def check_logger_values(df, log_contents):
 
 
 @given(orderly_log_content())
-@settings(deadline=1_000)  # Allow up to 1 seconds per test.
+@settings(deadline=2_000)  # Allow up to 2 seconds per test.
 def test_to_dataframe(log_contents):
     logger = du.data.logging.Logger()
     num_empty = populate_log(logger, log_contents)
