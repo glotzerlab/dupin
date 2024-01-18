@@ -8,7 +8,7 @@ on:
         type: boolean
       branch:
         required: true
-        type: str
+        type: string
 jobs:
   build:
     runs-on: ubuntu-latest
