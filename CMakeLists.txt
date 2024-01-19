@@ -8,7 +8,7 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(TBB REQUIRED)
-add_subdirectory(extern/pybind11)
+find_package(pybind11 CONFIG REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 add_subdirectory(src)

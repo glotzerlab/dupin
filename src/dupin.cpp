@@ -15,9 +15,9 @@ using namespace Eigen;
 DynamicProgramming::DynamicProgramming()
     : num_bkps(1), num_parameters(0), num_timesteps(0), jump(1), min_size(3) {}
 
-DynamicProgramming::DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, 
+DynamicProgramming::DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_,
                                         int jump_, int min_size_)
-                                        : data(data), num_bkps(num_bkps_), 
+                                        : data(data), num_bkps(num_bkps_),
                                         jump(jump_), min_size(min_size_) {
   num_timesteps = data.rows();
   num_parameters = data.cols();
@@ -95,6 +95,7 @@ void DynamicProgramming::initialize_cost_matrix() {
                         }
                       }
                     });
+  cost_computed = true;
 }
 
 std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
@@ -138,9 +139,12 @@ std::vector<int> DynamicProgramming::compute_breakpoints() {
   return breakpoints;
 }
 
-std::vector<int> DynamicProgramming::fit(){
+std::vector<int> DynamicProgramming::fit(int num_bkps_in){
+  num_bkps = num_bkps_in;
+  if (!cost_computed){
   initialize_cost_matrix();
-  return compute_breakpoints(); 
+  }
+  return compute_breakpoints();
 }
 
 void set_parallelization(int num_threads) {
@@ -148,21 +152,9 @@ void set_parallelization(int num_threads) {
                                 num_threads);
 }
 
-int DynamicProgramming::get_num_timesteps() { return num_timesteps; }
-
-int DynamicProgramming::get_num_parameters() { return num_parameters; }
-
-int DynamicProgramming::get_num_bkps() { return num_bkps; }
-
-Eigen::MatrixXd &DynamicProgramming::getDatum() { return data; }
-
 DynamicProgramming::UpperTriangularMatrix &
 DynamicProgramming::getCostMatrix() {
   return cost_matrix;
-}
-
-void DynamicProgramming::setDatum(const Eigen::MatrixXd &value) {
-  data = value;
 }
 
 void DynamicProgramming::setCostMatrix(

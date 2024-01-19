@@ -8,9 +8,11 @@
 #include <Eigen/Dense>
 
 
-// DynamicProgramming class for dynamic programming based segmentation.
-class DynamicProgramming { 
+// Calculates optimal breakpoints in time-series data using memoization
+class DynamicProgramming {
 private:
+
+  //stores upper triangular cost matrix efficiently
   class UpperTriangularMatrix {
   private:
     std::vector<double> matrix;
@@ -23,13 +25,6 @@ private:
 
   public:
     UpperTriangularMatrix() : length(0) {}
-
-    UpperTriangularMatrix(int n) : length(n), matrix(n * (n + 1) / 2, 0.0), 
-                                   row_indices(n) {
-        for (int row = 0; row < n; ++row) {
-            row_indices[row] = row * (2 * length - row + 1) / 2;
-        }
-    }
 
     void initialize(int n) {
         length = n;
@@ -45,8 +40,6 @@ private:
     }
     int getSize() const { return length; }
 };
-  UpperTriangularMatrix cost_matrix;
-
   // Struct for memoization key, combining start, end, and number of
   // breakpoints.
   struct MemoKey {
@@ -63,7 +56,7 @@ private:
 
   // Custom XOR-bit hash function for MemoKey, avoids clustering of data in
   // unordered map to improve efficiency.
-  struct MemoKeyHash { 
+  struct MemoKeyHash {
     std::size_t operator()(const MemoKey &key) const {
       return ((std::hash<int>()(key.start) ^
                (std::hash<int>()(key.end) << 1)) >>
@@ -81,8 +74,10 @@ private:
   int num_timesteps;     // Number of data points (time steps).
   int jump;              // Interval for checking potential breakpoints.
   int min_size;          // Minimum size of a segment.
-  Eigen::MatrixXd data; // Matrix storing the dataset.
 
+  Eigen::MatrixXd data; // Matrix storing the dataset.
+  UpperTriangularMatrix cost_matrix; //Matrix storing costs
+  bool cost_computed = false;
   // Structure for storing linear regression parameters.
   struct linear_fit_struct {
     Eigen::MatrixXd y; // Dependent variable (labels).
@@ -110,37 +105,27 @@ private:
     // Recursive function for dynamic programming segmentation.
   std::pair<double, std::vector<int>> seg(int start, int end, int num_bkps);
 
+// Initializes and fills the cost matrix for all data segments.
+  void initialize_cost_matrix();
+
+  // Returns the optimal set of breakpoints after segmentation.
+  std::vector<int> compute_breakpoints();
 
 public:
   // Default constructor.
   DynamicProgramming();
 
   // Parameterized constructor.
-  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_, 
+  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_,
                      int min_size_);
 
-  // Initializes and fills the cost matrix for all data segments.
-  void initialize_cost_matrix();
-
-
-  //sets number of threads for parallelization
+  //Sets number of threads for parallelization
   void set_parallelization(int num_threads);
 
-  // Returns the optimal set of breakpoints after segmentation.
-  std::vector<int> compute_breakpoints();
+  // Calculates optimal breakpoints with given number of points.
+  std::vector<int> fit(int num_bkps_in);
 
-  // Calculates the cost matrix and return the breakpoints
-  std::vector<int> fit(); 
-
-  // Getter functions for accessing private class members.
-  int get_num_timesteps();
-  int get_num_parameters();
-  int get_num_bkps();
-  Eigen::MatrixXd &getDatum();
+  // Getter functions for cost matrix.
   DynamicProgramming::UpperTriangularMatrix &getCostMatrix();
-
-  // Setter functions for modifying private class members.
-  
-  void setDatum(const Eigen::MatrixXd &value);
   void setCostMatrix(const DynamicProgramming::UpperTriangularMatrix &value);
 };
