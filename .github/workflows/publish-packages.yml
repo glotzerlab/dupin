@@ -38,7 +38,7 @@ jobs:
       run:
         python -m pip install build
     - name: Install System Packages
-      with: ./.github/workflows/install-nopython-dependencies.yml
+      uses: ./.github/actions/install-nopython-dependencies
     - name: Build a binary wheel and a source tarball
       run:
         python -m build --outdir dist/ .

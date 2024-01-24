@@ -1,0 +1,14 @@
+name: Install Non-Python Dependencies
+description: Installs system packages needed to build dupin.
+runs:
+  using: "composite"
+  steps:
+    - install-dependencies-linux:
+      if: runner.os == 'Linux'
+      run: sudo apt-get install tbb tbblib eigen3 ninja
+    - install-dependencies-macos:
+      if: runner.os == 'macOS'
+      run: brew install tbb eigen3 ninja
+    - install-dependencies-windows:
+      if: runner.os == 'Windows'
+      run: choco install tbb eigen3 ninja
