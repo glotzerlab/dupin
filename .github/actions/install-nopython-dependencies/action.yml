@@ -6,11 +6,15 @@ runs:
     - name: install-dependencies-linux
       if: runner.os == 'Linux'
       shell: bash
-      run: sudo apt-get install tbb tbblib eigen3 ninja
+      run: |
+        sudo apt-get update
+        sudo apt-get install tbb tbblib eigen3 ninja
     - name: install-dependencies-macos
       if: runner.os == 'macOS'
       shell: bash
-      run: brew install tbb eigen3 ninja
+      run: |
+        brew update
+        brew install tbb eigen3 ninja
     - name: install-dependencies-windows
       if: runner.os == 'Windows'
       shell: bash
