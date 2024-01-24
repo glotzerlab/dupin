@@ -1,0 +1,21 @@
+name: Install Non-Python Dependencies
+
+on:
+  workflow_call:
+
+jobs:
+  install-dependencies-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: sudo apt-get install tbb tbblib eigen3 ninja
+  install-dependencies-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Install dependencies
+      run: brew install tbb eigen3 ninja
+  install-dependencies-windows:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: choco install tbb eigen3 ninja

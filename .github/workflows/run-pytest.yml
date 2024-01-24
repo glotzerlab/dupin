@@ -45,7 +45,7 @@ jobs:
         python-version: ${{ matrix.python }}
     - name: Update pip/build packages
       run: |
-        pip install setuptools --upgrade
+        pip install pip --upgrade
     - name: Install newest dependencies
       run: |
         pip install -r requirements/requirements-test.txt
@@ -60,6 +60,8 @@ jobs:
       run: |
         pip install -r requirements/requirements-jit.txt
       if: ${{ matrix.python != '3.12' }}
+    - name: Install system packages
+      uses: ./.github/workflows/install-nopython-dependencies.yml
     - name: Install the package
       run: |
         pip install -e .
