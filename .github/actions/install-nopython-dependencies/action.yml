@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         brew update
-        brew install tbb eigen3 ninja
+        brew install tbb eigen ninja
     - name: install-dependencies-windows
       if: runner.os == 'Windows'
       shell: bash
