@@ -5,10 +5,13 @@ runs:
   steps:
     - install-dependencies-linux:
       if: runner.os == 'Linux'
+      shell: bash
       run: sudo apt-get install tbb tbblib eigen3 ninja
     - install-dependencies-macos:
       if: runner.os == 'macOS'
+      shell: bash
       run: brew install tbb eigen3 ninja
     - install-dependencies-windows:
       if: runner.os == 'Windows'
+      shell: bash
       run: choco install tbb eigen3 ninja
