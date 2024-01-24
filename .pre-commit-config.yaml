@@ -15,10 +15,15 @@ repos:
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.1.9
       hooks:
-        - id: ruff-format
         - id: ruff
           args:
           - --fix
+          - --error-zero-on-fix
+          types_or:
+          - python
+          - pyi
+          - jupyter
+        - id: ruff-format
           types_or:
           - python
           - pyi
