@@ -3,15 +3,15 @@ description: Installs system packages needed to build dupin.
 runs:
   using: "composite"
   steps:
-    - name: install-dependencies-linux:
+    - name: install-dependencies-linux
       if: runner.os == 'Linux'
       shell: bash
       run: sudo apt-get install tbb tbblib eigen3 ninja
-    - name: install-dependencies-macos:
+    - name: install-dependencies-macos
       if: runner.os == 'macOS'
       shell: bash
       run: brew install tbb eigen3 ninja
-    - name: install-dependencies-windows:
+    - name: install-dependencies-windows
       if: runner.os == 'Windows'
       shell: bash
       run: choco install tbb eigen3 ninja
