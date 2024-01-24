@@ -7,7 +7,7 @@ name = "dupin"
 version = "0.1"
 description = "Offline and online event detection scheme for rare events in molecular simulations."
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 maintainers = [{name = "Brandon Butler", email = "butlerbr@umich.edu"}]
 authors = [{name = "Brandon Butler et al.", email = "butlerbr@umich.edu"}]
 keywords = ["event detection", "molecular simulations"]
@@ -15,10 +15,10 @@ classifiers = [
         "Development Status :: 2 - Pre-Alpha",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ]
 dependencies = [
     "bottleneck",  # perform moving window array computations
@@ -32,25 +32,49 @@ dependencies = [
 
 [project.urls]
 Source = "https://github.com/glotzerlab/dupin"
+Documentation = "https://dupin.readthedocs.io"
 Issues = "https://github.com/glotzerlab/dupin/issues"
 
 [tool.setuptools]
 packages = { find = { namespaces = false, exclude = ["tests*", "notebooks*"] } }
 
-[tool.black]
+[tool.ruff]
+include = ["*.py", "*.ipynb"]
 line-length = 80
-include = '\.pyi?$'
-exclude = '''
+select = [
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "EM",  # flake8-errmsg
+    "ICN", # flake8-import-conventions
+    "N",   # pep8-naming
+    "NPY", # NumPy-specific rules
+    "PL",  # Pylint
+    "PT",  # flake8-pytest-style
+    "RET", # flake8-return
+    "RUF", # Ruff specific rules
+    "UP",  # pyupgrade
+    "E",   # pycodestyle (errors)
+    "W",   # pycodestyle (warnings) ruff supports W but, W503 is not supported!!
+    "F",   # pyflakes
+    "D",   # pydocstyle
+    "I",   # isort
+]
+ignore = ["N803", "N806", "A003", "PLR0913", "E741"]
 
-(
-      \.eggs
-    | \.git
-    | build
-    | _build
-    | dist
-)
-'''
+[tool.ruff.extend-per-file-ignores]
+"tests/*" = ["D100", "D101", "D102", "D103", "B008"]
+"docs/*" = ["D100", "D101", "D102", "D103", "E501"]
+"conftest.py" = ["D401"]
 
-[tool.isort]
-profile = "black"
-line_length = 80
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+[tool.coverage.run]
+branch = true
+source = [ "dupin" ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+filterwarnings = [
+    "ignore::UserWarning:dupin.*"
+]

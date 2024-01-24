@@ -8,48 +8,14 @@ repos:
         - id: check-added-large-files
         - id: check-ast
         - id: check-merge-conflict
-    - repo: https://github.com/asottile/pyupgrade
-      rev: 'v2.38.2'
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.1.9
       hooks:
-        - id: pyupgrade
+        - id: ruff-format
+        - id: ruff
           args:
-          - --py37-plus
-    - repo: https://github.com/pycqa/isort
-      rev: '5.12.0'
-      hooks:
-        - id: isort
-          args: ["--filter-files"]
-    - repo: https://github.com/psf/black
-      rev: '23.3.0'
-      hooks:
-         - id: black
-           language_version: python3
-    - repo: https://github.com/pycqa/flake8
-      rev: '6.0.0'
-      hooks:
-        - id: flake8
-    - repo: https://github.com/pycqa/pydocstyle
-      rev: 6.3.0
-      hooks:
-        - id: pydocstyle
-          files: ^((?!docs|tests).)*$
-    - repo: https://github.com/nbQA-dev/nbQA
-      rev: 1.5.2
-      hooks:
-      - id: nbqa-pyupgrade
-        args:
-        - --py37-plus
-      - id: nbqa-isort
-      - id: nbqa-black
-    - repo: https://github.com/kynan/nbstripout
-      rev: 0.6.1
-      hooks:
-      - id: nbstripout
-        args:
-        # Strip metadata but keep counts and outputs
-        - --keep-count
-        - --keep-output
-    - repo: https://github.com/bdice/nb-strip-paths
-      rev: v0.1.0
-      hooks:
-      - id: nb-strip-paths
+          - --fix
+          types_or:
+          - python
+          - pyi
+          - jupyter

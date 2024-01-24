@@ -13,7 +13,7 @@ Note
 """
 
 from collections.abc import Sequence
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 import numpy.typing as npt
 
@@ -70,11 +70,12 @@ class FreudDescriptor(base.Generator):
     def __init__(
         self,
         compute: "freud.util._Compute",
-        attrs: Union[str, List[str], Dict[str, str]],
+        attrs: Union[str, list[str], dict[str, str]],
         compute_method: str = "compute",
     ) -> None:
         if not hasattr(compute, compute_method):
-            raise ValueError("compute_method must exist for the compute.")
+            msg = "compute_method must exist for the compute."
+            raise ValueError(msg)
         self.compute = compute
         if isinstance(attrs, str):
             attrs = {attrs: attrs}
@@ -85,7 +86,7 @@ class FreudDescriptor(base.Generator):
 
     def __call__(
         self, *args: Any, **kwargs: Any
-    ) -> Dict[str, Union[float, npt.ArrayLike]]:
+    ) -> dict[str, Union[float, npt.ArrayLike]]:
         """Return computed attributes specified in a dictionary.
 
         The keys of the dictionary are the attributes specified, unless a `dict`
@@ -100,16 +101,18 @@ class FreudDescriptor(base.Generator):
             datum = getattr(self.compute, attr)
             name = self.attrs[attr]
             if not isinstance(name, str) and isinstance(name, Sequence):
-                if len(datum.shape) != 2:
-                    raise ValueError(
+                if len(datum.shape) != 2:  # noqa: PLR2004
+                    msg = (
                         f"Cannot specify multiple names for a single dimension "
                         f"array. Problem attr {attr}"
                     )
+                    raise ValueError(msg)
                 if datum.shape[1] != len(name):
-                    raise ValueError(
+                    msg = (
                         f"The correct number of names not specified for attr "
                         f"{attr}. Expected {datum.shape[1]} got {len(name)}."
                     )
+                    raise ValueError(msg)
                 collected_data.update({n: d for n, d in zip(name, datum.T)})
             else:
                 collected_data[name] = datum
@@ -118,16 +121,18 @@ class FreudDescriptor(base.Generator):
     def _convert_attrs(self, attrs):
         if isinstance(attrs, str):
             return {attrs: attrs}
-        elif isinstance(attrs, Sequence):
+        if isinstance(attrs, Sequence):
             return {attr: attr for attr in attrs}
-        elif isinstance(attrs, dict):
+        if isinstance(attrs, dict):
             if not all(
                 isinstance(v, (type(None), str, Sequence))
                 for v in attrs.values()
             ):
-                raise ValueError("Improper specification of compute attributes")
+                msg = "Improper specification of compute attributes"
+                raise ValueError(msg)
             return attrs
-        raise TypeError(
+        msg = (
             "attrs must be a str, list of strings, or dict of string values "
             "and keys"
         )
+        raise TypeError(msg)

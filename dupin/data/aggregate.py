@@ -5,12 +5,12 @@ provides methods for storing the output across a trajectory.
 """
 
 
-from typing import Any, Dict, Iterator, Optional, Tuple
+from collections.abc import Iterator
+from typing import Any, Optional
 
 import numpy as np
 
-import dupin.errors as errors
-
+from .. import errors
 from . import base, logging
 
 try:
@@ -58,7 +58,7 @@ class SignalAggregator:
         self.logger = logger
 
     def compute(
-        self, iterator: Iterator[Tuple[Tuple[Any, ...], Dict[str, Any]]]
+        self, iterator: Iterator[tuple[tuple[Any, ...], dict[str, Any]]]
     ):
         """Compute signals from generator across the iterator.
 
@@ -123,10 +123,11 @@ class SignalAggregator:
         # broken than this check will not catch it. However, this breaks one our
         # assumptions so is outside what we should check for.
         if any(is_array(value) for value in self.signals[0].values()):
-            raise ValueError(
+            msg = (
                 "Signal is 3 dimensional. ~.to_dataframe requires a 2 "
                 "dimensional signal. Use ~.to_xarray instead."
             )
+            raise ValueError(msg)
         return pd.DataFrame(
             {
                 col: [frame[col] for frame in self.signals]

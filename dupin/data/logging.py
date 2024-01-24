@@ -23,7 +23,7 @@ Note
 
 import numpy as np
 
-from dupin import errors
+from .. import errors
 
 try:
     import pandas as pd
@@ -71,8 +71,7 @@ class Logger:
             self._current_frame.setdefault(
                 self._context_key, self._current_context
             )
-        if self._current_frame:
-            self._data.append(self._current_frame)
+        self._data.append(self._current_frame)
         self._reset()
 
     def _reset(self):
@@ -104,18 +103,25 @@ class Logger:
         -------
             This only works for floating point logged values.
         """
-        # TODO: Extend to other dtypes?
-        if len(self._data) == 0:
+        frame_data = self._first_non_empty(self._data)
+        if frame_data is None:
             return pd.DataFrame()
-        frame_data = self._data[0]
         column_index = pd.MultiIndex.from_tuples(
             _create_column_index(frame_data)
         )
+        # TODO: Extend to other dtypes?
         data_arr = _log_data_to_array(
             self._data,
             np.empty((len(self._data), len(column_index)), dtype=float),
         )
         return pd.DataFrame(data_arr, columns=column_index)
+
+    @staticmethod
+    def _first_non_empty(data: list[dict]):
+        for d in data:
+            if len(d) > 0:
+                return d
+        return None
 
 
 def _create_column_index(log_data):
@@ -123,7 +129,7 @@ def _create_column_index(log_data):
     for key, value in log_data.items():
         if isinstance(value, dict):
             for inner_index in _create_column_index(value):
-                yield (key,) + inner_index
+                yield (key, *inner_index)
         else:
             yield (key,)
 

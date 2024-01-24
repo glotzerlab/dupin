@@ -1,0 +1,19 @@
+name: Publish to TestPyPI
+
+on:
+  workflow_run:
+    workflows: ["Run Unit Tests"]
+    branches: ['release/*.*.*']
+    types: ["completed"]
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build-test-publish-to-testpypi:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/publish-packages.yml
+    with:
+      upload_to_test: true
+      branch: ${{ github.event.workflow_run.head_branch }}

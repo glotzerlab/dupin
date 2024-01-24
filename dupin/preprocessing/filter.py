@@ -6,7 +6,7 @@ scikit-learn. These packages can easily be used as well for feature selection.
 
 import logging
 import warnings
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import bottleneck as bn
 import numpy as np
@@ -107,18 +107,19 @@ class MeanShift:
         signal_len: int, sample_size: Optional[Union[int, float]]
     ) -> int:
         # 3 on each side is the minimum to perform this analysis.
-        if signal_len < 7:
-            raise ValueError(
-                "Signal to small to perform statistical analysis on."
-            )
+        min_signal_length = 7
+        if signal_len < min_signal_length:
+            msg = "Signal to small to perform statistical analysis on."
+            raise ValueError(msg)
         if isinstance(sample_size, float):
             sample_size = max(3, int(sample_size * signal_len))
 
         if sample_size >= signal_len / 2:
-            raise ValueError(
+            msg = (
                 f"Cannot use {sample_size} frames with a signal of "
                 f"length {signal_len}."
             )
+            raise ValueError(msg)
         return sample_size
 
     @staticmethod
@@ -139,7 +140,7 @@ class MeanShift:
                 shift[mask & diff_zeros] = 0
                 warnings.warn(
                     "MeanShift: Zero standard deviation found.",
-                    RuntimeWarning,
+                    stacklevel=2,
                 )
             return shift
 
@@ -199,31 +200,35 @@ class Correlated:
         The array of features selected.
     """
 
-    _methods = {"spectral"}
-    _correlations = {"pearson"}
+    _methods = frozenset(("spectral",))
+    _correlations = frozenset(("pearson",))
 
     def __init__(
         self,
         method: str = "spectral",
         correlation: str = "pearson",
         max_clusters: int = 10,
-        method_args: Tuple[Any, ...] = (),
-        method_kwargs: Dict[str, Any] = None,
+        method_args: tuple[Any, ...] = (),
+        method_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         if method not in self._methods:
-            raise ValueError(
+            msg = (
                 f"Unsupported method {method}. Supported options "
                 f"{self._methods}"
             )
+            raise ValueError(msg)
         self.method = method
         if correlation not in self._correlations:
-            raise ValueError(
+            msg = (
                 f"Unsupported correlation option {correlation}. Supported "
                 f"options {self._correlations}"
             )
+            raise ValueError(msg)
         self.correlation = correlation
-        if max_clusters < 2:
-            raise ValueError("Max clusters must be greater than 1.")
+        min_clusters = 2
+        if max_clusters < min_clusters:
+            msg = "Max clusters must be greater than 1."
+            raise ValueError(msg)
         self.max_clusters = max_clusters
         self._method_args = method_args
         self._method_kwargs = {} if method_kwargs is None else method_kwargs
@@ -259,61 +264,48 @@ class Correlated:
             insignificant removed. If ``return_filter`` is ``True``, the Boolean
             array filtering features is returned.
         """
+        s = signal.to_numpy() if isinstance(signal, pd.DataFrame) else signal
+        feature_mask = self._get_feature_mask(
+            s, features_per_cluster, feature_importance
+        )
+        self.filter_ = feature_mask
+        if return_filter:
+            return feature_mask
         if isinstance(signal, pd.DataFrame):
-            filter_ = self(
-                signal.to_numpy(),
-                features_per_cluster,
-                True,
-                feature_importance,
-            )
-            if not return_filter:
-                return signal.iloc[:, filter_]
-            return filter_
+            return signal.iloc[:, feature_mask]
+        return signal[:, feature_mask]
 
+    def _get_feature_mask(
+        self,
+        signal: npt.ArrayLike,
+        features_per_cluster: int = 1,
+        feature_importance: Optional[npt.ArrayLike] = None,
+    ) -> np.ndarray:
         _logger.debug(f"Correlation: signal dimension, {signal.shape[1]}")
         if features_per_cluster < 1:
-            raise ValueError("features_per_cluster must be 1 or greater.")
-        if signal.shape[1] <= 2:
-            self.labels_ = np.array([0, 1])
-            self.scores_ = np.array([np.nan])
-            self.n_clusters_ = 2
-            if return_filter:
-                return np.ones(2, dtype=bool)
-            return np.copy(signal)
+            msg = "features_per_cluster must be 1 or greater."
+            raise ValueError(msg)
 
-        sim_matrix, dist_matrix = self._get_similiarity_matrix(signal)
-        isolated, connected = self._get_isolated(sim_matrix)
-        sim_matrix, dist_matrix = self._handle_isolated(
-            sim_matrix, dist_matrix, isolated, connected
-        )
-
-        self._cluster(sim_matrix, dist_matrix, connected)
-
+        connected_features = self._cluster(signal)
         chosen_features = self._choose_features(
             feature_importance, features_per_cluster
         )
 
         filter_ = np.zeros(signal.shape[1], dtype=bool)
-        filter_[np.flatnonzero(connected)[chosen_features]] = True
-        self.filter_ = filter_
-
-        if return_filter:
-            return self.filter_
-        return signal[:, self.filter_]
+        filter_[np.flatnonzero(connected_features)[chosen_features]] = True
+        return filter_
 
     def _get_similiarity_matrix(
         self, signal: npt.ArrayLike
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         if self.correlation == "pearson":
             sim_matrix = np.abs(np.corrcoef(signal, rowvar=False))
             sim_matrix[np.isnan(sim_matrix)] = 0
             dist_matrix = np.abs(1 - sim_matrix)
             np.fill_diagonal(dist_matrix, 0)
             return sim_matrix, dist_matrix
-        else:
-            raise ValueError(
-                f"Unsupported correlation type {self.correlation}."
-            )
+        msg = f"Unsupported correlation type {self.correlation}."
+        raise ValueError(msg)
 
     def _get_isolated(self, sim_matrix: np.ndarray):
         connected = np.any(sim_matrix != 0, axis=1)
@@ -324,7 +316,7 @@ class Correlated:
         sim_matrix: np.ndarray,
         dist_matrix: np.ndarray,
         connected: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         return (
             sim_matrix[:, connected][connected, :],
             dist_matrix[:, connected][connected, :],
@@ -338,8 +330,8 @@ class Correlated:
                 affinity="precomputed",
                 **self._method_kwargs,
             )
-        else:
-            raise ValueError(f"Unsupported method type {self.method}.")
+        msg = f"Unsupported method type {self.method}."
+        raise ValueError(msg)
 
     def _choose_features(
         self, feature_importance: np.ndarray, features_per_cluster: int
@@ -365,7 +357,7 @@ class Correlated:
         n_clusters: int,
         sim_matrix: np.ndarray,
         dist_matrix: np.ndarray,
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         clusterer = self._get_method_instance(n_clusters)
         clusterer.fit(sim_matrix)
         score = sk.metrics.silhouette_score(
@@ -381,21 +373,26 @@ class Correlated:
         dist_matrix: np.ndarray,
         isolated: np.ndarray,
         connected: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         n_isolated = np.sum(isolated)
         if n_isolated >= 1:
             warnings.warn(
-                f"{n_isolated} Isolated components detected " f"removing."
+                f"{n_isolated} Isolated components detected removing.",
+                stacklevel=2,
             )
             return self._remove_isolated(sim_matrix, dist_matrix, connected)
         return sim_matrix, dist_matrix
 
-    def _cluster(
-        self,
-        sim_matrix: np.ndarray,
-        dist_matrix: np.ndarray,
-        connected: np.ndarray,
-    ) -> None:
+    def _cluster(self, signal: np.ndarray) -> None:
+        if signal.shape[1] < 3:  # noqa: PLR2004
+            self._low_dimension_clustering(signal.shape[1])
+            return None
+
+        sim_matrix, dist_matrix = self._get_similiarity_matrix(signal)
+        isolated, connected = self._get_isolated(sim_matrix)
+        sim_matrix, dist_matrix = self._handle_isolated(
+            sim_matrix, dist_matrix, isolated, connected
+        )
         cluster_ids = []
         scores = []
         for n_clusters in range(2, min(len(sim_matrix), self.max_clusters + 1)):
@@ -410,6 +407,18 @@ class Correlated:
         self.labels_ = np.full(connected.shape[0], -1, dtype=int)
         self.labels_[connected] = cluster_ids[best_cluster_index]
         self.n_clusters_ = best_cluster_index + 2
+        return connected
+
+    def _low_dimension_clustering(self, size: int) -> None:
+        if size == 1:
+            self.scores_ = np.array([np.nan])
+            self.labels_ = np.zeros(1)
+            self.n_clusters_ = 1
+            return
+        # Size must be 2
+        self.scores_ = np.array([np.nan])
+        self.labels_ = np.array([0, 1])
+        self.n_clusters_ = 2
 
 
 def _to_unit_len(arr):

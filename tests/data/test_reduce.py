@@ -1,5 +1,5 @@
 import functools
-import itertools
+import typing
 import warnings
 
 import numpy as np
@@ -29,13 +29,17 @@ def _dropnan(arr):
     return arr[~np.isnan(arr)]
 
 
+def _pairwise(a):
+    return zip(a, a[1:])
+
+
 def add_reducer_tests(cls, validator):
     class TestReducer:
-        @pytest.fixture
+        @pytest.fixture()
         def constructor_args(self):
             return validator.constructor_args
 
-        @pytest.fixture
+        @pytest.fixture()
         def base_generator(self):
             @du.data.make_generator
             def generator():
@@ -65,7 +69,6 @@ def add_reducer_tests(cls, validator):
             assert isinstance(generate._generator, du.data.map.Identity)
 
         def test_pipeline(self, base_generator, constructor_args):
-
             pipeline = base_generator.pipe(cls(**constructor_args))
             assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
             pipeline = base_generator.pipe(du.data.map.Identity()).pipe(
@@ -86,21 +89,21 @@ def add_reducer_tests(cls, validator):
             assert pipeline._generator._logger is None
 
         @given(validator.strategy(), generator_data())
-        def test_output(self, kwargs, input):
+        def test_output(self, kwargs, input_):
             @du.data.make_generator
             def generator():
-                return input
+                return input_
 
             instance = cls(**kwargs)(generator)
             output = instance()
-            validator.validate_output(instance, input, output)
+            validator.validate_output(instance, input_, output)
 
         @given(validator.strategy(), generator_data())
         @settings(deadline=2e6)
-        def test_logging(self, kwargs, input):
+        def test_logging(self, kwargs, input_):
             @du.data.make_generator
             def generator():
-                return input
+                return input_
 
             logger = du.data.logging.Logger()
             instance = cls(**kwargs)
@@ -108,8 +111,7 @@ def add_reducer_tests(cls, validator):
             pipe.attach_logger(logger)
             output = pipe()
             logger.end_frame()
-            log_data = logger.frames[0]
-            validator.validate_logger(instance, input, output, log_data)
+            validator.validate_logger(instance, input_, output, logger)
 
     TestReducer.__name__ = "Test" + cls.__name__
 
@@ -117,11 +119,15 @@ def add_reducer_tests(cls, validator):
 
 
 class NthGreatestValidator:
-    constructor_args = {"indices": [10, -5, 1]}
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
+        "indices": [10, -5, 1]
+    }
 
     @st.composite
     @staticmethod
-    def strategy(draw, indices=st.lists(st.integers(-100, 100), max_size=15)):
+    def strategy(
+        draw, indices=st.lists(st.integers(-100, 100), min_size=1, max_size=15)
+    ):
         return {"indices": draw(indices)}
 
     @staticmethod
@@ -141,22 +147,26 @@ class NthGreatestValidator:
         return index if 0 <= index < length else length + index
 
     @classmethod
-    def validate_instance(self, instance, kwargs):
-        expected_indices = self.compute_indices(kwargs["indices"])
+    def validate_instance(cls, instance, kwargs):
+        expected_indices = cls.compute_indices(kwargs["indices"])
         assert set(instance._indices) == expected_indices
 
     @classmethod
-    def validate_output(cls, instance, input, output):
+    def validate_output(cls, instance, input_, output):
         def check_rank(in_, out_value, index):
             """Assuming a non-nan output check for correct reduction."""
             nth_highest = cls.to_positive_index(index, in_.size)
-            # Cannot be equal when duplicates in the array exists
             greater_than = np.sum(out_value > in_data)
+            # Cannot be equal when duplicates in the array exists so check for
+            # duplicates
             if greater_than != nth_highest:
                 assert np.sum(out_value == in_data) > 1
 
         def check_index_value(in_, out_value, index):
             """Ensure the output of reducer for an index is as expected."""
+            if not du.data.reduce.NthGreatest._fits(in_, index):
+                assert np.isnan(out_value)
+                return
             # if len(in_) is large enough but too many nans exist we set
             # out[key] to nan. Otherwise we filter out the nan and then talk
             # the nth greatest or least.
@@ -164,44 +174,45 @@ class NthGreatestValidator:
                 filtered_in = in_[~np.isnan(in_)]
                 if not du.data.reduce.NthGreatest._fits(filtered_in, index):
                     assert np.isnan(out_value)
-                else:
-                    check_rank(filtered_in, out_value, index)
-            else:
-                check_rank(in_, out_value, index)
+                    return
+                check_rank(filtered_in, out_value, index)
+                return
+            check_rank(in_, out_value, index)
 
-        for in_feature, in_data in input.items():
+        for in_feature, in_data in input_.items():
+            if len(in_data) == 0:
+                assert in_feature not in output
+                continue
             for name, index in zip(instance._names, instance._indices):
                 key = "_".join((name, in_feature))
-                # Only writes a reduction when it "fits" into the distribution.
-                if du.data.reduce.NthGreatest._fits(in_data, index):
-                    assert key in output
-                    check_index_value(in_data, output[key], index)
-                else:
-                    assert key not in output
+                assert key in output
+                check_index_value(in_data, output[key], index)
 
     @classmethod
-    def validate_logger(cls, instance, input, output, log_data):
-        def check_index(input, output_value, log_value, index):
-            filtered_in = _dropnan(input)
+    def validate_logger(cls, instance, input_, output, logger):
+        def check_index(input_, output_value, log_value, index):
+            filtered_in = _dropnan(input_)
             # Not enough non-nan values exist and logger stores nan.
             if not du.data.reduce.NthGreatest._fits(filtered_in, index):
                 assert np.isnan(log_value)
             else:
                 # Check that the index given to the logger produces the
                 # expected output.
-                assert output_value == input[log_value]
+                assert output_value == input_[log_value]
 
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
+
+        log_data = logger.frames[0]
         for feat, feat_log in log_data.items():
             nth_log = feat_log["NthGreatest"]
             for index in instance._indices:
                 index_name, key = cls._get_index_name_key(feat, index)
-                if instance._fits(input[feat], index):
-                    assert index_name in nth_log
-                    check_index(
-                        input[feat], output[key], nth_log[index_name], index
-                    )
-                else:
-                    assert index_name not in nth_log
+                assert index_name in nth_log
+                check_index(
+                    input_[feat], output[key], nth_log[index_name], index
+                )
 
     @staticmethod
     def _get_index_name_key(feature, index):
@@ -216,16 +227,20 @@ TestNthGreatest = add_reducer_tests(
 
 
 class PercentileValidator:
-    constructor_args = {"percentiles": [100, 50, 1]}
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
+        "percentiles": [100, 50, 1]
+    }
 
     @st.composite
     @staticmethod
-    def strategy(draw, percentiles=st.lists(st.floats(0, 100), max_size=20)):
+    def strategy(
+        draw, percentiles=st.lists(st.floats(0, 100), min_size=1, max_size=20)
+    ):
         return {"percentiles": draw(percentiles | st.none())}
 
     @classmethod
-    def validate_instance(self, instance, kwargs):
-        percentiles = self._get_percentiles(kwargs["percentiles"])
+    def validate_instance(cls, instance, kwargs):
+        percentiles = cls._get_percentiles(kwargs["percentiles"])
         assert all(instance._percentiles == np.unique(percentiles))
 
     @staticmethod
@@ -238,9 +253,9 @@ class PercentileValidator:
         return np.sort(arr)[np.rint(indices).astype(int)]
 
     @classmethod
-    def validate_output(cls, instance, input, output):
+    def validate_output(cls, instance, input_, output):
         percentiles = instance._percentiles
-        for name, arr in input.items():
+        for name, arr in input_.items():
             if len(arr) == 0:
                 assert all(f"{p}%_{name}" not in output for p in percentiles)
                 continue
@@ -255,13 +270,18 @@ class PercentileValidator:
                 assert output[f"{percentile}%_{name}"] == v
 
     @classmethod
-    def validate_logger(cls, instance, input, output, log_data):
+    def validate_logger(cls, instance, input_, output, logger):
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
+
+        log_data = logger.frames[0]
         percentiles = instance._percentiles
-        for name, arr in input.items():
-            feat_log = log_data[name]["Percentile"]
+        for name, arr in input_.items():
             if arr.size == 0:
-                assert feat_log == {}
+                assert "Percentile" not in log_data.get(name, {})
                 continue
+            feat_log = log_data[name]["Percentile"]
             cleaned_arr = _dropnan(arr)
             if cleaned_arr.size == 0:
                 for percentile in percentiles:
@@ -269,7 +289,7 @@ class PercentileValidator:
                     assert key in feat_log
                     assert feat_log[key] == 0
                 continue
-            assert all(a <= b for a, b in itertools.pairwise(percentiles))
+            assert all(a <= b for a, b in _pairwise(percentiles))
             pvalues = cls._get_pvalues(cleaned_arr, percentiles)
             for pv, percentile in zip(pvalues, percentiles):
                 key = f"{percentile}%"
@@ -283,8 +303,12 @@ TestPercentile = add_reducer_tests(
 
 
 class CustomReducerValidator:
-    cls = du.data.reduce.CustomReducer
-    constructor_args = {"custom_function": lambda d: {"first": d[0]}}
+    cls: typing.ClassVar[
+        du.data.base.DataReducer
+    ] = du.data.reduce.CustomReducer
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
+        "custom_function": lambda d: {"first": d[0]}
+    }
 
     @st.composite
     @staticmethod
@@ -310,12 +334,12 @@ class CustomReducerValidator:
         assert instance.function == kwargs["custom_function"]
 
     @staticmethod
-    def validate_output(instance, input, output):
+    def validate_output(instance, input_, output):
         func = instance.function
         if len(output) == 0:
-            assert all(v.size == 0 for v in input.values())
+            assert all(v.size == 0 for v in input_.values())
             return
-        for name, arr in input.items():
+        for name, arr in input_.items():
             key = "_".join((func._func_name, name))
             if arr.size == 0:
                 assert key not in output
@@ -325,7 +349,7 @@ class CustomReducerValidator:
             )
 
     @staticmethod
-    def validate_logger(instance, input, output, log_data):
+    def validate_logger(instance, input_, output, logger):
         pass
 
 
@@ -335,16 +359,16 @@ TestCustomReducer = add_reducer_tests(
 
 
 class TeeValidator:
-    cls = du.data.reduce.Tee
+    cls: typing.ClassVar[du.data.base.DataReducer] = du.data.reduce.Tee
 
-    constructor_args = {
+    constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "reducers": [
             du.data.reduce.NthGreatest([1]),
             du.data.reduce.Percentile([99]),
         ]
     }
 
-    validator_mapping = {
+    validator_mapping: typing.ClassVar[dict[du.data.base.DataReducer, type]] = {
         du.data.reduce.NthGreatest: NthGreatestValidator,
         du.data.reduce.Percentile: PercentileValidator,
         du.data.reduce.CustomReducer: CustomReducerValidator,
@@ -352,7 +376,7 @@ class TeeValidator:
 
     @st.composite
     @staticmethod
-    def strategy(draw, size=st.integers(0, 10)):
+    def strategy(draw, size=st.integers(1, 10)):
         cls_choice = st.sampled_from(
             [
                 (du.data.reduce.NthGreatest, NthGreatestValidator.strategy()),
@@ -364,7 +388,7 @@ class TeeValidator:
             ]
         )
         reducers = []
-        for i in range(draw(size)):
+        for _ in range(draw(size)):
             cls, kwargs_strat = draw(cls_choice)
             reducers.append(cls(**draw(kwargs_strat)))
 
@@ -376,14 +400,17 @@ class TeeValidator:
             assert instance._reducers[i] is pipeline_obj
 
     @classmethod
-    def validate_output(cls, instance, input, output):
+    def validate_output(cls, instance, input_, output):
         for reducer in instance._reducers:
             cls.validator_mapping[type(reducer)].validate_output(
-                reducer, input, output
+                reducer, input_, output
             )
 
     @classmethod
-    def validate_logger(cls, instance, input, output, log_data):
+    def validate_logger(cls, instance, input_, output, logger):
+        if len(input_) == 0:
+            assert logger.frames[0] == {}
+            return
         encountered_types = set()
         for reducer in reversed(instance._reducers):
             # Logger will override the same key so we only look at the last of
@@ -392,7 +419,7 @@ class TeeValidator:
                 continue
             encountered_types.add(type(reducer))
             cls.validator_mapping[type(reducer)].validate_logger(
-                reducer, input, output, log_data
+                reducer, input_, output, logger
             )
 
 

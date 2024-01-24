@@ -1,0 +1,17 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: monthly
+  open-pull-requests-limit: 10
+  reviewers:
+    - glotzerlab/dupin-maintainers
+  groups:
+    minor-patch:
+      update-types:
+      - "minor"
+      - "patch"
+    major:
+      update-types:
+      - "major"

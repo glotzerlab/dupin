@@ -9,7 +9,7 @@ class TestCustomGenerator:
     def n(self, request):
         return request.param
 
-    @pytest.fixture
+    @pytest.fixture()
     def function(self, n):
         if n == 0:
 
@@ -28,7 +28,7 @@ class TestCustomGenerator:
 
         return func
 
-    @pytest.fixture
+    @pytest.fixture()
     def generator(self, function):
         return du.data.base.CustomGenerator(function)
 
@@ -59,7 +59,7 @@ class TestCustomGenerator:
         assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
 
     def test_map(self, generator):
-        pipeline = generator.map(du.data.map_(lambda: None))
+        pipeline = generator.map(du.data.map.map_(lambda: None))
         assert isinstance(pipeline, du.data.map.CustomMap)
         assert isinstance(pipeline._generator, du.data.base.CustomGenerator)
 

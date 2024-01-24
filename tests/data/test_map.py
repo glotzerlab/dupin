@@ -8,55 +8,57 @@ import pytest
 
 import dupin as du
 
+SPH_HARM_NUMBER = [2, 3, 4]
+
 
 class BaseMapTest:
     cls = None
 
-    @pytest.fixture
+    @pytest.fixture()
     def generator(self):
         return du.data.freud.FreudDescriptor(
-            freud.order.Steinhardt(l=[2, 3, 4]),
-            {"particle_order": ["2", "3", "4"]},
+            freud.order.Steinhardt(l=SPH_HARM_NUMBER),
+            {"particle_order": [str(sph_harm) for sph_harm in SPH_HARM_NUMBER]},
         )
 
-    @pytest.fixture
-    def valid_spec(self):
+    @pytest.fixture()
+    def valid_spec(self):  # noqa: PT004
         """Return a valid spec."""
         raise NotImplementedError
 
     def test_decorator(self, valid_spec):
-        @du.data.reduce.NthGreatest.wraps([1])
-        @self.cls.wraps(**valid_spec)
+        @du.data.reduce.NthGreatest([1])
+        @self.cls(**valid_spec())
         def generate():
             pass
 
         assert inspect.isfunction(generate._generator._generator)
 
-        @du.data.reduce.NthGreatest.wraps([1])
-        @self.cls.wraps(**valid_spec)
-        @du.data.map.Identity.wraps()
+        @du.data.reduce.NthGreatest([1])
+        @self.cls(**valid_spec())
+        @du.data.map.Identity()
         def generate():
             pass
 
         assert isinstance(generate._generator._generator, du.data.map.Identity)
 
     def test_pipeline(self, generator, valid_spec):
-        pipeline = generator.pipe(self.cls.wraps(**valid_spec)).pipe(
-            du.data.reduce.NthGreatest.wraps([1])
+        pipeline = generator.pipe(self.cls(**valid_spec())).pipe(
+            du.data.reduce.NthGreatest([1])
         )
         assert isinstance(
             pipeline._generator._generator, du.data.freud.FreudDescriptor
         )
         pipeline = (
-            generator.pipe(du.data.map.Identity.wraps())
-            .pipe(self.cls.wraps(**valid_spec))
-            .pipe(du.data.reduce.NthGreatest.wraps([1]))
+            generator.pipe(du.data.map.Identity())
+            .pipe(self.cls(**valid_spec()))
+            .pipe(du.data.reduce.NthGreatest([1]))
         )
         assert isinstance(pipeline._generator._generator, du.data.map.Identity)
 
     def test_setting_logger(self, generator, valid_spec):
-        pipeline = generator.pipe(du.data.map.Identity.wraps()).pipe(
-            self.cls.wraps(**valid_spec)
+        pipeline = generator.pipe(du.data.map.Identity()).pipe(
+            self.cls(**valid_spec())
         )
         logger = du.data.logging.Logger()
         pipeline.attach_logger(logger)
@@ -68,7 +70,7 @@ class BaseMapTest:
 
     def test_output(self, generator, valid_spec, mock_fcc_system):
         """Test the map outputs the expected values."""
-        instance = generator.pipe(self.cls.wraps(**valid_spec))
+        instance = generator.pipe(self.cls(**valid_spec()))
         box, positions = mock_fcc_system(noise=1e-2)
         nlist = (
             freud.locality.AABBQuery(box, positions)
@@ -90,9 +92,9 @@ class BaseMapTest:
 class TestIdentity(BaseMapTest):
     cls = du.data.map.Identity
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
-        return {}
+        return lambda: {}
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):
@@ -103,9 +105,9 @@ class TestIdentity(BaseMapTest):
 class TestSpatialAveraging(BaseMapTest):
     cls = du.data.spatial.NeighborAveraging
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
-        return {"expected_kwarg": "neighbors", "remove_kwarg": False}
+        return lambda: {"expected_kwarg": "neighbors", "remove_kwarg": False}
 
     @staticmethod
     def compute_average(arr, neighbors):
@@ -122,32 +124,34 @@ class TestSpatialAveraging(BaseMapTest):
         averaged_arr = TestSpatialAveraging.compute_average(
             compute_arr, passed_args["neighbors"]
         )
-        for i, (k, arr) in enumerate(output.items()):
-            print(k, arr.dtype, averaged_arr.dtype, arr - averaged_arr[:, i])
+        for i, arr in enumerate(output.values()):
             assert np.allclose(arr, averaged_arr[:, i])
 
 
 class TestTee(BaseMapTest):
     cls = du.data.map.Tee
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
-        return {
-            "maps": [
-                du.data.map.Identity.wraps(),
-                du.data.spatial.NeighborAveraging.wraps("neighbors", False),
-            ]
-        }
+        def spec():
+            return {
+                "maps": [
+                    du.data.map.Identity(),
+                    du.data.spatial.NeighborAveraging("neighbors", False),
+                ]
+            }
+
+        return spec
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):
         identity_dict = {
             k: v for k, v in output.items() if not k.startswith("spa")
         }
-        assert len(identity_dict) == 3
+        assert len(identity_dict) == len(SPH_HARM_NUMBER)
         TestIdentity.validate_output(identity_dict, compute_arr, passed_args)
         spatial_dict = {k: v for k, v in output.items() if k.startswith("spa")}
-        assert len(spatial_dict) == 3
+        assert len(spatial_dict) == len(SPH_HARM_NUMBER)
         TestSpatialAveraging.validate_output(
             spatial_dict, compute_arr, passed_args
         )
@@ -156,12 +160,15 @@ class TestTee(BaseMapTest):
 class TestCustomMap(BaseMapTest):
     cls = du.data.base.CustomMap
 
-    @pytest.fixture
+    @pytest.fixture()
     def valid_spec(self):
         def double(arr):
             return {"doubled": arr * 2}
 
-        return {"custom_function": double}
+        def spec():
+            return {"custom_function": double}
+
+        return spec
 
     @staticmethod
     def validate_output(output, compute_arr, passed_args):

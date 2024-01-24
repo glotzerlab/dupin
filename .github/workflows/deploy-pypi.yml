@@ -1,0 +1,17 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build-test-publish-to-pypi:
+    uses: ./.github/workflows/publish-packages.yml
+    with:
+      upload_to_test: false
+      branch: "main"

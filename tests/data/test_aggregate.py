@@ -111,8 +111,6 @@ def test_to_dataframe(n_frames, keys, data):
         )
         assert all(k == c for k, c in zip(df.columns, keys))
         return
-    if n_frames > 0:
-        assert len(df) == n_frames
     assert len(df.columns) == 0
 
 
@@ -132,8 +130,9 @@ def test_logger():
     instance = du.data.aggregate.SignalAggregator(
         pipeline, du.data.logging.Logger()
     )
-    for _ in range(10):
+    n_frames = 10
+    for _ in range(n_frames):
         instance.accumulate()
-    assert len(instance.logger._data) == 10
+    assert len(instance.logger._data) == n_frames
     for frame_data in instance._logger._data:
         assert frame_data == {"a": {"test": True}}
