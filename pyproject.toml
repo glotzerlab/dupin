@@ -41,6 +41,9 @@ packages = { find = { namespaces = false, exclude = ["tests*", "notebooks*"] } }
 [tool.ruff]
 include = ["*.py", "*.ipynb"]
 line-length = 80
+
+[tool.ruff.lint]
+ignore = ["N803", "N806", "A003", "PLR0913", "E741"]
 select = [
     "A",   # flake8-builtins
     "B",   # flake8-bugbear
@@ -59,14 +62,13 @@ select = [
     "D",   # pydocstyle
     "I",   # isort
 ]
-ignore = ["N803", "N806", "A003", "PLR0913", "E741"]
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "tests/*" = ["D100", "D101", "D102", "D103", "B008"]
 "docs/*" = ["D100", "D101", "D102", "D103", "E501"]
 "conftest.py" = ["D401"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 [tool.coverage.run]

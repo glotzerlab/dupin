@@ -136,7 +136,7 @@ class MeanShift:
             if zeros_found:
                 mask = std == 0
                 diff_zeros = diff == 0
-                shift[mask & np.logical_not(diff_zeros)] = np.infty
+                shift[mask & np.logical_not(diff_zeros)] = np.inf
                 shift[mask & diff_zeros] = 0
                 warnings.warn(
                     "MeanShift: Zero standard deviation found.",
