@@ -111,7 +111,9 @@ std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
   std::pair<double, std::vector<int>> best = {std::numeric_limits<double>::infinity(), {}};
 
   for (int bkp = start + min_size; bkp < end; bkp++) {
-    if ((bkp - start) >= min_size && (end - bkp) >= min_size) {
+    if ((bkp - start) < min_size || (end - bkp) < min_size) {
+        continue;
+    }
       auto left = seg(start, bkp, num_bkps - 1);
       auto right = seg(bkp, end, 0);
       double cost = left.first + right.first;
