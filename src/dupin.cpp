@@ -42,45 +42,53 @@ void DynamicProgramming::regression_setup(linear_fit_struct &lfit) {
   lfit.y = data;
 }
 
-Eigen::VectorXd DynamicProgramming::regression_line(int start, int end, int dim,
-                                             linear_fit_struct &lfit) {
-  int n = end - start;
-  Eigen::VectorXd x = lfit.x.segment(start, n);
-  Eigen::VectorXd y = lfit.y.col(dim).segment(start, n);
+//work in progress, the rowwise colwise is messing up
+Eigen::MatrixXd DynamicProgramming::regression_lines(int start, int end, linear_fit_struct &lfit) {
+    int n = end - start;
+    Eigen::VectorXd x = lfit.x.segment(start, n);
+    Eigen::MatrixXd y = lfit.y.block(start, 0, n, num_features);
 
-  double x_mean = x.mean();
-  double y_mean = y.mean();
+    // Ensure x is in a two-dimensional form for broadcasting
+    Eigen::MatrixXd x_matrix = x.replicate(1, num_features);
 
-  Eigen::VectorXd x_centered = x.array() - x_mean;
-  Eigen::VectorXd y_centered = y.array() - y_mean;
+    // Calculate means
+    double x_mean = x.mean();
+    Eigen::VectorXd y_mean = y.colwise().mean();
 
-  double slope = x_centered.dot(y_centered) / x_centered.squaredNorm();
-  double intercept = y_mean - slope * x_mean;
+    // Center the data around 0
+    Eigen::MatrixXd x_centered = x_matrix.colwise() - Eigen::VectorXd::Constant(n, x_mean);
+    Eigen::MatrixXd y_centered = y.rowwise() - y_mean.transpose();
 
-  return x.unaryExpr(
-      [slope, intercept](double xi) { return slope * xi + intercept; });
+    // Calculate slopes for each feature
+    Eigen::VectorXd slope = (x_centered.array() * y_centered.array()).colwise().sum() / x_centered.array().square().sum();
+
+    // Calculate intercepts for each feature
+    Eigen::VectorXd intercept = y_mean.array() - slope.array() * x_mean;
+
+    // everything till this line is functioning fine; I might be overcomplicating it
+    Eigen::MatrixXd regression_lines = (x_matrix.array().colwise() - x_mean).colwise() * slope.array() + intercept.transpose().array();
+
+    return regression_lines;
 }
 
-double DynamicProgramming::l2_cost(Eigen::MatrixXd &predicted_y, int start, int end) {
-  Eigen::MatrixXd diff = predicted_y.block(start, 0, end - start, num_features) -
-                  data.block(start, 0, end - start, num_features);
-  return std::sqrt(diff.array().square().sum());
+double DynamicProgramming::l2_cost(const Eigen::MatrixXd &predicted_y, int start, int end) {
+    Eigen::MatrixXd diff = predicted_y.block(start, 0, end - start, num_features) -
+                           data.block(start, 0, end - start, num_features);
+    return std::sqrt(diff.array().square().sum());
 }
 
-Eigen::MatrixXd DynamicProgramming::predicted(int start, int end,
-                                       linear_fit_struct &lfit) {
-  Eigen::MatrixXd predicted_y(num_timesteps, num_features);
-  for (int i = 0; i < num_features; ++i) {
-    predicted_y.block(start, i, end - start, 1) =
-        regression_line(start, end, i, lfit);
-  }
-  return predicted_y;
+void DynamicProgramming::predicted(int start, int end, linear_fit_struct &lfit,
+                                    Eigen::MatrixXd &predicted_y) {
+    predicted_y.block(start, 0, end - start, num_features) = regression_lines(start, end, lfit);
 }
 
 double DynamicProgramming::cost_function(int start, int end) {
   linear_fit_struct lfit;
   regression_setup(lfit);
-  Eigen::MatrixXd predicted_y = predicted(start, end, lfit);
+
+  Eigen::MatrixXd predicted_y(num_timesteps, num_features);
+  predicted(start, end, lfit, predicted_y); // Fill the predicted_y matrix
+
   return l2_cost(predicted_y, start, end);
 }
 
@@ -134,9 +142,6 @@ std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
 std::vector<int> DynamicProgramming::compute_breakpoints(int num_bkps) {
   auto result = seg(0, num_timesteps - 1, num_bkps);
   std::vector<int> breakpoints = result.second;
-  std::sort(breakpoints.begin(), breakpoints.end());
-  breakpoints.erase(std::unique(breakpoints.begin(), breakpoints.end()),
-                    breakpoints.end());
   return breakpoints;
 }
 

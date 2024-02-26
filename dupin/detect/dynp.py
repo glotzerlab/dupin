@@ -61,7 +61,7 @@ class DynP:
         """
         self._dupin.set_threads(num_threads)
 
-    def fit(self, num_bkps: int) -> list:
+    def fit(self, num_breakpoints: int) -> list[int]:
         """Calculate the cost matrix and return the breakpoints.
 
         Parameters
@@ -73,4 +73,4 @@ class DynP:
         -------
             list: A list of integers representing the breakpoints.
         """
-        return self._dupin.fit(num_bkps)
+        return self._dupin.fit(num_breakpoints)

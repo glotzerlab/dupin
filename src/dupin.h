@@ -82,26 +82,25 @@ private:
     Eigen::MatrixXd y; // Dependent variable (labels).
     Eigen::VectorXd x; // z Independent variable (time steps).
   };
- // Scales the dataset using min-max normalization.
+  // Scales the dataset using min-max normalization.
   void scale_data();
 
-  // Prepares data for linear regression.
+  // Prepares data for linear regression, setting up the independent variable 'x'.
   void regression_setup(linear_fit_struct &lfit);
 
-  // Calculates the regression line for a given data segment.
-  Eigen::VectorXd regression_line(int start, int end, int dim,
-                                  linear_fit_struct &lfit);
+  // Computes regression parameters (slope and intercept) for all dimensions simultaneously.
+  Eigen::MatrixXd regression_lines(int start, int end, linear_fit_struct &lfit);
 
-  // Generates predicted values based on the linear regression model.
-  Eigen::MatrixXd predicted(int start, int end, linear_fit_struct &lfit);
+  // Generates predicted values based on the linear regression model for all features.
+  void predicted(int start, int end, linear_fit_struct &lfit, Eigen::MatrixXd &predicted_y);
 
-  // Calculates L2 cost (Euclidean distance) between predicted and actual data.
-  double l2_cost(Eigen::MatrixXd &predicted_y, int start, int end);
+  // Calculates L2 cost (Euclidean distance) between predicted and actual data for a given segment.
+  double l2_cost(const Eigen::MatrixXd &predicted_y, int start, int end);
 
-  // Computes the cost of a specific data segment using linear regression.
+  // Computes the cost of a specific data segment using linear regression and L2 cost.
   double cost_function(int start, int end);
 
-    // Recursive function for dynamic programming segmentation.
+  // Recursive function for dynamic programming segmentation.
   std::pair<double, std::vector<int>> seg(int start, int end, int num_bkps);
 
 // Initializes and fills the cost matrix for all data segments.
