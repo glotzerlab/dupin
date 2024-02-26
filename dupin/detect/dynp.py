@@ -1,5 +1,5 @@
 """Implements dynamic programming class for optimal segementation algorithm."""
-import _DynP
+import _dupin
 import numpy as np
 
 
@@ -18,13 +18,37 @@ class DynP:
     min_size: int
         Minimum size of a segment. Changing will not provide optimal
         detection, but will reduce runtime.
+
+
+    Methods
+    -------
+    __init__(self, data: np.ndarray, num_bkps: int, jump: int, min_size: int)
+        Initializes the DynamicProgramming instance with the time series data
+        and parameters.
+    set_num_threads(self, num_threads: int)
+        Sets the number of threads to be used for parallel computation.
+    fit(self, num_bkps: int) -> list
+        Calculates the cost matrix and identifies the optimal breakpoints in
+        the time series data.
+
+    Example Usage
+    -------------
+    >>> import numpy as np
+    >>> from dynp import DynP
+    >>> data = np.random.rand(100, 1)  # Simulated time series data
+    >>> num_bkps = 3  # Number of breakpoints to detect
+    >>> jump = 1  # Interval for checking potential breakpoints
+    >>> min_size = 3  # Minimum size of a segment
+    >>> model = _dupin(data, num_bkps, jump, min_size)
+    >>> breakpoints = model.fit()
+    >>> print(breakpoints)
     """
 
     def __init__(
         self, data: np.ndarray, num_bkps: int, jump: int, min_size: int
     ):
         """Initialize the DynamicProgramming instance with given parameters."""
-        self.dynp = _DynP.DynamicProgramming(data, num_bkps, jump, min_size)
+        self._dupin = _dupin.DynamicProgramming(data, num_bkps, jump, min_size)
 
     def set_num_threads(self, num_threads: int):
         """Set the number of threads for parallelization.
@@ -35,7 +59,7 @@ class DynP:
             The number of threads to use during computation. Default
             is determined automatically.
         """
-        self.dynp.set_threads(num_threads)
+        self._dupin.set_threads(num_threads)
 
     def fit(self, num_bkps: int) -> list:
         """Calculate the cost matrix and return the breakpoints.
@@ -49,4 +73,4 @@ class DynP:
         -------
             list: A list of integers representing the breakpoints.
         """
-        return self.dynp.fit()
+        return self._dupin.fit()

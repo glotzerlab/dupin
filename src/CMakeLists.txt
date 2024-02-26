@@ -1,4 +1,4 @@
-list(APPEND dupin_cxx "dupininterface.cpp" "dupin.h" "dupin.cpp")
+list(APPEND dupin_cxx "module.cpp" "dupin.h" "dupin.cpp")
 
 pybind11_add_module(_dupin ${dupin_cxx})
 
