@@ -13,14 +13,14 @@ using namespace std;
 using namespace Eigen;
 
 DynamicProgramming::DynamicProgramming()
-    : num_bkps(1), num_parameters(0), num_timesteps(0), jump(1), min_size(3) {}
+    : num_features(0), num_timesteps(0), jump(1), min_size(3), cost_matrix(0) {}
 
-DynamicProgramming::DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_,
-                                        int jump_, int min_size_)
-                                        : data(data), num_bkps(num_bkps_),
-                                        jump(jump_), min_size(min_size_) {
+
+DynamicProgramming::DynamicProgramming(const Eigen::MatrixXd &data,
+                                       int jump_, int min_size_)
+    : data(data), jump(jump_), min_size(min_size_), cost_matrix(data.rows()) {
   num_timesteps = data.rows();
-  num_parameters = data.cols();
+  num_features = data.cols();
 }
 
 void DynamicProgramming::scale_data() {
@@ -28,7 +28,7 @@ void DynamicProgramming::scale_data() {
   Eigen::VectorXd max_val = data.colwise().maxCoeff();
   Eigen::VectorXd range = max_val - min_val;
 
-  for (int j = 0; j < num_parameters; ++j) {
+  for (int j = 0; j <num_features; ++j) {
     if (range(j) == 0.0) {
       data.col(j).setZero();
     } else {
@@ -62,15 +62,15 @@ Eigen::VectorXd DynamicProgramming::regression_line(int start, int end, int dim,
 }
 
 double DynamicProgramming::l2_cost(Eigen::MatrixXd &predicted_y, int start, int end) {
-  Eigen::MatrixXd diff = predicted_y.block(start, 0, end - start, num_parameters) -
-                  data.block(start, 0, end - start, num_parameters);
+  Eigen::MatrixXd diff = predicted_y.block(start, 0, end - start, num_features) -
+                  data.block(start, 0, end - start, num_features);
   return std::sqrt(diff.array().square().sum());
 }
 
 Eigen::MatrixXd DynamicProgramming::predicted(int start, int end,
                                        linear_fit_struct &lfit) {
-  Eigen::MatrixXd predicted_y(num_timesteps, num_parameters);
-  for (int i = 0; i < num_parameters; ++i) {
+  Eigen::MatrixXd predicted_y(num_timesteps, num_features);
+  for (int i = 0; i < num_features; ++i) {
     predicted_y.block(start, i, end - start, 1) =
         regression_line(start, end, i, lfit);
   }
@@ -86,7 +86,6 @@ double DynamicProgramming::cost_function(int start, int end) {
 
 void DynamicProgramming::initialize_cost_matrix() {
   scale_data();
-  cost_matrix.initialize(num_timesteps);
   tbb::parallel_for(tbb::blocked_range<int>(0, num_timesteps),
                     [&](const tbb::blocked_range<int> &r) {
                       for (int i = r.begin(); i < r.end(); ++i) {
@@ -130,7 +129,7 @@ std::pair<double, std::vector<int>> DynamicProgramming::seg(int start, int end,
   return best;
 }
 
-std::vector<int> DynamicProgramming::compute_breakpoints() {
+std::vector<int> DynamicProgramming::compute_breakpoints(int num_bkps) {
   auto result = seg(0, num_timesteps - 1, num_bkps);
   std::vector<int> breakpoints = result.second;
   std::sort(breakpoints.begin(), breakpoints.end());
@@ -139,12 +138,11 @@ std::vector<int> DynamicProgramming::compute_breakpoints() {
   return breakpoints;
 }
 
-std::vector<int> DynamicProgramming::fit(int num_bkps_in){
-  num_bkps = num_bkps_in;
+std::vector<int> DynamicProgramming::fit(int num_bkps){
   if (!cost_computed){
   initialize_cost_matrix();
   }
-  return compute_breakpoints();
+  return compute_breakpoints(num_bkps);
 }
 
 void set_parallelization(int num_threads) {

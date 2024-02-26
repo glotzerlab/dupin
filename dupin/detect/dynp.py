@@ -39,8 +39,8 @@ class DynP:
     >>> num_bkps = 3  # Number of breakpoints to detect
     >>> jump = 1  # Interval for checking potential breakpoints
     >>> min_size = 3  # Minimum size of a segment
-    >>> model = _dupin(data, num_bkps, jump, min_size)
-    >>> breakpoints = model.fit()
+    >>> model = Dynp(data, num_bkps, jump, min_size)
+    >>> breakpoints = model.fit(num_bkps)
     >>> print(breakpoints)
     """
 
@@ -73,4 +73,4 @@ class DynP:
         -------
             list: A list of integers representing the breakpoints.
         """
-        return self._dupin.fit()
+        return self._dupin.fit(num_bkps)

@@ -19,25 +19,25 @@ private:
     std::vector<int> row_indices;
     int length;
 
-    int index(int row, int col) const {
-        return row_indices[row] + col - row;
-    }
-
-  public:
-    UpperTriangularMatrix() : length(0) {}
-
-    void initialize(int n) {
-        length = n;
-        matrix.resize(n * (n + 1) / 2, 0.0);
-        row_indices.resize(n);
-        for (int row = 0; row < n; ++row) {
+    // Helper function to compute the row_indices vector
+    void compute_row_indices() {
+        row_indices.resize(length);
+        for (int row = 0; row < length; ++row) {
             row_indices[row] = row * (2 * length - row + 1) / 2;
         }
     }
 
-    double &operator()(int row, int col) {
-        return matrix[index(row, col)];
+  public:
+    // Constructor that initializes the matrix and row_indices
+    UpperTriangularMatrix(int n) : length(n), matrix(n * (n + 1) / 2, 0.0) {
+        compute_row_indices();
     }
+
+    double &operator()(int row, int col) {
+        int idx = row_indices[row] + col - row; // Use precomputed index
+        return matrix[idx];
+    }
+
     int getSize() const { return length; }
 };
   // Struct for memoization key, combining start, end, and number of
@@ -69,8 +69,7 @@ private:
   std::unordered_map<MemoKey, std::pair<double, std::vector<int>>, MemoKeyHash>
       memo;
 
-  int num_bkps;          // Number of breakpoints to detect.
-  int num_parameters;    // Number of features in the dataset.
+  int num_features;    // Number of features in the dataset.
   int num_timesteps;     // Number of data points (time steps).
   int jump;              // Interval for checking potential breakpoints.
   int min_size;          // Minimum size of a segment.
@@ -109,14 +108,14 @@ private:
   void initialize_cost_matrix();
 
   // Returns the optimal set of breakpoints after segmentation.
-  std::vector<int> compute_breakpoints();
+  std::vector<int> compute_breakpoints(int num_bkps);
 
 public:
   // Default constructor.
   DynamicProgramming();
 
   // Parameterized constructor.
-  DynamicProgramming(const Eigen::MatrixXd &data, int num_bkps_, int jump_,
+  DynamicProgramming(const Eigen::MatrixXd &data, int jump_,
                      int min_size_);
 
   //Sets number of threads for parallelization
