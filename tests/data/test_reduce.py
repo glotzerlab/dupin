@@ -4,7 +4,7 @@ import warnings
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays, floating_dtypes
 
@@ -88,6 +88,7 @@ def add_reducer_tests(cls, validator):
             assert pipeline._logger is None
             assert pipeline._generator._logger is None
 
+        @settings(suppress_health_check=[HealthCheck.too_slow])
         @given(validator.strategy(), generator_data())
         def test_output(self, kwargs, input_):
             @du.data.make_generator
