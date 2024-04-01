@@ -304,9 +304,9 @@ TestPercentile = add_reducer_tests(
 
 
 class CustomReducerValidator:
-    cls: typing.ClassVar[
-        du.data.base.DataReducer
-    ] = du.data.reduce.CustomReducer
+    cls: typing.ClassVar[du.data.base.DataReducer] = (
+        du.data.reduce.CustomReducer
+    )
     constructor_args: typing.ClassVar[dict[str, typing.Any]] = {
         "custom_function": lambda d: {"first": d[0]}
     }

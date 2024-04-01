@@ -172,7 +172,7 @@ class Window:
 
     @test_size.setter
     def test_size(self, value):
-        if value <= 0.0 or value >= 1.0:  # noqa: PLR2004
+        if value <= 0.0 or value >= 1.0:
             msg = "test_size must be between 0 and 1."
             raise ValueError(msg)
         self._test_size = value

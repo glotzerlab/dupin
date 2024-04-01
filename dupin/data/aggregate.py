@@ -4,7 +4,6 @@ This class provides the `SignalAggregator` class which takes a pipeline and
 provides methods for storing the output across a trajectory.
 """
 
-
 from collections.abc import Iterator
 from typing import Any, Optional
 
