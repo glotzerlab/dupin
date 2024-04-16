@@ -34,10 +34,11 @@ jobs:
         -r requirements/requirements-test.txt \
         -r requirements/requirements-jit.txt \
         -r requirements/requirements-data.txt
-
     - name: Install pypa/build
       run:
         python -m pip install build
+    - name: Install System Packages
+      uses: ./.github/actions/install-nopython-dependencies
     - name: Build a binary wheel and a source tarball
       run:
         python -m build --outdir dist/ .
