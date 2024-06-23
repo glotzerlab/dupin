@@ -20,15 +20,12 @@ classifiers = [
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
     ]
-dependencies = [
-    "bottleneck",  # perform moving window array computations
-    "freud-analysis",  # generate features
-    "kneed",  # knee/elbow detection
-    "numpy",  # basic numerical Python
-    "pandas", # Handling DataFrames in functions and signal aggregation.
-    "ruptures",  # event detection
-    "scikit-learn",  # For ML window dimensionality reduction
-]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements/requirements.txt"] }
+optional-dependencies = { testing = { file = [
+    "requirements/requirements-testing.txt",
+] } }
 
 [project.urls]
 Source = "https://github.com/glotzerlab/dupin"
