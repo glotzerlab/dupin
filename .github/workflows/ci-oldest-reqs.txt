@@ -1,6 +1,5 @@
 bottleneck == 1.3.4
 freud-analysis == 2.7.0
-coverage[toml] == 6.2
 kneed == 0.8.2
 numpy == 1.21.0
 ruptures == 1.1.5

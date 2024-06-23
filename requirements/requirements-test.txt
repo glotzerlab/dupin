@@ -1,6 +1,5 @@
 hypothesis == 6.103.2
 pytest == 8.2.2
-pytest-cov[toml] == 5.0.0
 bottleneck == 1.4
 freud-analysis == 3.1
 kneed == 0.8.5

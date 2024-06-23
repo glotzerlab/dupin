@@ -60,7 +60,4 @@ jobs:
         pip install -e .
     - name: Test with pytest
       run: |
-        pytest --cov=dupin --cov-config=pyproject.toml --cov-report=xml tests -v
-    - uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+        python -m pytest -v
