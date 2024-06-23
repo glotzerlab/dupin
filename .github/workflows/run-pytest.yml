@@ -52,7 +52,7 @@ jobs:
         pip install setuptools --upgrade
     - name: Install newest dependencies
       run: |
-        pip install -r requirements/requirements-test.txt
+        pip install -r .github/workflows/requirements-test.txt
       if: ${{ matrix.dependencies == 'newest' }}
     - name: Install oldest dependencies
       run: |
