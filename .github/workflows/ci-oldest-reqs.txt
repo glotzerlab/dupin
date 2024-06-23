@@ -1,11 +1,11 @@
 bottleneck == 1.3.4
 freud-analysis == 2.7.0
 kneed == 0.8.2
-numpy == 1.21.0
+numpy == 1.22.0
 ruptures == 1.1.5
 scikit-learn == 0.24.0
 pandas == 1.1.3
 hypothesis == 6.30.0
 pytest == 6.2.1
-numba == 0.55.0
+numba == 0.55.2
 xarray == 0.20.0
