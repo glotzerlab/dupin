@@ -27,9 +27,9 @@ jobs:
           # Defaults to newest dependencies
           - dependencies: 'newest'
           # Other tests
-          #- os: 'ubuntu-latest'
-          #  python: '3.9'
-          #  dependencies: 'oldest'
+          - os: 'ubuntu-latest'
+            python: '3.9'
+            dependencies: 'oldest'
           #- os: 'macos-latest'
           #  python: '3.9'
           #  dependencies: 'oldest'
