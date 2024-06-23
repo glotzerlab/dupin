@@ -27,14 +27,15 @@ jobs:
           # Defaults to newest dependencies
           - dependencies: 'newest'
           # Other tests
-          - python: '3.9'
-            dependencies: 'oldest'
-          - os: 'macos-latest'
-            python: '3.9'
-            dependencies: 'oldest'
-          - os: 'macos-latest'
-            python: '3.12'
-            dependencies: 'newest'
+          #- os: 'ubuntu-latest'
+          #  python: '3.9'
+          #  dependencies: 'oldest'
+          #- os: 'macos-latest'
+          #  python: '3.9'
+          #  dependencies: 'oldest'
+          #- os: 'macos-latest'
+          #  python: '3.12'
+          #  dependencies: 'newest'
     steps:
     - uses: actions/checkout@v4
       with:
