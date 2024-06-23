@@ -33,9 +33,9 @@ jobs:
           #- os: 'macos-latest'
           #  python: '3.9'
           #  dependencies: 'oldest'
-          #- os: 'macos-latest'
-          #  python: '3.12'
-          #  dependencies: 'newest'
+          - os: 'macos-latest'
+            python: '3.12'
+            dependencies: 'newest'
     steps:
     - uses: actions/checkout@v4
       with:
