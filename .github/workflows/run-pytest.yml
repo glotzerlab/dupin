@@ -49,17 +49,11 @@ jobs:
     - name: Install newest dependencies
       run: |
         pip install -r requirements/requirements-test.txt
-        pip install -r requirements/requirements-data.txt
       if: ${{ matrix.dependencies == 'newest' }}
     - name: Install oldest dependencies
       run: |
         pip install -r .github/workflows/ci-oldest-reqs.txt
-        pip install -r requirements/requirements-data.txt
       if: ${{ matrix.dependencies == 'oldest' }}
-    - name: Install numba (if available)
-      run: |
-        pip install -r requirements/requirements-jit.txt
-      if: ${{ matrix.python != '3.12' }}
     - name: Install the package
       run: |
         pip install -e .
