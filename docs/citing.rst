@@ -9,11 +9,14 @@ Please acknowledge the use of this software within the body of your publication 
 The following is a BibTex citation for the current pre-print.
 Before submitting please check to see if this has been updated with the submitted journal paper::
 
-    @misc{butler2023change,
-      title={Change Point Detection of Events in Molecular Simulations using dupin},
-      author={Brandon L. Butler and Domagoj Fijan and Sharon C. Glotzer},
-      year={2023},
-      eprint={2312.15090},
-      archivePrefix={arXiv},
-      primaryClass={physics.comp-ph}
+    @article{butler2023change,
+      title = {Change point detection of events in molecular simulations using dupin},
+      journal = {Computer Physics Communications},
+      volume = {304},
+      pages = {109297},
+      year = {2024},
+      issn = {0010-4655},
+      doi = {https://doi.org/10.1016/j.cpc.2024.109297},
+      url = {https://www.sciencedirect.com/science/article/pii/S0010465524002200},
+      author = {Brandon L. Butler and Domagoj Fijan and Sharon C. Glotzer},
     }
