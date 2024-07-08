@@ -6,8 +6,7 @@ Please acknowledge the use of this software within the body of your publication 
 
 *Event detection for this publication used the dupin library[1].*
 
-The following is a BibTex citation for the current pre-print.
-Before submitting please check to see if this has been updated with the submitted journal paper::
+The following is a BibTex citation for the dupin paper::
 
     @article{butler2023change,
       title = {Change point detection of events in molecular simulations using dupin},
