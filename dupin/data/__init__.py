@@ -62,6 +62,8 @@ Example::
 
 from . import aggregate, base, freud, logging, map, reduce, spatial
 from .base import make_generator
+from .map import map_
+from .reduce import reduce_
 
 __all__ = (
     "aggregate",
@@ -72,4 +74,6 @@ __all__ = (
     "reduce",
     "spatial",
     "make_generator",
+    "map_",
+    "reduce_",
 )
