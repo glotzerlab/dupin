@@ -72,6 +72,28 @@ def test_compute_no_args(n_frames, keys, data):
 
 
 @given(n_frames(), keys(), data())
+def test_compute_no_args_deque(n_frames, keys, data):
+    """Test compute works with correct iterator."""
+    schema = fixed_dictionaries({k: floats() for k in keys})
+
+    def generator():
+        return data.draw(schema)
+
+    deque_length = 5
+
+    instance = du.data.aggregate.SignalAggregator(
+        generator, max_deque_length=deque_length
+    )
+    for ii, _ in enumerate(range(n_frames)):
+        instance.accumulate()
+        if ii >= deque_length:
+            assert len(instance.signals) == deque_length
+        else:
+            assert len(instance.signals) == ii + 1
+    assert all(k in dict_ for k in keys for dict_ in instance.signals)
+
+
+@given(n_frames(), keys(), data())
 def test_compute_with_args(n_frames, keys, data):
     """Test compute works with correct iterator."""
 
