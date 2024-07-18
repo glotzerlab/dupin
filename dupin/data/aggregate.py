@@ -60,6 +60,7 @@ class SignalAggregator:
         max_deque_length=None,
     ):
         self.generator = generator
+        self._max_deque_length = max_deque_length
         if max_deque_length is not None:
             self.signals = deque(maxlen=max_deque_length)
         else:
@@ -214,6 +215,11 @@ class SignalAggregator:
     def logger(self):
         """dupin.data.logging.Logger: Logger for the aggregator."""
         return self._logger
+
+    @property
+    def max_deque_length(self):
+        """int: The maximum length of the deque."""
+        return self._max_deque_length
 
     @logger.setter
     def logger(self, new_logger):
