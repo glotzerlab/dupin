@@ -60,7 +60,10 @@ class SignalAggregator:
         max_deque_length=None,
     ):
         self.generator = generator
-        self.signals = deque(max_deque_length)
+        if max_deque_length is not None:
+            self.signals = deque(maxlen=max_deque_length)
+        else:
+            self.signals = []
         self.logger = logger
 
     def compute(
