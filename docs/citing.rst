@@ -4,7 +4,7 @@ How to cite **dupin**
 
 Dupin paper was published in Computer Physics Communications and can be found `here
 <https://www.sciencedirect.com/science/article/pii/S0010465524002200>`_. Arxiv pre-print
-paper can be found `here <https://arxiv.org/abs/2312.15090>`_.
+paper can be found `on this link <https://arxiv.org/abs/2312.15090>`_.
 
 Please acknowledge the use of this software within the body of your publication for example by copying or adapting the following formulation:
 
