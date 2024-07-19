@@ -29,7 +29,7 @@ class SignalAggregator:
     This class can be used to create appropriate data structures for use in
     analyzing a whole trajectory with offline methods or iteratively
     analyzing for online use. See the `compute` and `accumulate` methods for
-    usage. The signal is stored in a deque, which allows for signal to be of
+    usage. The signal is stored in a deque, which maintains a signal of
     constant length by forgetting earlier values. This is useful for online
     detection. Full signal length can be achieved by setting `max_deque_length`
     to `None`.
