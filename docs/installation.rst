@@ -4,6 +4,38 @@
 Installation
 ============
 
+**dupin** is available on `PyPI`_ and `conda-forge`_. Alternatively, users can also
+install **dupin** from source.
+
+Install via conda
+-----------------
+
+**dupin** is available on conda-forge_. Install with:
+
+.. code:: bash
+
+   mamba install dupin
+
+Install via pip
+-----------------
+
+**dupin** is also available from PyPI_. To install **dupin** into a *non-conda* virtual
+environment (if uv_ is installed), execute:
+
+.. code:: bash
+
+   uv pip install dupin
+
+or
+
+.. code:: bash
+
+   python3 -m pip install dupin
+
+.. _conda-forge: https://conda-forge.org/
+.. _PyPI: https://pypi.org/
+.. _uv: https://github.com/astral-sh/uv
+
 
 From source
 ------------
