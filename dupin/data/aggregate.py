@@ -1,9 +1,10 @@
-"""Helper module for generating/storing features accross an entire trajectory.
+"""Helper module for generating/storing features across an entire trajectory.
 
 This class provides the `SignalAggregator` class which takes a pipeline and
 provides methods for storing the output across a trajectory.
 """
 
+from collections import deque
 from collections.abc import Iterator
 from typing import Any, Optional
 
@@ -28,7 +29,10 @@ class SignalAggregator:
     This class can be used to create appropriate data structures for use in
     analyzing a whole trajectory with offline methods or iteratively
     analyzing for online use. See the `compute` and `accumulate` methods for
-    usage.
+    usage. The signal is stored in a deque, which maintains a signal of
+    constant length by forgetting earlier values. This is useful for online
+    detection. Full signal length can be achieved by setting `max_deque_length`
+    to `None`.
 
     Parameters
     ----------
@@ -37,7 +41,9 @@ class SignalAggregator:
         multivariate signal of a trajectory.
     logger : dupin.data.logging.Logger
         A logger object to store information about the data processing of
-        the given pipeline. Defaults to ``None``.
+    max_deque_length : int, optional
+        The maximum length of the deque. If None, the deque will be of infinite
+        size (like a list) and whole signal will be stored.
 
     Attributes
     ----------
@@ -51,9 +57,14 @@ class SignalAggregator:
         self,
         generator: base.GeneratorLike,
         logger: Optional[logging.Logger] = None,
+        max_deque_length=None,
     ):
         self.generator = generator
-        self.signals = []
+        self._max_deque_length = max_deque_length
+        if max_deque_length is not None:
+            self.signals = deque(maxlen=max_deque_length)
+        else:
+            self.signals = []
         self.logger = logger
 
     def compute(
@@ -204,6 +215,11 @@ class SignalAggregator:
     def logger(self):
         """dupin.data.logging.Logger: Logger for the aggregator."""
         return self._logger
+
+    @property
+    def max_deque_length(self):
+        """int: The maximum length of the deque."""
+        return self._max_deque_length
 
     @logger.setter
     def logger(self, new_logger):
