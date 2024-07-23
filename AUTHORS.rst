@@ -11,3 +11,4 @@ Contributors
 ------------
 
 * Domagoj Fijan (GitHub: DomFijan)
+* Jenna Bradley (GitHub: janbridley)
