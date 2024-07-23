@@ -32,14 +32,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python }}
       uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ matrix.python }}
     - name: Set up Python environment
       uses: glotzerlab/workflows/setup-uv@3573ddaebf3290e00bfb150b82a46412192a61d3
       with:
-        lockfile: ".github/requirements${{matrix.python-version}}.txt"
+        lockfile: ".github/requirements${{ matrix.python }}.txt"
     - name: Install package
       run: |
         python --version
