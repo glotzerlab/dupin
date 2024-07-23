@@ -1,2 +1,4 @@
-pytest>6.2.1
-hypothesis>6.30.0
+pytest
+pytest-xdist
+hypothesis
+coverage
