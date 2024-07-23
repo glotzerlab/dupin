@@ -47,4 +47,4 @@ jobs:
         uv pip install . --no-build-isolation --no-deps --system -v
     - name: Test with pytest
       run: |
-        python -m pytest -v -n auto
+        python -m pytest -v
