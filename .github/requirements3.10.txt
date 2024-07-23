@@ -10,8 +10,6 @@ exceptiongroup==1.2.2
     # via
     #   hypothesis
     #   pytest
-execnet==2.1.1
-    # via pytest-xdist
 freud-analysis==3.1.0
     # via -r requirements/requirements.txt
 hypothesis==6.108.4
@@ -22,28 +20,34 @@ joblib==1.4.2
     # via scikit-learn
 kneed==0.8.5
     # via -r requirements/requirements.txt
+llvmlite==0.43.0
+    # via numba
+numba==0.60.0
+    # via -r requirements/requirements.txt
 numpy==2.0.1
     # via
     #   -r requirements/requirements.txt
     #   bottleneck
     #   freud-analysis
     #   kneed
+    #   numba
     #   pandas
     #   rowan
     #   ruptures
     #   scikit-learn
     #   scipy
+    #   xarray
 packaging==24.1
-    # via pytest
+    # via
+    #   pytest
+    #   xarray
 pandas==2.2.2
-    # via -r requirements/requirements.txt
+    # via
+    #   -r requirements/requirements.txt
+    #   xarray
 pluggy==1.5.0
     # via pytest
 pytest==8.3.1
-    # via
-    #   -r requirements/requirements-testing.txt
-    #   pytest-xdist
-pytest-xdist==3.6.1
     # via -r requirements/requirements-testing.txt
 python-dateutil==2.9.0.post0
     # via pandas
@@ -73,3 +77,5 @@ tomli==2.0.1
     # via pytest
 tzdata==2024.1
     # via pandas
+xarray==2024.6.0
+    # via -r requirements/requirements.txt
