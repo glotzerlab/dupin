@@ -35,11 +35,11 @@ def _pairwise(a):
 
 def add_reducer_tests(cls, validator):
     class TestReducer:
-        @pytest.fixture()
+        @pytest.fixture
         def constructor_args(self):
             return validator.constructor_args
 
-        @pytest.fixture()
+        @pytest.fixture
         def base_generator(self):
             @du.data.make_generator
             def generator():

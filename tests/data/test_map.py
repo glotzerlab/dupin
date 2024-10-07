@@ -14,14 +14,14 @@ SPH_HARM_NUMBER = [2, 3, 4]
 class BaseMapTest:
     cls = None
 
-    @pytest.fixture()
+    @pytest.fixture
     def generator(self):
         return du.data.freud.FreudDescriptor(
             freud.order.Steinhardt(l=SPH_HARM_NUMBER),
             {"particle_order": [str(sph_harm) for sph_harm in SPH_HARM_NUMBER]},
         )
 
-    @pytest.fixture()
+    @pytest.fixture
     def valid_spec(self):  # noqa: PT004
         """Return a valid spec."""
         raise NotImplementedError
@@ -92,7 +92,7 @@ class BaseMapTest:
 class TestIdentity(BaseMapTest):
     cls = du.data.map.Identity
 
-    @pytest.fixture()
+    @pytest.fixture
     def valid_spec(self):
         return lambda: {}
 
@@ -105,7 +105,7 @@ class TestIdentity(BaseMapTest):
 class TestSpatialAveraging(BaseMapTest):
     cls = du.data.spatial.NeighborAveraging
 
-    @pytest.fixture()
+    @pytest.fixture
     def valid_spec(self):
         return lambda: {"expected_kwarg": "neighbors", "remove_kwarg": False}
 
@@ -131,7 +131,7 @@ class TestSpatialAveraging(BaseMapTest):
 class TestTee(BaseMapTest):
     cls = du.data.map.Tee
 
-    @pytest.fixture()
+    @pytest.fixture
     def valid_spec(self):
         def spec():
             return {
@@ -160,7 +160,7 @@ class TestTee(BaseMapTest):
 class TestCustomMap(BaseMapTest):
     cls = du.data.base.CustomMap
 
-    @pytest.fixture()
+    @pytest.fixture
     def valid_spec(self):
         def double(arr):
             return {"doubled": arr * 2}

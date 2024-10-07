@@ -14,7 +14,7 @@ class TestMeanShift:
     def get_shift_range(self, min_, max_):
         return (min_ * self.min_mean_shift, max_ * self.min_mean_shift)
 
-    @pytest.fixture()
+    @pytest.fixture
     def mean_shift(self):
         return du.preprocessing.filter.MeanShift(self.sensitivity)
 
@@ -155,7 +155,7 @@ class TestCorrelated:
         for i, j in map_.items():
             assert not np.any((a == i) != (b == j))
 
-    @pytest.fixture()
+    @pytest.fixture
     def correlated(self):
         return du.preprocessing.filter.Correlated(max_clusters=5)
 
