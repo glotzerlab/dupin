@@ -9,7 +9,7 @@ class TestCustomGenerator:
     def n(self, request):
         return request.param
 
-    @pytest.fixture()
+    @pytest.fixture
     def function(self, n):
         if n == 0:
 
@@ -28,7 +28,7 @@ class TestCustomGenerator:
 
         return func
 
-    @pytest.fixture()
+    @pytest.fixture
     def generator(self, function):
         return du.data.base.CustomGenerator(function)
 
