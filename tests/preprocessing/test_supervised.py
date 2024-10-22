@@ -82,7 +82,7 @@ def signal_with_mean_shift(seeds):
     return rpt.pw_constant(100, 2, 1, 0.5, delta=(3, 5), seed=seeds())
 
 
-@pytest.fixture()
+@pytest.fixture
 def window():
     classifier = sk.tree.DecisionTreeClassifier(max_depth=1)
     return du.preprocessing.supervised.Window(
@@ -97,7 +97,7 @@ def test_compute(window, signal_with_mean_shift):
     assert abs(error.argmin() - change_point[0]) <= max_allowed_error
 
 
-@pytest.fixture()
+@pytest.fixture
 def random_signal(rng):
     return rng.uniform(-500_000, 500_000, size=20).reshape((-1, 1))
 
