@@ -70,10 +70,10 @@ __all__ = (
     "base",
     "freud",
     "logging",
-    "map",
-    "reduce",
-    "spatial",
     "make_generator",
+    "map",
     "map_",
+    "reduce",
     "reduce_",
+    "spatial",
 )
