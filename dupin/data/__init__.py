@@ -60,7 +60,7 @@ Example::
 
 """
 
-from . import aggregate, base, freud, logging, map, reduce, spatial
+from . import aggregate, base, freud, logging, map, reduce, spatial  # noqa A004
 from .base import make_generator
 from .map import map_
 from .reduce import reduce_
