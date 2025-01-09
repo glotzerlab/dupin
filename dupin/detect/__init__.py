@@ -18,8 +18,8 @@ from .detect import (
 )
 
 __all__ = (
-    "CostLinearFit",
     "CostLinearBiasedFit",
+    "CostLinearFit",
     "SweepDetector",
     "kneedle_elbow_detection",
     "two_pass_elbow_detection",
