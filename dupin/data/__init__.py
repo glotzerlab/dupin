@@ -60,7 +60,7 @@ Example::
 
 """
 
-from . import aggregate, base, freud, logging, map, reduce, spatial
+from . import aggregate, base, freud, logging, map, reduce, spatial  # noqa A004
 from .base import make_generator
 from .map import map_
 from .reduce import reduce_
@@ -70,10 +70,10 @@ __all__ = (
     "base",
     "freud",
     "logging",
-    "map",
-    "reduce",
-    "spatial",
     "make_generator",
+    "map",
     "map_",
+    "reduce",
     "reduce_",
+    "spatial",
 )

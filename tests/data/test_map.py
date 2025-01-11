@@ -22,7 +22,7 @@ class BaseMapTest:
         )
 
     @pytest.fixture
-    def valid_spec(self):  # noqa: PT004
+    def valid_spec(self):
         """Return a valid spec."""
         raise NotImplementedError
 
