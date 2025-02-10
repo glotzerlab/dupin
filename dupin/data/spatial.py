@@ -6,24 +6,11 @@ import numpy.typing as npt
 from . import base
 
 
-def _njit(*args, **kwargs):
-    """Allow for JIT when numba is found."""
-    try:
-        import numba
-    except ImportError:
-        return lambda x: x
-    return numba.njit(*args, **kwargs)
-
-
-@_njit()
 def _freud_neighbor_summing(
-    arr: np.ndarray,
-    particle_index: np.ndarray,
-    neighbor_index: np.ndarray,
-    base: np.ndarray,
+    arr, particle_index, neighbor_index, base
 ) -> np.ndarray:
-    for i, j in zip(particle_index, neighbor_index):
-        base[i] += arr[j]
+    np.add.at(base, particle_index, arr[neighbor_index])
+    return base
 
 
 class NeighborAveraging(base.DataMap):
