@@ -1,7 +1,7 @@
 hypothesis == 6.103.2
 pytest == 8.2.2
 bottleneck == 1.4
-freud-analysis == 3.1
+freud-analysis == 3.2
 kneed == 0.8.5
 numpy == 2.0
 ruptures == 1.1.9
