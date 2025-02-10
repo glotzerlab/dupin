@@ -1,7 +1,6 @@
 bottleneck
 freud-analysis
 kneed
-numba
 numpy
 ruptures
 scikit-learn
