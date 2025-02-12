@@ -1,1 +1,1 @@
-setuptools
+setuptools>=64.0.0
