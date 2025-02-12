@@ -4,11 +4,11 @@ attrs==25.1.0
     # via hypothesis
 bottleneck==1.4.2
     # via -r ../../requirements/requirements.txt
-coverage==7.6.11
+coverage==7.6.12
     # via -r ../../requirements/requirements-testing.txt
 freud-analysis==3.2.0
     # via -r ../../requirements/requirements.txt
-hypothesis==6.125.2
+hypothesis==6.125.3
     # via -r ../../requirements/requirements-testing.txt
 iniconfig==2.0.0
     # via pytest
