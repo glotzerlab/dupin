@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.1.0
--------------
+Version 0.1.0 -- 2025-02-13
+---------------------------
 
 * Added the possibility for the aggregator to have a constant signal length
 * Removed the Numba dependency and replaced the relevant code with NumPy.
