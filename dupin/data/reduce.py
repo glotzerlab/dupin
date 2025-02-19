@@ -1,3 +1,6 @@
+# Copyright (c) 2023-2025 The Regents of the University of Michigan.
+# This file is from the dupin project, released under the BSD 3-Clause License.
+
 """Classes for transforming array quantities into scalar features.
 
 Reduction in ``dupin`` takes an array and _reduces_ it to a set number of scalar
