@@ -1,3 +1,6 @@
+# Copyright (c) 2023-2025 The Regents of the University of Michigan.
+# This file is from the dupin project, released under the BSD 3-Clause License.
+
 """General functions for analyzing change points once detected.
 
 This module is designed to primarly work with logger data and the original
