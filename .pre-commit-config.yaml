@@ -44,7 +44,7 @@ repos:
           types_or: [python]
           args:
             - --license-file=LICENSE
-            - --start=2
+            - --start=0
             - --num=1
             - --add=This file is from the dupin project, released under the BSD 3-Clause License.
             - --keep-before=#!
