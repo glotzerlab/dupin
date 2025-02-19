@@ -4,10 +4,6 @@ on:
   # trigger on pull requests
   pull_request:
 
-  # trigger on all commits to main
-  push:
-    branches:
-      - 'main'
   workflow_dispatch:
 
 concurrency:
@@ -54,3 +50,4 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
