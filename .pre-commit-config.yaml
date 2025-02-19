@@ -40,7 +40,7 @@ repos:
       hooks:
         - id: fix-license-header
           name: Fix License Headers (Python)
-          exclude: ^doc/
+          exclude: ^docs/
           types_or: [python]
           args:
             - --license-file=LICENSE
