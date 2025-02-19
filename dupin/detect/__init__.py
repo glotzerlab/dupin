@@ -1,3 +1,6 @@
+# Copyright (c) 2023-2025 The Regents of the University of Michigan.
+# This file is from the dupin project, released under the BSD 3-Clause License.
+
 """Methods for event detection in molecular simulations.
 
 dupin provides classes and functions to help in the event detection process but

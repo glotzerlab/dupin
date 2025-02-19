@@ -1,3 +1,6 @@
+# Copyright (c) 2023-2025 The Regents of the University of Michigan.
+# This file is from the dupin project, released under the BSD 3-Clause License.
+
 """Interface from `freud` to dupin.
 
 freud is a Python package for analyzing molecular trajectory data.

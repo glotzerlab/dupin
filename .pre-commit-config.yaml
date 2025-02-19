@@ -35,3 +35,16 @@ repos:
           - python
           - pyi
           - jupyter
+    - repo: https://github.com/glotzerlab/fix-license-header
+      rev: v0.4.1
+      hooks:
+        - id: fix-license-header
+          name: Fix License Headers (Python)
+          exclude: ^docs/|^tests/
+          types_or: [python]
+          args:
+            - --license-file=LICENSE
+            - --start=0
+            - --num=1
+            - --add=This file is from the dupin project, released under the BSD 3-Clause License.
+            - --keep-before=#!
