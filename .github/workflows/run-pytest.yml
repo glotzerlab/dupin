@@ -42,7 +42,7 @@ jobs:
       uses: glotzerlab/workflows/setup-uv@3573ddaebf3290e00bfb150b82a46412192a61d3
       with:
         only-binary: ":none:"
-        lockfile: ".github/environments/requirements${{ matrix.python }}.txt"
+        lockfile: ".github/workflows/environments/requirements${{ matrix.python }}.txt"
     - name: Install package
       run: |
         python --version
