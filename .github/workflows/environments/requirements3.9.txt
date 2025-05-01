@@ -10,9 +10,9 @@ exceptiongroup==1.2.2
     # via
     #   hypothesis
     #   pytest
-freud-analysis==3.2.0
+freud-analysis==3.3.1
     # via -r ../../../requirements/requirements.txt
-hypothesis==6.130.8
+hypothesis==6.131.9
     # via -r ../../../requirements/requirements-testing.txt
 iniconfig==2.1.0
     # via pytest
@@ -20,6 +20,8 @@ joblib==1.4.2
     # via scikit-learn
 kneed==0.8.5
     # via -r ../../../requirements/requirements.txt
+more-itertools==10.7.0
+    # via parsnip-cif
 numpy==2.0.2
     # via
     #   -r ../../../requirements/requirements.txt
@@ -27,12 +29,13 @@ numpy==2.0.2
     #   freud-analysis
     #   kneed
     #   pandas
+    #   parsnip-cif
     #   rowan
     #   ruptures
     #   scikit-learn
     #   scipy
     #   xarray
-packaging==24.2
+packaging==25.0
     # via
     #   pytest
     #   xarray
@@ -40,6 +43,8 @@ pandas==2.2.3
     # via
     #   -r ../../../requirements/requirements.txt
     #   xarray
+parsnip-cif==0.2.1
+    # via freud-analysis
 pluggy==1.5.0
     # via pytest
 pytest==8.3.5
@@ -60,7 +65,7 @@ scipy==1.13.1
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==78.1.0
+setuptools==80.1.0
     # via -r ../../../requirements/requirements-build.txt
 six==1.17.0
     # via python-dateutil

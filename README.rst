@@ -6,7 +6,7 @@ dupin
 |Github-Stars|
 
 .. |Cite| image:: https://img.shields.io/badge/dupin-cite-yellow
-   :target: https://dupin.readthedocs.io/citing.html
+   :target: https://dupin.readthedocs.io/en/latest/citing.html
 .. |GitHub-Stars| image:: https://img.shields.io/github/stars/glotzerlab/dupin.svg
    :target: https://github.com/glotzerlab/dupin
 
