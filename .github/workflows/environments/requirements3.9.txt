@@ -2,21 +2,21 @@
 #    uv pip compile --python-version 3.9 ../../../requirements/requirements-build.txt ../../../requirements/requirements-testing.txt ../../../requirements/requirements.txt
 attrs==25.3.0
     # via hypothesis
-bottleneck==1.4.2
+bottleneck==1.5.0
     # via -r ../../../requirements/requirements.txt
 coverage==7.8.0
     # via -r ../../../requirements/requirements-testing.txt
-exceptiongroup==1.2.2
+exceptiongroup==1.3.0
     # via
     #   hypothesis
     #   pytest
 freud-analysis==3.3.1
     # via -r ../../../requirements/requirements.txt
-hypothesis==6.131.9
+hypothesis==6.131.20
     # via -r ../../../requirements/requirements-testing.txt
 iniconfig==2.1.0
     # via pytest
-joblib==1.4.2
+joblib==1.5.0
     # via scikit-learn
 kneed==0.8.5
     # via -r ../../../requirements/requirements.txt
@@ -45,7 +45,7 @@ pandas==2.2.3
     #   xarray
 parsnip-cif==0.2.1
     # via freud-analysis
-pluggy==1.5.0
+pluggy==1.6.0
     # via pytest
 pytest==8.3.5
     # via -r ../../../requirements/requirements-testing.txt
@@ -65,7 +65,7 @@ scipy==1.13.1
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==80.1.0
+setuptools==80.7.1
     # via -r ../../../requirements/requirements-build.txt
 six==1.17.0
     # via python-dateutil
@@ -75,6 +75,8 @@ threadpoolctl==3.6.0
     # via scikit-learn
 tomli==2.2.1
     # via pytest
+typing-extensions==4.13.2
+    # via exceptiongroup
 tzdata==2025.2
     # via pandas
 xarray==2024.7.0
