@@ -4,15 +4,15 @@ attrs==25.3.0
     # via hypothesis
 bottleneck==1.5.0
     # via -r ../../../requirements/requirements.txt
-coverage==7.8.0
+coverage==7.8.2
     # via -r ../../../requirements/requirements-testing.txt
 freud-analysis==3.3.1
     # via -r ../../../requirements/requirements.txt
-hypothesis==6.131.20
+hypothesis==6.135.0
     # via -r ../../../requirements/requirements-testing.txt
 iniconfig==2.1.0
     # via pytest
-joblib==1.5.0
+joblib==1.5.1
     # via scikit-learn
 kneed==0.8.5
     # via -r ../../../requirements/requirements.txt
@@ -35,7 +35,7 @@ packaging==25.0
     # via
     #   pytest
     #   xarray
-pandas==2.2.3
+pandas==2.3.0
     # via
     #   -r ../../../requirements/requirements.txt
     #   xarray
@@ -43,7 +43,9 @@ parsnip-cif==0.2.1
     # via freud-analysis
 pluggy==1.6.0
     # via pytest
-pytest==8.3.5
+pygments==2.19.1
+    # via pytest
+pytest==8.4.0
     # via -r ../../../requirements/requirements-testing.txt
 python-dateutil==2.9.0.post0
     # via pandas
@@ -61,7 +63,7 @@ scipy==1.15.3
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==80.7.1
+setuptools==80.9.0
     # via -r ../../../requirements/requirements-build.txt
 six==1.17.0
     # via python-dateutil
