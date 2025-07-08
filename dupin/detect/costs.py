@@ -93,7 +93,7 @@ class CostLinearFit(BaseLinearCost):
         Only works for 1 or 2D arrays.
         """
         if arr.ndim > 1:
-            shape = arr.shape[:-1] + (arr.shape[-1] + 1,)
+            shape = (*arr.shape[:-1], arr.shape[-1] + 1)
         else:
             shape = len(arr) + 1
         out = np.empty(shape)
