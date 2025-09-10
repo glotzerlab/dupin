@@ -39,7 +39,7 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
     - name: Set up Python environment
-      uses: glotzerlab/workflows/setup-uv@3573ddaebf3290e00bfb150b82a46412192a61d3
+      uses: glotzerlab/workflows/setup-uv@1855eec25e87bdbc06359aa3adc355b59272cae3 # 0.7.0
       with:
         lockfile: ".github/workflows/environments/requirements${{ matrix.python }}.txt"
     - name: Install package
