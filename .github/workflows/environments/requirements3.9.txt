@@ -57,7 +57,7 @@ pytz==2025.2
     # via pandas
 rowan==1.3.2
     # via freud-analysis
-ruptures==1.1.9
+ruptures==1.1.10
     # via -r ../../../requirements/requirements.txt
 scikit-learn==1.6.1
     # via -r ../../../requirements/requirements.txt
