@@ -12,7 +12,7 @@ on:
   # trigger on request
   workflow_dispatch:
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         python: ['3.9', '3.10', '3.11', '3.12', '3.13']
         include:
           # Other tests
@@ -39,9 +39,8 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
     - name: Set up Python environment
-      uses: glotzerlab/workflows/setup-uv@3573ddaebf3290e00bfb150b82a46412192a61d3
+      uses: glotzerlab/workflows/setup-uv@1855eec25e87bdbc06359aa3adc355b59272cae3 # 0.7.0
       with:
-        only-binary: ":none:"
         lockfile: ".github/workflows/environments/requirements${{ matrix.python }}.txt"
     - name: Install package
       run: |
@@ -50,3 +49,15 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest -v
+
+  # This job is used to provide a single requirement for branch merge conditions.
+  tests_complete:
+    name: Unit test
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+    - name: Done
+      run: exit 0
