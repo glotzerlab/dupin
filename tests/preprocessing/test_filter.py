@@ -46,7 +46,7 @@ class TestMeanShift:
         signal, _ = rpt.pw_constant(6, 1, 0, 2)
         with pytest.raises(
             ValueError,
-            match="Signal to small to perform statistical analysis on.",
+            match=r"Signal to small to perform statistical analysis on.",
         ):
             mean_shift(signal)
 
@@ -171,7 +171,7 @@ class TestCorrelated:
 
     def test_zero_n_features(self, random_signal, correlated):
         with pytest.raises(
-            ValueError, match="features_per_cluster must be 1 or greater."
+            ValueError, match=r"features_per_cluster must be 1 or greater."
         ):
             correlated(random_signal, features_per_cluster=0)
 
@@ -216,15 +216,15 @@ class TestCorrelated:
             assert not np.any(filter_[features_in_cluster][:-2])
 
     def test_invalid_construction(self):
-        with pytest.raises(ValueError, match="Unsupported method aggregate."):
+        with pytest.raises(ValueError, match=r"Unsupported method aggregate."):
             du.preprocessing.filter.Correlated(method="aggregate")
         with pytest.raises(
-            ValueError, match="Unsupported correlation option spearman."
+            ValueError, match=r"Unsupported correlation option spearman."
         ):
             du.preprocessing.filter.Correlated(correlation="spearman")
         for n_clusters in (-1, 0, 1):
             with pytest.raises(
-                ValueError, match="Max clusters must be greater than 1."
+                ValueError, match=r"Max clusters must be greater than 1."
             ):
                 du.preprocessing.filter.Correlated(max_clusters=n_clusters)
         for n_clusters in ("", {}):

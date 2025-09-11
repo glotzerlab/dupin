@@ -29,19 +29,9 @@ All contributors implicitly agree to the Contributor Agreement (`ContributorAgre
 Source code
 ===========
 
-This package uses pre-commit to ensure consistent formatting of Python code.
-To install ``pre-commit`` run the following commands in the project directory.
+This package `prek`_ to ensure consistent formatting of Python code.
 
-.. code:: shell
-
-    python3 -m pip install pre-commit
-    pre-commit install
-
-
-.. note::
-
-   We also recommend the use of `pipx <https://pypa.github.io/pipx/>`__ to install Python applications.
-   To do this first install **pipx** via your preferred method and then run ``pipx install pre-commit``.
+.. _prek: https://prek.j178.dev/
 
 Document code with comments
 ---------------------------

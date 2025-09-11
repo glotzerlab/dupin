@@ -50,9 +50,11 @@ def test_valid_construction():
 
 def test_invalid_construction():
     classifier = sk.tree.DecisionTreeClassifier(max_depth=1)
-    with pytest.raises(ValueError, match="window_size must be greater than 1."):
+    with pytest.raises(
+        ValueError, match=r"window_size must be greater than 1."
+    ):
         du.preprocessing.supervised.Window(classifier, 1, 0.1)
-    with pytest.raises(ValueError, match="test_size must be between 0 and 1."):
+    with pytest.raises(ValueError, match=r"test_size must be between 0 and 1."):
         du.preprocessing.supervised.Window(classifier, 2, 0.0)
     with pytest.raises(TypeError):
         du.preprocessing.supervised.Window(classifier, 2, 0.1, {})
@@ -64,7 +66,7 @@ def test_invalid_construction():
         du.preprocessing.supervised.Window(classifier, 2, 0.1, loss, "foo")
     for n_classifiers in (0, -1):
         with pytest.raises(
-            ValueError, match="n_classifiers must be greater than 0."
+            ValueError, match=r"n_classifiers must be greater than 0."
         ):
             du.preprocessing.supervised.Window(
                 classifier, 2, 0.1, loss, True, n_classifiers
