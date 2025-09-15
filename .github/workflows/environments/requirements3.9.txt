@@ -3,28 +3,28 @@
 attrs==25.3.0
     # via hypothesis
 bottleneck==1.5.0
-    # via -r ../../../requirements/requirements.txt
-coverage==7.8.2
-    # via -r ../../../requirements/requirements-testing.txt
+    # via -r requirements.in
+coverage==7.10.6
+    # via -r requirements-testing.in
 exceptiongroup==1.3.0
     # via
     #   hypothesis
     #   pytest
-freud-analysis==3.3.1
-    # via -r ../../../requirements/requirements.txt
-hypothesis==6.135.0
-    # via -r ../../../requirements/requirements-testing.txt
+freud-analysis==3.4.0
+    # via -r requirements.in
+hypothesis==6.138.16
+    # via -r requirements-testing.in
 iniconfig==2.1.0
     # via pytest
-joblib==1.5.1
+joblib==1.5.2
     # via scikit-learn
 kneed==0.8.5
-    # via -r ../../../requirements/requirements.txt
-more-itertools==10.7.0
+    # via -r requirements.in
+more-itertools==10.8.0
     # via parsnip-cif
 numpy==2.0.2
     # via
-    #   -r ../../../requirements/requirements.txt
+    #   -r requirements.in
     #   bottleneck
     #   freud-analysis
     #   kneed
@@ -39,18 +39,18 @@ packaging==25.0
     # via
     #   pytest
     #   xarray
-pandas==2.3.0
+pandas==2.3.2
     # via
-    #   -r ../../../requirements/requirements.txt
+    #   -r requirements.in
     #   xarray
-parsnip-cif==0.2.1
+parsnip-cif==0.4.0
     # via freud-analysis
 pluggy==1.6.0
     # via pytest
-pygments==2.19.1
+pygments==2.19.2
     # via pytest
-pytest==8.4.0
-    # via -r ../../../requirements/requirements-testing.txt
+pytest==8.4.2
+    # via -r requirements-testing.in
 python-dateutil==2.9.0.post0
     # via pandas
 pytz==2025.2
@@ -58,9 +58,9 @@ pytz==2025.2
 rowan==1.3.2
     # via freud-analysis
 ruptures==1.1.10
-    # via -r ../../../requirements/requirements.txt
+    # via -r requirements.in
 scikit-learn==1.6.1
-    # via -r ../../../requirements/requirements.txt
+    # via -r requirements.in
 scipy==1.13.1
     # via
     #   freud-analysis
@@ -68,7 +68,7 @@ scipy==1.13.1
     #   ruptures
     #   scikit-learn
 setuptools==80.9.0
-    # via -r ../../../requirements/requirements-build.txt
+    # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil
 sortedcontainers==2.4.0
@@ -77,9 +77,9 @@ threadpoolctl==3.6.0
     # via scikit-learn
 tomli==2.2.1
     # via pytest
-typing-extensions==4.14.0
+typing-extensions==4.15.0
     # via exceptiongroup
 tzdata==2025.2
     # via pandas
 xarray==2024.7.0
-    # via -r ../../../requirements/requirements.txt
+    # via -r requirements.in
