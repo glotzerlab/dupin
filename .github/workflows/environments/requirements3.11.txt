@@ -8,7 +8,7 @@ coverage==7.10.7
     # via -r requirements-testing.in
 freud-analysis==3.4.0
     # via -r requirements.in
-hypothesis==6.140.0
+hypothesis==6.140.2
     # via -r requirements-testing.in
 iniconfig==2.1.0
     # via pytest
