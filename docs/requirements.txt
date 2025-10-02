@@ -12,7 +12,7 @@ attrs==25.3.0
     #   referencing
 babel==2.17.0
     # via sphinx
-beautifulsoup4==4.13.5
+beautifulsoup4==4.14.2
     # via
     #   furo
     #   nbconvert
@@ -36,13 +36,13 @@ executing==2.2.1
     # via stack-data
 fastjsonschema==2.21.2
     # via nbformat
-furo==2025.7.19
+furo==2025.9.25
     # via -r requirements.in
 idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
-ipython==9.5.0
+ipython==9.6.0
     # via
     #   -r requirements.in
     #   ipywidgets
@@ -73,7 +73,7 @@ jupyterlab-pygments==0.3.0
     # via nbconvert
 jupyterlab-widgets==3.0.15
     # via ipywidgets
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via
     #   jinja2
     #   nbconvert
