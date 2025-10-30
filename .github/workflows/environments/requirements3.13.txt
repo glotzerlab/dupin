@@ -8,7 +8,7 @@ coverage==7.11.0
     # via -r requirements-testing.in
 freud-analysis==3.5.0
     # via -r requirements.in
-hypothesis==6.142.3
+hypothesis==6.142.4
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
@@ -57,7 +57,7 @@ ruptures==1.1.10
     # via -r requirements.in
 scikit-learn==1.7.2
     # via -r requirements.in
-scipy==1.16.2
+scipy==1.16.3
     # via
     #   freud-analysis
     #   kneed
