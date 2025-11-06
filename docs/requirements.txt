@@ -42,13 +42,13 @@ idna==3.11
     # via requests
 imagesize==1.4.1
     # via sphinx
-ipython==9.6.0
+ipython==9.7.0
     # via
     #   -r requirements.in
     #   ipywidgets
 ipython-pygments-lexers==1.1.1
     # via ipython
-ipywidgets==8.1.7
+ipywidgets==8.1.8
     # via -r requirements.in
 jedi==0.19.2
     # via ipython
@@ -71,7 +71,7 @@ jupyter-core==5.9.1
     #   nbformat
 jupyterlab-pygments==0.3.0
     # via nbconvert
-jupyterlab-widgets==3.0.15
+jupyterlab-widgets==3.0.16
     # via ipywidgets
 markupsafe==3.0.3
     # via
@@ -184,5 +184,5 @@ webencodings==0.5.1
     # via
     #   bleach
     #   tinycss2
-widgetsnbextension==4.0.14
+widgetsnbextension==4.0.15
     # via ipywidgets
