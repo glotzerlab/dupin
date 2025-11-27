@@ -2,11 +2,11 @@
 #    uv pip compile --python-version=3.13 requirements-build.in requirements-testing.in requirements.in --output-file=requirements3.13.txt
 bottleneck==1.6.0
     # via -r requirements.in
-coverage==7.11.3
+coverage==7.12.0
     # via -r requirements-testing.in
 freud-analysis==3.5.0
     # via -r requirements.in
-hypothesis==6.147.0
+hypothesis==6.148.2
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
@@ -16,7 +16,7 @@ kneed==0.8.5
     # via -r requirements.in
 more-itertools==10.8.0
     # via parsnip-cif
-numpy==2.3.4
+numpy==2.3.5
     # via
     #   -r requirements.in
     #   bottleneck
@@ -71,5 +71,5 @@ threadpoolctl==3.6.0
     # via scikit-learn
 tzdata==2025.2
     # via pandas
-xarray==2025.10.1
+xarray==2025.11.0
     # via -r requirements.in
