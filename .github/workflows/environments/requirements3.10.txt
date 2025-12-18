@@ -14,7 +14,7 @@ hypothesis==6.148.7
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
-joblib==1.5.2
+joblib==1.5.3
     # via scikit-learn
 kneed==0.8.5
     # via -r requirements.in
@@ -77,7 +77,7 @@ tomli==2.3.0
     # via pytest
 typing-extensions==4.15.0
     # via exceptiongroup
-tzdata==2025.2
+tzdata==2025.3
     # via pandas
 xarray==2025.6.1
     # via -r requirements.in

@@ -10,7 +10,7 @@ hypothesis==6.148.7
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
-joblib==1.5.2
+joblib==1.5.3
     # via scikit-learn
 kneed==0.8.5
     # via -r requirements.in
@@ -69,7 +69,7 @@ sortedcontainers==2.4.0
     # via hypothesis
 threadpoolctl==3.6.0
     # via scikit-learn
-tzdata==2025.2
+tzdata==2025.3
     # via pandas
 xarray==2025.12.0
     # via -r requirements.in
