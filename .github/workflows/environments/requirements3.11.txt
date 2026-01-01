@@ -2,11 +2,11 @@
 #    uv pip compile --python-version=3.11 requirements-build.in requirements-testing.in requirements.in --output-file=requirements3.11.txt
 bottleneck==1.6.0
     # via -r requirements.in
-coverage==7.13.0
+coverage==7.13.1
     # via -r requirements-testing.in
 freud-analysis==3.4.0
     # via -r requirements.in
-hypothesis==6.148.8
+hypothesis==6.148.9
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
