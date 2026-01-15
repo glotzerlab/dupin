@@ -75,7 +75,7 @@ sortedcontainers==2.4.0
     # via hypothesis
 threadpoolctl==3.6.0
     # via scikit-learn
-tomli==2.3.0
+tomli==2.4.0
     # via pytest
 typing-extensions==4.15.0
     # via exceptiongroup
