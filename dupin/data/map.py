@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2025 The Regents of the University of Michigan.
+# Copyright (c) 2023-2026 The Regents of the University of Michigan.
 # This file is from the dupin project, released under the BSD 3-Clause License.
 
 """`dupin.data.base.DataMap` subclasses to transform distributional data.
