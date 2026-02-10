@@ -35,7 +35,7 @@ numpy==2.0.2
     #   scikit-learn
     #   scipy
     #   xarray
-packaging==25.0
+packaging==26.0
     # via
     #   pytest
     #   xarray
@@ -67,7 +67,7 @@ scipy==1.13.1
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==80.9.0
+setuptools==82.0.0
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil
