@@ -6,7 +6,7 @@ coverage==7.13.4
     # via -r requirements-testing.in
 freud-analysis==3.4.0
     # via -r requirements.in
-hypothesis==6.151.6
+hypothesis==6.151.9
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
@@ -33,7 +33,7 @@ packaging==26.0
     # via
     #   pytest
     #   xarray
-pandas==3.0.0
+pandas==3.0.1
     # via
     #   -r requirements.in
     #   xarray
@@ -53,7 +53,7 @@ ruptures==1.1.10
     # via -r requirements.in
 scikit-learn==1.8.0
     # via -r requirements.in
-scipy==1.17.0
+scipy==1.17.1
     # via
     #   freud-analysis
     #   kneed
@@ -67,5 +67,5 @@ sortedcontainers==2.4.0
     # via hypothesis
 threadpoolctl==3.6.0
     # via scikit-learn
-xarray==2026.1.0
+xarray==2026.2.0
     # via -r requirements.in
