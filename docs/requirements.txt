@@ -20,7 +20,7 @@ bleach==6.3.0
     # via nbconvert
 certifi==2026.2.25
     # via requests
-charset-normalizer==3.4.4
+charset-normalizer==3.4.5
     # via requests
 comm==0.2.3
     # via ipywidgets
@@ -42,7 +42,7 @@ idna==3.11
     # via requests
 imagesize==2.0.0
     # via sphinx
-ipython==9.10.0
+ipython==9.11.0
     # via
     #   -r requirements.in
     #   ipywidgets
@@ -102,7 +102,7 @@ parso==0.8.6
     # via jedi
 pexpect==4.9.0
     # via ipython
-platformdirs==4.9.2
+platformdirs==4.9.4
     # via jupyter-core
 prompt-toolkit==3.0.52
     # via ipython
@@ -163,7 +163,7 @@ stack-data==0.6.3
     # via ipython
 tinycss2==1.4.0
     # via bleach
-tornado==6.5.4
+tornado==6.5.5
     # via jupyter-client
 traitlets==5.14.3
     # via
