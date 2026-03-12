@@ -16,7 +16,7 @@ kneed==0.8.5
     # via -r requirements.in
 more-itertools==10.8.0
     # via parsnip-cif
-numpy==2.4.2
+numpy==2.4.3
     # via
     #   -r requirements.in
     #   bottleneck
@@ -59,7 +59,7 @@ scipy==1.17.1
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==82.0.0
+setuptools==82.0.1
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil

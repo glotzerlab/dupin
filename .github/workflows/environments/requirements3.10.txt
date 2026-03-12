@@ -65,7 +65,7 @@ scipy==1.15.3
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==82.0.0
+setuptools==82.0.1
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil
