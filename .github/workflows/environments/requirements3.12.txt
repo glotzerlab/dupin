@@ -2,7 +2,7 @@
 #    uv pip compile --python-version=3.12 requirements-build.in requirements-testing.in requirements.in --output-file=requirements3.12.txt
 bottleneck==1.6.0
     # via -r requirements.in
-coverage==7.13.4
+coverage==7.13.5
     # via -r requirements-testing.in
 freud-analysis==3.5.0
     # via -r requirements.in
