@@ -43,7 +43,7 @@ pluggy==1.6.0
     # via pytest
 pygments==2.19.2
     # via pytest
-pytest==9.0.2
+pytest==9.0.3
     # via -r requirements-testing.in
 python-dateutil==2.9.0.post0
     # via pandas
