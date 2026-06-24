@@ -126,12 +126,13 @@ def test_to_dataframe(n_frames, keys, data):
     df = instance.to_dataframe()
     if n_frames > 0 and len(keys) > 0:
         assert df.shape == (n_frames, len(keys))
-        assert np.allclose(
-            df.to_numpy(),
-            [list(v.values()) for v in instance.signals],
-            equal_nan=True,
-        )
-        assert all(k == c for k, c in zip(df.columns, keys))
+        columns = list(instance.signals[0])
+        assert list(df.columns) == columns
+        assert set(df.columns) == keys
+        expected = [
+            [frame[col] for col in columns] for frame in instance.signals
+        ]
+        assert np.allclose(df.to_numpy(), expected, equal_nan=True)
         return
     assert len(df.columns) == 0
 
