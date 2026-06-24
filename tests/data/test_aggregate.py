@@ -129,7 +129,9 @@ def test_to_dataframe(n_frames, keys, data):
         columns = list(instance.signals[0])
         assert list(df.columns) == columns
         assert set(df.columns) == keys
-        expected = [[frame[col] for col in columns] for frame in instance.signals]
+        expected = [
+            [frame[col] for col in columns] for frame in instance.signals
+        ]
         assert np.allclose(df.to_numpy(), expected, equal_nan=True)
         return
     assert len(df.columns) == 0
