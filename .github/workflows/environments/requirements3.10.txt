@@ -2,7 +2,7 @@
 #    uv pip compile --python-version=3.10 requirements-build.in requirements-testing.in requirements.in --output-file=requirements3.10.txt
 bottleneck==1.6.0
     # via -r requirements.in
-coverage==7.14.3
+coverage==7.15.2
     # via -r requirements-testing.in
 exceptiongroup==1.3.1
     # via
@@ -10,7 +10,7 @@ exceptiongroup==1.3.1
     #   pytest
 freud-analysis==3.4.0
     # via -r requirements.in
-hypothesis==6.155.7
+hypothesis==6.158.1
     # via -r requirements-testing.in
 iniconfig==2.3.0
     # via pytest
@@ -41,7 +41,7 @@ pandas==2.3.3
     # via
     #   -r requirements.in
     #   xarray
-parsnip-cif==0.6.1
+parsnip-cif==1.0.0
     # via freud-analysis
 pluggy==1.6.0
     # via pytest
@@ -65,7 +65,7 @@ scipy==1.15.3
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==82.0.1
+setuptools==83.0.0
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil
@@ -75,9 +75,9 @@ threadpoolctl==3.6.0
     # via scikit-learn
 tomli==2.4.1
     # via pytest
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via exceptiongroup
-tzdata==2026.2
+tzdata==2026.3
     # via pandas
 xarray==2025.6.1
     # via -r requirements.in
