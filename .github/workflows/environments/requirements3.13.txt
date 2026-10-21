@@ -8,15 +8,15 @@ coverage==7.16.2
     # via -r requirements-testing.in
 freud-analysis==3.6.1
     # via -r requirements.in
-hypothesis==6.169.0
+hypothesis==6.170.5
     # via -r requirements-testing.in
 iniconfig==2.3.1
     # via pytest
 joblib==1.6.0
     # via scikit-learn
-kneed==0.8.6
+kneed==0.9.0
     # via -r requirements.in
-more-itertools==11.2.0
+more-itertools==11.2.1
     # via parsnip-cif
 narwhals==2.27.1
     # via scikit-learn
@@ -43,7 +43,7 @@ pandas==3.0.6
     #   xarray
 parsnip-cif==1.0.0
     # via freud-analysis
-pluggy==1.6.0
+pluggy==1.7.0
     # via pytest
 pygments==2.21.0
     # via pytest
@@ -63,7 +63,7 @@ scipy==1.18.1
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==84.0.0
+setuptools==84.2.1
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil

@@ -18,7 +18,7 @@ iniconfig==2.3.1
     # via pytest
 joblib==1.6.0
     # via scikit-learn
-kneed==0.8.6
+kneed==0.9.0
     # via -r requirements.in
 more-itertools==11.1.0
     # via parsnip-cif
@@ -45,7 +45,7 @@ pandas==2.3.3
     #   xarray
 parsnip-cif==1.0.0
     # via freud-analysis
-pluggy==1.6.0
+pluggy==1.7.0
     # via pytest
 pygments==2.21.0
     # via pytest
@@ -67,7 +67,7 @@ scipy==1.15.3
     #   kneed
     #   ruptures
     #   scikit-learn
-setuptools==84.0.0
+setuptools==84.2.1
     # via -r requirements-build.in
 six==1.17.0
     # via python-dateutil
