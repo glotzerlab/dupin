@@ -49,7 +49,7 @@ pygments==2.21.0
     # via pytest
 pytest==9.1.1
     # via -r requirements-testing.in
-python-dateutil==2.9.0.post0
+python-dateutil==3.0.0
     # via pandas
 rowan==1.3.2
     # via freud-analysis
@@ -71,5 +71,7 @@ sortedcontainers==2.4.0
     # via hypothesis
 threadpoolctl==3.7.0
     # via scikit-learn
+tzdata==2026.5
+    # via python-dateutil
 xarray==2026.9.0
     # via -r requirements.in

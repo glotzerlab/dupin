@@ -51,7 +51,7 @@ pygments==2.21.0
     # via pytest
 pytest==9.1.1
     # via -r requirements-testing.in
-python-dateutil==2.9.0.post0
+python-dateutil==3.0.0
     # via pandas
 pytz==2026.5
     # via pandas
@@ -80,6 +80,8 @@ tomli==2.5.0
 typing-extensions==4.16.0
     # via exceptiongroup
 tzdata==2026.5
-    # via pandas
+    # via
+    #   pandas
+    #   python-dateutil
 xarray==2025.6.1
     # via -r requirements.in
